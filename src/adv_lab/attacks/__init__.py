@@ -1,12 +1,34 @@
-"""Adversarial attacks: white-box gradient attacks, black-box query attacks, model stealing, norm attacks, LLM attacks, and poisoning."""
+"""Adversarial attacks: white-box gradient attacks, black-box query attacks, model stealing, norm attacks, LLM attacks, poisoning, adaptive, parameter search, constrained, evasion, and ensemble."""
 
+from adv_lab.attacks.adaptive import (
+    BPDA,
+    EoT,
+    GradientMaskingDetector,
+    AdaptiveAttackLog,
+    adaptive_attack,
+)
 from adv_lab.attacks.blackbox import (
     boundary_attack,
     hop_skip_jump,
     simba_attack,
     square_attack,
 )
+from adv_lab.attacks.constrained import (
+    QueryBudgetManager,
+    TimedAttack,
+    rate_limited_attack,
+)
 from adv_lab.attacks.cw import cw_l2_attack
+from adv_lab.attacks.ensemble import (
+    build_attacker_ensemble,
+    ensemble_attack,
+    weighted_ensemble_pgd,
+)
+from adv_lab.attacks.evasion import (
+    detector_evasion,
+    feature_squeeze_robust,
+    jpeg_robust_attack,
+)
 from adv_lab.attacks.fgsm import batch_fgsm, fgsm_attack
 from adv_lab.attacks.llm import (
     AutoDANAttack,
@@ -29,6 +51,12 @@ from adv_lab.attacks.norms import (
     pgd_l1,
     semantic_attack,
     wasserstein_attack,
+)
+from adv_lab.attacks.param_search import (
+    BayesianAttackOptimizer,
+    GaussianProcess,
+    ParamBounds,
+    per_sample_difficulty_score,
 )
 from adv_lab.attacks.pgd import pgd_attack, pgd_l2, pgd_linf
 from adv_lab.attacks.poisoning import (
@@ -69,4 +97,22 @@ __all__ = [
     "badnets_trigger",
     "spectral_backdoor",
     "weight_poisoning",
+    "BPDA",
+    "EoT",
+    "GradientMaskingDetector",
+    "AdaptiveAttackLog",
+    "adaptive_attack",
+    "BayesianAttackOptimizer",
+    "GaussianProcess",
+    "ParamBounds",
+    "per_sample_difficulty_score",
+    "TimedAttack",
+    "QueryBudgetManager",
+    "rate_limited_attack",
+    "jpeg_robust_attack",
+    "feature_squeeze_robust",
+    "detector_evasion",
+    "ensemble_attack",
+    "build_attacker_ensemble",
+    "weighted_ensemble_pgd",
 ]
