@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Complete FEAT-004 from prior task: add missing tests for Tier 2-3 inference/chaining/api_sim/non_classification/certified modules that already have implementations. Also update __init__.py exports to include inference, chaining, api_sim, non_classification modules.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create tests/test_inference.py with tests for watermark_flip, prediction_poison, soft_label_manipulation functions from src/adv_lab/attacks/inference.py. Tests should verify: output tensor shapes match input, functions are callable with correct signatures, outputs are valid tensors.",
     "Create tests/test_chaining.py with tests for PerturbationChain class, chain_attack function, and ChainState from src/adv_lab/attacks/chaining.py. Tests should verify: chain maintains state across steps, attack configs are composable, logging produces entries.",
@@ -24,5 +24,5 @@
     "Verify __init__.py imports are consistent with module contents"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 5 test files created and pass AST validation. Updated both __init__.py files with full exports (74 entries in attacks, 14 in eval). No circular imports detected. Tests follow existing patterns using correct_batch and lab fixtures from conftest.py. Non-classification tests use their own model instantiation since those attacks use specialized models (SimpleDetector, SimpleSegmenter, etc.) rather than the shared _SmallCNN classifier."
 }
