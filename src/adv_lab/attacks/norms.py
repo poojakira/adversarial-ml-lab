@@ -123,6 +123,19 @@ def pgd_l0(
             x_adv = x_adv.detach() + perturbation
             x_adv = torch.clamp(x_adv, 0.0, 1.0)
 
+        # Enforce cumulative L0 constraint: keep only top-budget pixels
+        delta = x_adv - images
+        delta_spatial_mag = delta.abs().sum(dim=1)  # (N, H, W)
+        delta_flat = delta_spatial_mag.view(batch_size, -1)  # (N, H*W)
+        k = min(budget, spatial_dims)
+        _, top_k_idx = torch.topk(delta_flat, k, dim=1)
+        mask_final = torch.zeros(batch_size, spatial_dims, device=images.device)
+        mask_final.scatter_(1, top_k_idx, 1.0)
+        mask_final = mask_final.view(batch_size, 1, images.shape[2], images.shape[3])
+        mask_final = mask_final.expand_as(images)
+        x_adv = images + delta * mask_final
+        x_adv = torch.clamp(x_adv, 0.0, 1.0)
+
         # Check which examples are now misclassified
         with torch.no_grad():
             preds = model(x_adv).argmax(dim=1)
