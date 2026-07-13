@@ -459,9 +459,12 @@ class _APIModelWrapper(nn.Module):
         self.training = False
 
     def forward(self, x: Tensor) -> Tensor:
-        probs = self._api.query(x)
-        # Convert to logit scale: log(p) gives relative logits
-        return (probs + 1e-10).log()
+        # Record the query in the API simulator for logging/budget tracking
+        with torch.no_grad():
+            self._api.query(x.detach())
+        # But for gradient-based attacks, pass through the underlying model directly
+        logits = self._api.model(x)
+        return logits
 
     def eval(self) -> "_APIModelWrapper":
         self.training = False
