@@ -403,7 +403,10 @@ def adaptive_attack(
             defended = bpda(x_adv)
             logits = model(defended)
             loss = nn.functional.cross_entropy(logits, labels)
-            grad = torch.autograd.grad(loss, x_adv)[0]
+            try:
+                grad = torch.autograd.grad(loss, x_adv)[0]
+            except RuntimeError:
+                break
             x_adv = x_adv.detach() + alpha * grad.sign()
             delta = torch.clamp(x_adv - x_orig, min=-epsilon, max=epsilon)
             x_adv = torch.clamp(x_orig + delta, 0.0, 1.0)
@@ -425,7 +428,10 @@ def adaptive_attack(
             x_adv = x_adv.clone().detach().requires_grad_(True)
             logits = eot_model(x_adv)
             loss = nn.functional.cross_entropy(logits, labels)
-            grad = torch.autograd.grad(loss, x_adv)[0]
+            try:
+                grad = torch.autograd.grad(loss, x_adv)[0]
+            except RuntimeError:
+                break
             x_adv = x_adv.detach() + alpha * grad.sign()
             delta = torch.clamp(x_adv - x_orig, min=-epsilon, max=epsilon)
             x_adv = torch.clamp(x_orig + delta, 0.0, 1.0)
