@@ -99,6 +99,25 @@ from adv_lab.attacks.non_classification import (
     rl_attack,
     segmentation_attack,
 )
+from adv_lab.attacks.inversion import (
+    InversionResult,
+    MembershipResult,
+    gan_inversion,
+    gradient_inversion,
+    membership_inference_likelihood,
+    membership_inference_shadow,
+)
+from adv_lab.attacks.physical import (
+    PatchResult,
+    PhysicalPatchAttack,
+    printability_constraint,
+)
+from adv_lab.attacks.universal import (
+    cross_architecture_transfer,
+    evaluate_fooling_rate,
+    fast_uap,
+    uap_generate,
+)
 
 __all__ = [
     "fgsm_attack",
@@ -179,4 +198,20 @@ __all__ = [
     "regression_attack",
     "rl_attack",
     "recommendation_attack",
+    # inversion module
+    "InversionResult",
+    "MembershipResult",
+    "gradient_inversion",
+    "gan_inversion",
+    "membership_inference_shadow",
+    "membership_inference_likelihood",
+    # physical module
+    "PhysicalPatchAttack",
+    "PatchResult",
+    "printability_constraint",
+    # universal module
+    "uap_generate",
+    "fast_uap",
+    "evaluate_fooling_rate",
+    "cross_architecture_transfer",
 ]

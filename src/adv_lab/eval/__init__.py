@@ -1,4 +1,4 @@
-"""Evaluation: the CI-gateable robustness benchmark harness, transferability analysis, and certified defense evaluation."""
+"""Evaluation: the CI-gateable robustness benchmark harness, transferability analysis, certified defense evaluation, and CI signing."""
 
 from adv_lab.eval.harness import BenchmarkResult, export_json, run_benchmark
 from adv_lab.eval.transferability import (
@@ -15,6 +15,14 @@ from adv_lab.eval.certified import (
     find_certificate_boundary,
     ibp_eval,
     lipschitz_eval,
+)
+from adv_lab.eval.ci_signing import (
+    create_signed_manifest,
+    derive_key,
+    detect_replay,
+    log_input_hashes,
+    sign_report,
+    verify_report,
 )
 
 __all__ = [
@@ -33,4 +41,11 @@ __all__ = [
     "ibp_eval",
     "IBPBounds",
     "find_certificate_boundary",
+    # ci_signing module
+    "sign_report",
+    "verify_report",
+    "log_input_hashes",
+    "detect_replay",
+    "derive_key",
+    "create_signed_manifest",
 ]

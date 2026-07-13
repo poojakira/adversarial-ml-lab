@@ -141,12 +141,31 @@ def run_benchmark(
     )
 
 
-def export_json(result: BenchmarkResult, path: str) -> None:
-    """Write a CI-consumable JSON report.
+def export_json(
+    result: BenchmarkResult,
+    path: str,
+    hmac_key: bytes | None = None,
+) -> None:
+    """Write a CI-consumable JSON report, optionally HMAC-signed.
 
     The payload includes short keys a CI job can grep (``passed``,
     ``robust_pgd``) alongside the full record for humans.
+
+    If ``hmac_key`` is provided, the output JSON includes an HMAC-SHA256
+    signature over the canonical payload, making the report tamper-evident.
+    An unsigned CI gate is a broken CI gate -- use signing in production.
+
+    Args:
+        result: The benchmark result to export.
+        path: File path for the JSON output.
+        hmac_key: Optional HMAC signing key. If None (default), the report
+            is written unsigned for backward compatibility. If provided,
+            a ``signature`` field is added using HMAC-SHA256.
     """
+    import hashlib as _hashlib
+    import hmac as _hmac
+    import os
+
     payload = {
         "passed": result.passed,
         "robust_pgd": result.robust_accuracy_pgd,
@@ -159,7 +178,15 @@ def export_json(result: BenchmarkResult, path: str) -> None:
         "timestamp": result.timestamp,
         "detail": asdict(result),
     }
-    import os
+
+    if hmac_key is not None:
+        # Canonicalize payload for signing
+        canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        signature = _hmac.new(
+            hmac_key, canonical.encode("utf-8"), _hashlib.sha256
+        ).hexdigest()
+        payload["signature"] = signature
+        payload["signature_algorithm"] = "HMAC-SHA256"
 
     parent = os.path.dirname(path)
     if parent:
