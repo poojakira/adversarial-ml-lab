@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Complete FEAT-004 from prior task: add missing tests for Tier 2-3 inference/chaining/api_sim/non_classification/certified modules that already have implementations. Also update __init__.py exports to include inference, chaining, api_sim, non_classification modules.",
+  "status": "in_progress",
+  "steps": [
+    "Create tests/test_inference.py with tests for watermark_flip, prediction_poison, soft_label_manipulation functions from src/adv_lab/attacks/inference.py. Tests should verify: output tensor shapes match input, functions are callable with correct signatures, outputs are valid tensors.",
+    "Create tests/test_chaining.py with tests for PerturbationChain class, chain_attack function, and ChainState from src/adv_lab/attacks/chaining.py. Tests should verify: chain maintains state across steps, attack configs are composable, logging produces entries.",
+    "Create tests/test_api_sim.py with tests for APISimulator class, simulated_api_attack, anomaly_detection_evasion from src/adv_lab/attacks/api_sim.py. Tests should verify: rate limiting enforced, query budget tracked, confidence rounding to 2 decimals.",
+    "Create tests/test_non_classification.py with tests for object_detection_attack, segmentation_attack, regression_attack, rl_attack, recommendation_attack from src/adv_lab/attacks/non_classification.py.",
+    "Create tests/test_certified.py with tests for RandomizedSmoothing, lipschitz_eval, ibp_eval, find_certificate_boundary from src/adv_lab/eval/certified.py.",
+    "Update src/adv_lab/attacks/__init__.py to add imports from inference, chaining, api_sim, non_classification modules.",
+    "Update src/adv_lab/eval/__init__.py to add imports from certified module.",
+    "Verify all files pass AST validation."
+  ],
+  "acceptance_criteria": [
+    "All 5 test files exist and pass AST validation",
+    "Tests follow existing patterns from tests/conftest.py (use correct_batch, lab fixtures)",
+    "Updated __init__.py files export all public functions from new modules",
+    "No circular imports introduced"
+  ],
+  "verification": [
+    "Run AST validation on all .py files in src/ and tests/",
+    "Verify __init__.py imports are consistent with module contents"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,4 +1,4 @@
-"""Evaluation: the CI-gateable robustness benchmark harness and transferability analysis."""
+"""Evaluation: the CI-gateable robustness benchmark harness, transferability analysis, and certified defense evaluation."""
 
 from adv_lab.eval.harness import BenchmarkResult, export_json, run_benchmark
 from adv_lab.eval.transferability import (
@@ -6,6 +6,15 @@ from adv_lab.eval.transferability import (
     TransferabilityReport,
     TransferResult,
     create_heterogeneous_models,
+)
+from adv_lab.eval.certified import (
+    IBPBounds,
+    LipschitzNetwork,
+    RandomizedSmoothing,
+    SmoothingResult,
+    find_certificate_boundary,
+    ibp_eval,
+    lipschitz_eval,
 )
 
 __all__ = [
@@ -16,4 +25,12 @@ __all__ = [
     "TransferabilityReport",
     "TransferResult",
     "create_heterogeneous_models",
+    # certified module
+    "RandomizedSmoothing",
+    "SmoothingResult",
+    "LipschitzNetwork",
+    "lipschitz_eval",
+    "ibp_eval",
+    "IBPBounds",
+    "find_certificate_boundary",
 ]

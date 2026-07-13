@@ -1,4 +1,4 @@
-"""Adversarial attacks: white-box gradient attacks, black-box query attacks, model stealing, norm attacks, LLM attacks, poisoning, adaptive, parameter search, constrained, evasion, and ensemble."""
+"""Adversarial attacks: white-box gradient attacks, black-box query attacks, model stealing, norm attacks, LLM attacks, poisoning, adaptive, parameter search, constrained, evasion, ensemble, inference, chaining, API simulation, and non-classification."""
 
 from adv_lab.attacks.adaptive import (
     BPDA,
@@ -65,6 +65,40 @@ from adv_lab.attacks.poisoning import (
     spectral_backdoor,
     weight_poisoning,
 )
+from adv_lab.attacks.inference import (
+    PreprocessingParams,
+    WatermarkFlipResult,
+    prediction_poison,
+    soft_label_manipulation,
+    watermark_flip,
+)
+from adv_lab.attacks.chaining import (
+    AttackConfig,
+    ChainState,
+    PerturbationChain,
+    StepMetrics,
+    chain_attack,
+)
+from adv_lab.attacks.api_sim import (
+    AnomalyType,
+    APISimulator,
+    AnomalyEvent,
+    QueryRecord,
+    anomaly_detection_evasion,
+    simulated_api_attack,
+)
+from adv_lab.attacks.non_classification import (
+    SimpleDetector,
+    SimplePolicy,
+    SimpleRecommender,
+    SimpleRegressor,
+    SimpleSegmenter,
+    object_detection_attack,
+    recommendation_attack,
+    regression_attack,
+    rl_attack,
+    segmentation_attack,
+)
 
 __all__ = [
     "fgsm_attack",
@@ -115,4 +149,34 @@ __all__ = [
     "ensemble_attack",
     "build_attacker_ensemble",
     "weighted_ensemble_pgd",
+    # inference module
+    "watermark_flip",
+    "prediction_poison",
+    "soft_label_manipulation",
+    "PreprocessingParams",
+    "WatermarkFlipResult",
+    # chaining module
+    "PerturbationChain",
+    "chain_attack",
+    "ChainState",
+    "StepMetrics",
+    "AttackConfig",
+    # api_sim module
+    "APISimulator",
+    "simulated_api_attack",
+    "anomaly_detection_evasion",
+    "AnomalyType",
+    "AnomalyEvent",
+    "QueryRecord",
+    # non_classification module
+    "SimpleDetector",
+    "SimpleSegmenter",
+    "SimpleRegressor",
+    "SimplePolicy",
+    "SimpleRecommender",
+    "object_detection_attack",
+    "segmentation_attack",
+    "regression_attack",
+    "rl_attack",
+    "recommendation_attack",
 ]
