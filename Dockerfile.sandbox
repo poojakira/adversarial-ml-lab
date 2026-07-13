@@ -1,0 +1,36 @@
+# Isolation image for running adversarial attack code (poisoning.py, llm.py, ...).
+#
+# Attack modules generate adversarial/poisoned data and, for LLM attacks,
+# potentially offensive content. They must never run unsandboxed on a CI host
+# or workstation. Build this image and run it with a locked-down runtime (see
+# scripts/run_sandboxed.sh): no network, all capabilities dropped, read-only
+# root filesystem, non-root user.
+FROM python:3.12-slim AS builder
+
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /build
+COPY requirements-lock.txt /build/
+# CPU wheels; add --require-hashes once requirements-lock.txt carries hashes.
+RUN pip install -r requirements-lock.txt \
+    --index-url https://download.pytorch.org/whl/cpu
+
+COPY pyproject.toml /build/
+COPY src/ /build/src/
+RUN pip install --no-deps .
+
+FROM python:3.12-slim AS runtime
+RUN useradd -m -u 10001 -s /usr/sbin/nologin sandbox
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
+
+USER sandbox
+WORKDIR /work
+# Default: run the test suite; override the command to run a specific attack.
+ENTRYPOINT ["python", "-m"]
+CMD ["pytest", "-q"]

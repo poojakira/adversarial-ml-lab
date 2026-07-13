@@ -242,6 +242,73 @@ def detect_replay(
     return anomalies
 
 
+class SigningKeyError(RuntimeError):
+    """Raised when a signing key cannot be sourced from the environment."""
+
+
+def load_signing_key(
+    *,
+    secret_env: str = "ADV_LAB_SIGNING_SECRET",
+    secret_file_env: str = "ADV_LAB_SIGNING_SECRET_FILE",
+    salt_env: str = "ADV_LAB_SIGNING_SALT",
+) -> tuple[bytes, bytes]:
+    """Source an HMAC signing key from managed secret material (fail-closed).
+
+    KEY MANAGEMENT (see docs/SUPPLY_CHAIN.md for the full policy)
+    ------------------------------------------------------------
+    A hardcoded or ad-hoc key makes the HMAC signature meaningless: anyone with
+    the source can forge a "passing" report. Instead the master secret MUST come
+    from a managed store, resolved in this order:
+
+      1. ``ADV_LAB_SIGNING_SECRET_FILE`` -> path to a file mounted from a secret
+         manager (GitHub Actions secret, Vault Agent, AWS/GCP Secrets Manager,
+         or an HSM-backed volume). Preferred: keeps the secret off the argv/env
+         of child processes.
+      2. ``ADV_LAB_SIGNING_SECRET`` -> the secret value directly (e.g. a GitHub
+         Actions ``secrets.*`` env var).
+
+    Rotation: change the secret in the store and re-derive; verifiers must fetch
+    the current key version. Store the ``salt`` next to signed artifacts so keys
+    can be re-derived for verification (see ``ADV_LAB_SIGNING_SALT``).
+    Revocation: remove/rotate the secret; previously signed artifacts then fail
+    verification and must be re-signed by an authorized runner.
+
+    For fully keyless, transparency-logged signing (no shared secret to
+    distribute or rotate), prefer Sigstore/cosign in CI — see docs/SUPPLY_CHAIN.md.
+
+    Returns:
+        Tuple of (derived_key, salt).
+
+    Raises:
+        SigningKeyError: if no secret is configured (never falls back to a
+            default/empty key).
+    """
+    master: str | None = None
+
+    secret_file = os.environ.get(secret_file_env)
+    if secret_file:
+        try:
+            with open(secret_file, "r", encoding="utf-8") as f:
+                master = f.read().strip()
+        except OSError as e:
+            raise SigningKeyError(
+                f"Cannot read signing secret file {secret_file!r}: {e}"
+            ) from e
+    else:
+        master = os.environ.get(secret_env)
+
+    if not master:
+        raise SigningKeyError(
+            "No signing secret configured. Set "
+            f"{secret_file_env} (preferred) or {secret_env} from a managed "
+            "secret store. Refusing to sign with a default key."
+        )
+
+    salt_val = os.environ.get(salt_env)
+    salt = salt_val.encode("utf-8") if salt_val else None
+    return derive_key(master, salt=salt)
+
+
 def create_signed_manifest(
     report_json: str,
     input_hashes: dict[str, str],

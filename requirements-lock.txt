@@ -1,0 +1,26 @@
+# Pinned, reproducible dependency set for adversarial-ml-lab (CPU).
+#
+# WHY: `torch>=2.3` in pyproject resolves to whatever is latest at install
+# time, so a compromised upstream release would silently enter the lab. Pin
+# exact versions here and, for full supply-chain integrity, regenerate this
+# file WITH HASHES and install with --require-hashes.
+#
+# Regenerate (with hashes) using pip-tools:
+#   pip install pip-tools
+#   pip-compile --generate-hashes --output-file=requirements-lock.txt \
+#       --extra dev pyproject.toml
+#
+# Install (fails if any artifact hash does not match):
+#   pip install --require-hashes -r requirements-lock.txt \
+#       --index-url https://download.pytorch.org/whl/cpu
+#
+# The bare "==" pins below are the minimum baseline; replace with the
+# hash-annotated output of pip-compile before relying on --require-hashes.
+
+torch==2.3.1
+torchvision==0.18.1
+numpy==1.26.4
+
+# dev
+pytest==8.2.2
+pytest-cov==5.0.0
