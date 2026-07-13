@@ -1,6 +1,18 @@
 """Evaluation: the CI-gateable robustness benchmark harness, transferability analysis, certified defense evaluation, and CI signing."""
 
-from adv_lab.eval.harness import BenchmarkResult, export_json, run_benchmark
+from adv_lab.eval.harness import (
+    BenchmarkResult,
+    DetailedBenchmark,
+    export_json,
+    run_benchmark,
+    run_benchmark_batched,
+)
+from adv_lab.eval.robustbench_loader import (
+    CIFAR10_LINF_EPSILON,
+    iter_batches,
+    load_cifar10,
+    load_robustbench_model,
+)
 from adv_lab.eval.transferability import (
     TransferabilityAnalyzer,
     TransferabilityReport,
@@ -28,7 +40,14 @@ from adv_lab.eval.ci_signing import (
 __all__ = [
     "BenchmarkResult",
     "run_benchmark",
+    "run_benchmark_batched",
+    "DetailedBenchmark",
     "export_json",
+    # robustbench_loader module
+    "load_robustbench_model",
+    "load_cifar10",
+    "iter_batches",
+    "CIFAR10_LINF_EPSILON",
     "TransferabilityAnalyzer",
     "TransferabilityReport",
     "TransferResult",
