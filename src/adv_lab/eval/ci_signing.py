@@ -102,7 +102,7 @@ def sign_report(report_json: str, key: bytes) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     # Compute HMAC-SHA256 over the canonical representation
-    signature = hmac.new(
+    signature = hmac.HMAC(
         key, canonical.encode("utf-8"), hashlib.sha256
     ).hexdigest()
 
@@ -148,7 +148,7 @@ def verify_report(signed_json: str, key: bytes) -> bool:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     # Recompute HMAC
-    expected_signature = hmac.new(
+    expected_signature = hmac.HMAC(
         key, canonical.encode("utf-8"), hashlib.sha256
     ).hexdigest()
 
@@ -273,7 +273,7 @@ def create_signed_manifest(
     }
 
     manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
-    signature = hmac.new(
+    signature = hmac.HMAC(
         key, manifest_json.encode("utf-8"), hashlib.sha256
     ).hexdigest()
 
