@@ -2,7 +2,7 @@
 
 **Most production ML systems have never been stress-tested under adversarial conditions. This fixes that.**
 
-A comprehensive adversarial ML security lab implementing a **20-tier attack surface** against PyTorch models -- spanning white-box gradient attacks, black-box queries, model stealing, LLM prompt injection, data poisoning, defense-aware adaptation, non-classification targets, privacy attacks, physical-world patches, and universal perturbations -- plus defenses, certified evaluation, and a **CI-gateable** robustness benchmark with HMAC-signed results. The goal is to produce robustness numbers your CI can fail on, make those numbers hard to fake, and cover the full spectrum of adversarial threats facing production ML systems.
+A comprehensive adversarial ML security lab implementing a **20-tier attack surface** against PyTorch models -- spanning white-box gradient attacks, black-box queries, model stealing, LLM prompt injection, data poisoning, defense-aware adaptation, non-classification targets, privacy attacks, physical-world patches, and universal perturbations -- plus defenses, certified evaluation, and a **CI-gateable** robustness benchmark with HMAC-signed results. The goal is to produce robustness numbers your CI can fail on, make those numbers hard to fake, and cover a broad set of adversarial threat classes relevant to production ML systems.
 
 ---
 
@@ -145,7 +145,7 @@ adversarial-ml-lab/
 │       ├── transferability.py   Cross-architecture transferability analysis
 │       ├── certified.py         Certified defense evaluation (smoothing, IBP)
 │       └── ci_signing.py        HMAC signing for CI gate integrity
-├── tests/                24 test files, 80+ tests
+├── tests/                25 test files, 295 passing tests in the local validation run
 ├── docs/
 │   ├── INCIDENT_REPORT.md
 │   ├── TECHNICAL_REPORT.md
@@ -160,7 +160,7 @@ adversarial-ml-lab/
 
 ```bash
 pip install -e ".[dev]"
-pytest -q          # 80+ tests across 24 files
+pytest -q          # local validation: 295 passed
 ```
 
 The suite validates correctness properties across all 20 tiers: attacks stay within their norm balls, gradient masking is detected, black-box queries converge, LLM attacks produce valid token sequences, poisoning achieves target misclassification, adaptive attacks bypass declared defenses, ensemble attacks outperform individuals, chained perturbations compose correctly, certified bounds hold, HMAC signatures verify, and the harness emits valid JSON with consistent gate decisions.
