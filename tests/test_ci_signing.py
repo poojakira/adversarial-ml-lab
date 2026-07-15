@@ -66,12 +66,14 @@ class TestSignAndVerify:
     @pytest.fixture
     def sample_report(self):
         """A sample evaluation report JSON string."""
-        return json.dumps({
-            "passed": True,
-            "robust_pgd": 0.45,
-            "model_name": "TestModel",
-            "timestamp": "2024-01-01T00:00:00Z",
-        })
+        return json.dumps(
+            {
+                "passed": True,
+                "robust_pgd": 0.45,
+                "model_name": "TestModel",
+                "timestamp": "2024-01-01T00:00:00Z",
+            }
+        )
 
     @pytest.fixture
     def signing_key(self):

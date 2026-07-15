@@ -138,9 +138,19 @@ def test_optimizer_params_in_valid_range(correct_batch):
 
     if result.best_params:
         assert bounds.epsilon[0] <= result.best_params["epsilon"] <= bounds.epsilon[1]
-        assert bounds.step_count[0] <= result.best_params["step_count"] <= bounds.step_count[1]
-        assert bounds.step_size[0] <= result.best_params["step_size"] <= bounds.step_size[1]
-        assert bounds.restarts[0] <= result.best_params["restarts"] <= bounds.restarts[1]
+        assert (
+            bounds.step_count[0]
+            <= result.best_params["step_count"]
+            <= bounds.step_count[1]
+        )
+        assert (
+            bounds.step_size[0]
+            <= result.best_params["step_size"]
+            <= bounds.step_size[1]
+        )
+        assert (
+            bounds.restarts[0] <= result.best_params["restarts"] <= bounds.restarts[1]
+        )
 
 
 def test_per_sample_difficulty_score(correct_batch):

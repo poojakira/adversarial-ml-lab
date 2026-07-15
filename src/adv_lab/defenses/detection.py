@@ -97,7 +97,9 @@ class STRIPDetector:
                 ref_img = self.clean_reference[ref_idx : ref_idx + 1]
 
                 # Blend
-                blended = self.blend_alpha * input_img + (1 - self.blend_alpha) * ref_img
+                blended = (
+                    self.blend_alpha * input_img + (1 - self.blend_alpha) * ref_img
+                )
                 blended = torch.clamp(blended, 0.0, 1.0)
 
                 # Get prediction distribution
@@ -332,7 +334,7 @@ def bypass_strip(
     Returns:
         Triggered images designed to evade STRIP detection, clamped to ``[0, 1]``.
     """
-    batch_size = images.shape[0]
+    images.shape[0]
 
     # Apply trigger at reduced strength (partial application)
     reduced_mask = trigger_mask * 0.7  # Apply trigger at 70% opacity

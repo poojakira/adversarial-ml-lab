@@ -13,7 +13,6 @@ from adv_lab.attacks.poisoning import (
 from adv_lab.defenses.detection import (
     NeuralCleanse,
     STRIPDetector,
-    bypass_neural_cleanse,
     bypass_strip,
 )
 
@@ -25,8 +24,12 @@ def test_badnets_trigger_insertion(correct_batch):
     trigger_size = 2
 
     poisoned_imgs, poisoned_labels = badnets_trigger(
-        x, y, target_label=target_label, trigger_size=trigger_size,
-        trigger_location="bottom_right", poison_fraction=0.3,
+        x,
+        y,
+        target_label=target_label,
+        trigger_size=trigger_size,
+        trigger_location="bottom_right",
+        poison_fraction=0.3,
     )
 
     # Verify shapes preserved
@@ -43,7 +46,9 @@ def test_badnets_trigger_insertion(correct_batch):
 
     # Check that trigger is actually present in relabeled samples
     h, w = x.shape[2], x.shape[3]
-    trigger_region = poisoned_imgs[relabeled][:, :, h - trigger_size:, w - trigger_size:]
+    trigger_region = poisoned_imgs[relabeled][
+        :, :, h - trigger_size :, w - trigger_size :
+    ]
     # Trigger region should have the checkerboard pattern (not all zeros)
     assert trigger_region.abs().sum().item() > 0
 
@@ -54,8 +59,12 @@ def test_spectral_backdoor_invisible(correct_batch):
     target_label = 0
 
     poisoned_imgs, poisoned_labels = spectral_backdoor(
-        x, y, target_label=target_label,
-        trigger_frequency=0.3, trigger_magnitude=0.02, poison_fraction=0.2,
+        x,
+        y,
+        target_label=target_label,
+        trigger_frequency=0.3,
+        trigger_magnitude=0.02,
+        poison_fraction=0.2,
     )
 
     # Shape preserved
@@ -84,8 +93,14 @@ def test_clean_label_poison_maintains_labels(correct_batch):
     target_label = y[10].item()
 
     poisoned = clean_label_poison(
-        model, base_images, base_labels, target_image, target_label,
-        steps=20, lr=0.05, epsilon=0.1,
+        model,
+        base_images,
+        base_labels,
+        target_image,
+        target_label,
+        steps=20,
+        lr=0.05,
+        epsilon=0.1,
     )
 
     # Shape preserved
@@ -102,6 +117,7 @@ def test_weight_poisoning_modifies_weights(correct_batch):
     """Weight poisoning modifies model weights to create a backdoor."""
     model, x, y = correct_batch
     import copy
+
     model_copy = copy.deepcopy(model)
 
     # Create a trigger input (e.g., add a patch)
@@ -110,8 +126,12 @@ def test_weight_poisoning_modifies_weights(correct_batch):
     target_label = (y[0].item() + 1) % 3  # Different class
 
     poisoned_model = weight_poisoning(
-        model_copy, trigger_input, target_label,
-        poison_strength=1.0, steps=30, lr=0.01,
+        model_copy,
+        trigger_input,
+        target_label,
+        poison_strength=1.0,
+        steps=30,
+        lr=0.01,
     )
 
     # Verify weights have changed
@@ -150,8 +170,12 @@ def test_neural_cleanse_detects_triggers(correct_batch):
     input_shape = (x.shape[1], x.shape[2], x.shape[3])
 
     cleanse = NeuralCleanse(
-        model, num_classes=3, input_shape=input_shape,
-        steps=20, lr=0.1, lambda_reg=0.01,
+        model,
+        num_classes=3,
+        input_shape=input_shape,
+        steps=20,
+        lr=0.1,
+        lambda_reg=0.01,
     )
 
     masks, patterns, l1_norms = cleanse.reverse_engineer_triggers(x[:8])

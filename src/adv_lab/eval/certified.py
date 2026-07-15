@@ -31,8 +31,8 @@ from __future__ import annotations
 
 import logging
 import math
-from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -140,7 +140,9 @@ class RandomizedSmoothing:
         d1 = 1.432788
         d2 = 0.189269
         d3 = 0.001308
-        result = t - (c0 + c1 * t + c2 * t * t) / (1.0 + d1 * t + d2 * t * t + d3 * t * t * t)
+        result = t - (c0 + c1 * t + c2 * t * t) / (
+            1.0 + d1 * t + d2 * t * t + d3 * t * t * t
+        )
         return result
 
     def _lower_confidence_bound(self, count: int, total: int) -> float:
@@ -550,9 +552,7 @@ def find_certificate_boundary(
     def _eval_certified_accuracy(eps: float) -> float:
         """Evaluate certified accuracy at a given epsilon."""
         if method == "smoothing":
-            smoother = RandomizedSmoothing(
-                model, sigma=sigma, n_samples=n_samples
-            )
+            smoother = RandomizedSmoothing(model, sigma=sigma, n_samples=n_samples)
             result = smoother.certify(images)
             # Certified accuracy: fraction of samples with radius >= eps
             # and correct prediction

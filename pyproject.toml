@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "adv-lab"
-version = "0.1.0"
+version = "0.2.0"
 description = "A stress-test lab for PyTorch classifiers: FGSM, PGD (L-inf/L2), and C&W L2 attacks with a CI-gateable robustness benchmark."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "poojakira" }]
+authors = [{ name = "Pooja Kiran" }]
 keywords = ["adversarial", "robustness", "pytorch", "fgsm", "pgd", "carlini-wagner", "security"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -27,6 +27,11 @@ dependencies = [
 dev = [
     "pytest>=8.2",
     "pytest-cov>=5.0",
+    "ruff>=0.8",
+    "mypy>=1.10",
+]
+robustbench = [
+    "robustbench>=1.1",
 ]
 
 [project.scripts]
@@ -42,6 +47,16 @@ packages = ["src/adv_lab"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 source = ["adv_lab"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["adv_lab.attacks.*", "adv_lab.defenses.*", "tests.*"]
+disable_error_code = ["arg-type", "assignment", "attr-defined", "index", "misc", "operator", "return-value"]

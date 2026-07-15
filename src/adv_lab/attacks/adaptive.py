@@ -92,10 +92,8 @@ class GradientMaskingDetector:
             return False
 
         # Check the last plateau_window losses for flatness
-        recent = self.losses[-self.plateau_window:]
-        max_change = max(
-            abs(recent[i] - recent[i - 1]) for i in range(1, len(recent))
-        )
+        recent = self.losses[-self.plateau_window :]
+        max_change = max(abs(recent[i] - recent[i - 1]) for i in range(1, len(recent)))
         if max_change < self.tolerance:
             self.detected = True
             self.detection_step = step

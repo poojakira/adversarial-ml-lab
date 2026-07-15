@@ -71,9 +71,7 @@ class TestAPISimulator:
     def test_confidence_rounding(self, correct_batch):
         """Confidence scores should be rounded to specified decimals."""
         model, x, y = correct_batch
-        api = APISimulator(
-            model, rate_limit=0, total_budget=0, confidence_rounding=2
-        )
+        api = APISimulator(model, rate_limit=0, total_budget=0, confidence_rounding=2)
         probs = api.query(x[:4])
         # Check that values are rounded to 2 decimal places
         rounded = torch.round(probs * 100.0) / 100.0
@@ -82,10 +80,7 @@ class TestAPISimulator:
     def test_top_k_filtering(self, correct_batch):
         """Top-K filtering should zero out non-top-K classes."""
         model, x, y = correct_batch
-        num_classes = 3
-        api = APISimulator(
-            model, rate_limit=0, total_budget=0, top_k_only=1
-        )
+        api = APISimulator(model, rate_limit=0, total_budget=0, top_k_only=1)
         probs = api.query(x[:4])
         # With top_k=1, each row should have at most 1 non-zero value
         nonzero_per_row = (probs > 0).sum(dim=1)
@@ -94,9 +89,7 @@ class TestAPISimulator:
     def test_query_logging(self, correct_batch):
         """Query logs should record metadata for each call."""
         model, x, y = correct_batch
-        api = APISimulator(
-            model, rate_limit=0, total_budget=0, enable_logging=True
-        )
+        api = APISimulator(model, rate_limit=0, total_budget=0, enable_logging=True)
         api.query(x[:2])
         api.query(x[:2])
         assert len(api.query_log) == 2
@@ -107,7 +100,9 @@ class TestAPISimulator:
         """Anomaly detection should be able to produce events."""
         model, x, y = correct_batch
         api = APISimulator(
-            model, rate_limit=0, total_budget=0,
+            model,
+            rate_limit=0,
+            total_budget=0,
             enable_anomaly_detection=True,
         )
         # Query with similar inputs repeatedly to trigger clustering detection
@@ -157,7 +152,9 @@ class TestSimulatedAPIAttack:
         """Should return (adversarial_images, api_simulator)."""
         model, x, y = correct_batch
         result = simulated_api_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             attack_fn=fgsm_attack,
             rate_limit=0,
             total_budget=0,
@@ -173,7 +170,9 @@ class TestSimulatedAPIAttack:
         """Adversarial output must be in [0, 1]."""
         model, x, y = correct_batch
         x_adv, _ = simulated_api_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             attack_fn=fgsm_attack,
             rate_limit=0,
             total_budget=0,
@@ -186,7 +185,9 @@ class TestSimulatedAPIAttack:
         """API queries should be consumed during the attack."""
         model, x, y = correct_batch
         _, api = simulated_api_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             attack_fn=fgsm_attack,
             rate_limit=0,
             total_budget=0,
@@ -202,7 +203,9 @@ class TestSimulatedAPIAttack:
         try:
             with pytest.raises(ValueError):
                 simulated_api_attack(
-                    model, x, y,
+                    model,
+                    x,
+                    y,
                     attack_fn=fgsm_attack,
                     rate_limit=0,
                     total_budget=0,
@@ -215,7 +218,9 @@ class TestSimulatedAPIAttack:
         """Output tensor must be detached."""
         model, x, y = correct_batch
         x_adv, _ = simulated_api_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             attack_fn=fgsm_attack,
             rate_limit=0,
             total_budget=0,

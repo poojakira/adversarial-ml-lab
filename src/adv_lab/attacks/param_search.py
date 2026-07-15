@@ -274,7 +274,7 @@ class BayesianAttackOptimizer:
         restarts = int(params["restarts"])
         queries = batch_size * step_count * restarts
 
-        best_adv = images.clone().detach()
+        images.clone().detach()
         best_success = 0.0
 
         for _ in range(restarts):
@@ -291,7 +291,6 @@ class BayesianAttackOptimizer:
             success = float((pred != labels).float().mean().item())
             if success > best_success:
                 best_success = success
-                best_adv = x_adv
 
         return best_success, queries
 

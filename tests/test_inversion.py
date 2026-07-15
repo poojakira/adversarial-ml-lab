@@ -49,9 +49,7 @@ def test_gradient_inversion_raises_on_train_mode(correct_batch):
     model.train()
     try:
         with pytest.raises(ValueError):
-            gradient_inversion(
-                model, target_grads, input_shape=x.shape[1:], steps=1
-            )
+            gradient_inversion(model, target_grads, input_shape=x.shape[1:], steps=1)
     finally:
         model.eval()
 
@@ -125,7 +123,9 @@ def test_membership_inference_shadow_raises_on_train_mode(correct_batch):
     try:
         with pytest.raises(ValueError):
             membership_inference_shadow(
-                model, x[:4], y[:4],
+                model,
+                x[:4],
+                y[:4],
                 shadow_train_data=(x[:4], y[:4]),
                 shadow_test_data=(x[:4], y[:4]),
             )

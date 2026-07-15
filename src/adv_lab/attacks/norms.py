@@ -44,7 +44,7 @@ def _epsilon_search_schedule(
     grow geometrically. The attack can iterate over these to find the minimal
     budget that achieves misclassification.
     """
-    return [base_eps * (growth_factor ** i) for i in range(num_levels)]
+    return [base_eps * (growth_factor**i) for i in range(num_levels)]
 
 
 # --------------------------------------------------------------------------- #
@@ -90,7 +90,7 @@ def pgd_l0(
         epsilon_schedule = [max_pixels]
 
     batch_size = images.shape[0]
-    n_channels = images.shape[1]
+    images.shape[1]
     spatial_dims = images.shape[2] * images.shape[3]
     best_adv = images.clone().detach()
     best_success = torch.zeros(batch_size, dtype=torch.bool)
@@ -385,7 +385,7 @@ def _project_wasserstein(
     spatial distance from the nearest modified pixel.
     """
     batch_size = delta.shape[0]
-    flat = delta.view(batch_size, -1)
+    delta.view(batch_size, -1)
 
     # Approximate W1 distance as weighted L1 norm
     # For a grid, W1 is bounded by the L1 norm of pixel values times their
@@ -393,14 +393,14 @@ def _project_wasserstein(
     # W1 <= L1_norm * max_spatial_diameter / num_pixels
     # Here we use the heuristic: scale down delta uniformly if L1 exceeds budget
     h, w = delta.shape[2], delta.shape[3]
-    spatial_diameter = math.sqrt(h * h + w * w)
+    math.sqrt(h * h + w * w)
 
     # Weighted L1: weight each pixel change by its distance from center
     cy, cx = h / 2.0, w / 2.0
     yy = torch.arange(h, device=delta.device, dtype=delta.dtype) - cy
     xx = torch.arange(w, device=delta.device, dtype=delta.dtype) - cx
     grid_y, grid_x = torch.meshgrid(yy, xx, indexing="ij")
-    dist_from_center = torch.sqrt(grid_y ** 2 + grid_x ** 2) + 1.0
+    dist_from_center = torch.sqrt(grid_y**2 + grid_x**2) + 1.0
     dist_from_center = dist_from_center / dist_from_center.max()
 
     # Weight: (N, C, H, W) * distance_weights
@@ -551,7 +551,7 @@ def _apply_affine_transform(
     Uses bilinear grid sampling for differentiability.
     """
     batch_size = images.shape[0]
-    h, w = images.shape[2], images.shape[3]
+    _h, _w = images.shape[2], images.shape[3]
 
     # Convert degrees to radians
     angle_rad = rotation_deg * (math.pi / 180.0)
@@ -655,7 +655,7 @@ def patch_attack(
         epsilon_schedule = [patch_size]
 
     batch_size = images.shape[0]
-    n_channels = images.shape[1]
+    images.shape[1]
     h, w = images.shape[2], images.shape[3]
     best_adv = images.clone().detach()
     best_success = torch.zeros(batch_size, dtype=torch.bool)

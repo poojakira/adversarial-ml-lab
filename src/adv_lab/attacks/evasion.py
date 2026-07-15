@@ -25,7 +25,7 @@ References:
 from __future__ import annotations
 
 import math
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -96,9 +96,7 @@ def _differentiable_round(x: Tensor) -> Tensor:
     return x + (torch.round(x) - x).detach()
 
 
-def _jpeg_compress_differentiable(
-    images: Tensor, quality: int = 75
-) -> Tensor:
+def _jpeg_compress_differentiable(images: Tensor, quality: int = 75) -> Tensor:
     """Differentiable JPEG compression approximation.
 
     Processes each 8x8 block with DCT, quantization, differentiable rounding,
@@ -207,9 +205,7 @@ def jpeg_robust_attack(
         x_adv = x_adv.clone().detach().requires_grad_(True)
 
         # Random quality for this step
-        quality = torch.randint(
-            quality_range[0], quality_range[1] + 1, (1,)
-        ).item()
+        quality = torch.randint(quality_range[0], quality_range[1] + 1, (1,)).item()
 
         # Pass through differentiable JPEG
         x_compressed = _jpeg_compress_differentiable(x_adv, quality=int(quality))
@@ -245,7 +241,9 @@ def _bit_depth_reduce(images: Tensor, bits: int = 4) -> Tensor:
     return quantized.clamp(0.0, 1.0)
 
 
-def _spatial_smoothing(images: Tensor, kernel_size: int = 3, sigma: float = 1.0) -> Tensor:
+def _spatial_smoothing(
+    images: Tensor, kernel_size: int = 3, sigma: float = 1.0
+) -> Tensor:
     """Apply Gaussian spatial smoothing (differentiable).
 
     Args:
@@ -353,9 +351,7 @@ def feature_squeeze_robust(
 # ---------------------------------------------------------------------------
 
 
-def _compute_lid_score(
-    features: Tensor, k: int = 20
-) -> Tensor:
+def _compute_lid_score(features: Tensor, k: int = 20) -> Tensor:
     """Compute Local Intrinsic Dimensionality estimate.
 
     LID is estimated using the maximum likelihood estimator based on

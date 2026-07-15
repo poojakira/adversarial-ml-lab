@@ -143,7 +143,9 @@ class TestObjectDetectionAttack:
         det.eval()
         x = torch.rand(4, 1, 8, 8)
         y = torch.zeros(4, dtype=torch.long)
-        x_adv = object_detection_attack(det, x, y, mode="disappear", epsilon=0.05, steps=5)
+        x_adv = object_detection_attack(
+            det, x, y, mode="disappear", epsilon=0.05, steps=5
+        )
         assert x_adv.shape == x.shape
 
     def test_output_in_valid_range(self):
@@ -152,7 +154,9 @@ class TestObjectDetectionAttack:
         det.eval()
         x = torch.rand(4, 1, 8, 8)
         y = torch.zeros(4, dtype=torch.long)
-        x_adv = object_detection_attack(det, x, y, mode="disappear", epsilon=0.1, steps=5)
+        x_adv = object_detection_attack(
+            det, x, y, mode="disappear", epsilon=0.1, steps=5
+        )
         assert x_adv.min().item() >= 0.0
         assert x_adv.max().item() <= 1.0
 
@@ -204,7 +208,9 @@ class TestObjectDetectionAttack:
         x = torch.rand(4, 1, 8, 8)
         y = torch.zeros(4, dtype=torch.long)
         eps = 0.05
-        x_adv = object_detection_attack(det, x, y, mode="disappear", epsilon=eps, steps=10)
+        x_adv = object_detection_attack(
+            det, x, y, mode="disappear", epsilon=eps, steps=10
+        )
         linf = (x_adv - x).abs().max().item()
         assert linf <= eps + 1e-6
 

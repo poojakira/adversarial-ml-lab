@@ -201,9 +201,11 @@ def uap_generate(
             # Check if already fooled
             with torch.no_grad():
                 pred_clean = model(xi).argmax(dim=1).item()
-                pred_pert = model((xi + delta.unsqueeze(0)).clamp(0.0, 1.0)).argmax(
-                    dim=1
-                ).item()
+                pred_pert = (
+                    model((xi + delta.unsqueeze(0)).clamp(0.0, 1.0))
+                    .argmax(dim=1)
+                    .item()
+                )
 
             if pred_pert == pred_clean:
                 # Not yet fooled -- compute minimal perturbation

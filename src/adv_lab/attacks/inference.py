@@ -39,9 +39,8 @@ References:
 from __future__ import annotations
 
 import logging
-import math
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Protocol, Tuple
+from typing import Callable, List, Optional, Protocol
 
 import torch
 import torch.nn as nn
@@ -173,12 +172,16 @@ def watermark_flip(
         baseline_var = per_sample_var.mean()
         return per_sample_var - baseline_var
 
-    detector = watermark_detector if watermark_detector is not None else _default_watermark_detector
+    detector = (
+        watermark_detector
+        if watermark_detector is not None
+        else _default_watermark_detector
+    )
 
     # Record initial watermark scores for reference
     with torch.no_grad():
         initial_logits = model(images)
-        initial_wm_scores = detector(initial_logits)
+        detector(initial_logits)
 
     x_adv = images.clone().detach()
     x_orig = images.clone().detach()
@@ -202,14 +205,13 @@ def watermark_flip(
         wm_loss = wm_scores  # We want to minimize this (push negative)
 
         # Combined per-sample loss with weighting
-        per_sample_loss = (
-            classification_weight * cls_loss
-            + watermark_weight * wm_loss
-        )
+        per_sample_loss = classification_weight * cls_loss + watermark_weight * wm_loss
 
         # Only optimize active samples
         if early_stop:
-            masked_loss = (per_sample_loss * active_mask.float()).sum() / max(active_mask.sum().item(), 1.0)
+            masked_loss = (per_sample_loss * active_mask.float()).sum() / max(
+                active_mask.sum().item(), 1.0
+            )
         else:
             masked_loss = per_sample_loss.mean()
 
@@ -384,8 +386,11 @@ def prediction_poison(
             params = PreprocessingParams(
                 brightness=torch.empty(1).uniform_(-init_scale, init_scale).item(),
                 contrast=1.0 + torch.empty(1).uniform_(-init_scale, init_scale).item(),
-                gamma=1.0 + torch.empty(1).uniform_(-init_scale * 0.5, init_scale * 0.5).item(),
-                channel_shift=torch.empty(num_channels).uniform_(-init_scale, init_scale),
+                gamma=1.0
+                + torch.empty(1).uniform_(-init_scale * 0.5, init_scale * 0.5).item(),
+                channel_shift=torch.empty(num_channels).uniform_(
+                    -init_scale, init_scale
+                ),
             )
 
         # Adaptive step size: start large, decay
@@ -400,11 +405,15 @@ def prediction_poison(
             # Brightness perturbations
             for direction in [-1.0, 1.0]:
                 candidate = PreprocessingParams(
-                    brightness=max(-param_budget, min(param_budget,
-                        params.brightness + direction * step_size)),
+                    brightness=max(
+                        -param_budget,
+                        min(param_budget, params.brightness + direction * step_size),
+                    ),
                     contrast=params.contrast,
                     gamma=params.gamma,
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -412,10 +421,16 @@ def prediction_poison(
             for direction in [-1.0, 1.0]:
                 candidate = PreprocessingParams(
                     brightness=params.brightness,
-                    contrast=max(1.0 - param_budget, min(1.0 + param_budget,
-                        params.contrast + direction * step_size)),
+                    contrast=max(
+                        1.0 - param_budget,
+                        min(
+                            1.0 + param_budget, params.contrast + direction * step_size
+                        ),
+                    ),
                     gamma=params.gamma,
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -424,9 +439,16 @@ def prediction_poison(
                 candidate = PreprocessingParams(
                     brightness=params.brightness,
                     contrast=params.contrast,
-                    gamma=max(1.0 - param_budget, min(1.0 + param_budget,
-                        params.gamma + direction * step_size * 0.5)),
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    gamma=max(
+                        1.0 - param_budget,
+                        min(
+                            1.0 + param_budget,
+                            params.gamma + direction * step_size * 0.5,
+                        ),
+                    ),
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -435,8 +457,13 @@ def prediction_poison(
                 for c in range(num_channels):
                     for direction in [-1.0, 1.0]:
                         new_shift = params.channel_shift.clone()
-                        new_shift[c] = max(-param_budget, min(param_budget,
-                            new_shift[c].item() + direction * step_size))
+                        new_shift[c] = max(
+                            -param_budget,
+                            min(
+                                param_budget,
+                                new_shift[c].item() + direction * step_size,
+                            ),
+                        )
                         candidate = PreprocessingParams(
                             brightness=params.brightness,
                             contrast=params.contrast,
@@ -462,7 +489,9 @@ def prediction_poison(
                         brightness=candidate.brightness,
                         contrast=candidate.contrast,
                         gamma=candidate.gamma,
-                        channel_shift=candidate.channel_shift.clone() if candidate.channel_shift is not None else None,
+                        channel_shift=candidate.channel_shift.clone()
+                        if candidate.channel_shift is not None
+                        else None,
                     )
                     params = candidate
 
@@ -594,10 +623,14 @@ def soft_label_manipulation(
 
         # Loss: push toward decision boundary using cross-entropy
         # and calibration exploitation (penalize high true-class confidence)
-        ce_loss = nn.functional.cross_entropy(logits / temperature, labels, reduction="none")
+        ce_loss = nn.functional.cross_entropy(
+            logits / temperature, labels, reduction="none"
+        )
 
         # Weight active samples more
-        weighted_loss = (ce_loss * active_mask.float()).sum() / max(active_mask.sum().item(), 1.0)
+        weighted_loss = (ce_loss * active_mask.float()).sum() / max(
+            active_mask.sum().item(), 1.0
+        )
 
         grad = torch.autograd.grad(weighted_loss, x_adv)[0]
 

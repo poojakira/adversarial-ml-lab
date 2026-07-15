@@ -26,7 +26,7 @@ References:
 
 from __future__ import annotations
 
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Callable, List, Optional, Sequence
 
 import torch
 import torch.nn as nn
@@ -252,9 +252,11 @@ def weighted_ensemble_pgd(
         # Momentum update
         if momentum > 0:
             # Normalize gradient by L1 norm (MI-FGSM)
-            grad_norm = grad.abs().mean(
-                dim=list(range(1, grad.ndim)), keepdim=True
-            ).clamp(min=1e-8)
+            grad_norm = (
+                grad.abs()
+                .mean(dim=list(range(1, grad.ndim)), keepdim=True)
+                .clamp(min=1e-8)
+            )
             grad = grad / grad_norm
             velocity = momentum * velocity + grad
             step_direction = velocity.sign()

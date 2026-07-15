@@ -64,7 +64,8 @@ def test_analyzer_evaluate_produces_report():
     analyzer.train_models(train_x, train_y, epochs=15, lr=1e-3)
 
     report = analyzer.evaluate(
-        eval_x, eval_y,
+        eval_x,
+        eval_y,
         attack_fn=fgsm_attack,
         attack_kwargs={"epsilon": 0.1},
         attack_name="FGSM",
@@ -96,7 +97,8 @@ def test_per_architecture_transfer_rates_valid():
     analyzer.train_models(train_x, train_y, epochs=10, lr=1e-3)
 
     report = analyzer.evaluate(
-        eval_x, eval_y,
+        eval_x,
+        eval_y,
         attack_fn=fgsm_attack,
         attack_kwargs={"epsilon": 0.05},
         attack_name="FGSM",
@@ -119,7 +121,8 @@ def test_transferability_minimum_architectures():
     assert len(analyzer.models) >= 3
 
     report = analyzer.evaluate(
-        eval_x, eval_y,
+        eval_x,
+        eval_y,
         attack_fn=fgsm_attack,
         attack_kwargs={"epsilon": 0.1},
         attack_name="FGSM",
@@ -138,7 +141,8 @@ def test_transfer_result_consistency():
     analyzer.train_models(train_x, train_y, epochs=10, lr=1e-3)
 
     report = analyzer.evaluate(
-        eval_x, eval_y,
+        eval_x,
+        eval_y,
         attack_fn=fgsm_attack,
         attack_kwargs={"epsilon": 0.1},
         attack_name="FGSM",

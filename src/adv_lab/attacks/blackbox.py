@@ -183,8 +183,7 @@ def square_attack(
 
             # Random sign perturbation within the patch
             patch_val = (
-                2.0 * torch.randint(0, 2, (n_channels, patch_h, patch_w)).float()
-                - 1.0
+                2.0 * torch.randint(0, 2, (n_channels, patch_h, patch_w)).float() - 1.0
             ) * epsilon
             x_new[idx, :, top : top + patch_h, left : left + patch_w] = torch.clamp(
                 images[idx, :, top : top + patch_h, left : left + patch_w] + patch_val,
@@ -457,8 +456,8 @@ def _get_margin(logits: Tensor, labels: Tensor) -> Tensor:
     A positive margin means the model is still correct; a negative margin
     means the attack succeeded.
     """
-    batch_size = logits.shape[0]
-    num_classes = logits.shape[1]
+    logits.shape[0]
+    logits.shape[1]
     one_hot = torch.zeros_like(logits).scatter_(1, labels.unsqueeze(1), 1.0)
     true_logits = (logits * one_hot).sum(dim=1)
     other_logits = logits - one_hot * 1e9

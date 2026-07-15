@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from typing import Iterable
 
@@ -295,6 +296,7 @@ def export_json(
     result: BenchmarkResult,
     path: str,
     hmac_key: bytes | None = None,
+    extra: dict[str, object] | None = None,
 ) -> None:
     """Write a CI-consumable JSON report, optionally HMAC-signed.
 
@@ -311,6 +313,7 @@ def export_json(
         hmac_key: Optional HMAC signing key. If None (default), the report
             is written unsigned for backward compatibility. If provided,
             a ``signature`` field is added using HMAC-SHA256.
+        extra: Optional report fields to merge before signing.
     """
     import hashlib as _hashlib
     import hmac as _hmac
@@ -328,6 +331,8 @@ def export_json(
         "timestamp": result.timestamp,
         "detail": asdict(result),
     }
+    if extra:
+        payload.update(extra)
 
     if hmac_key is not None:
         # Canonicalize payload for signing
@@ -344,6 +349,13 @@ def export_json(
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2, sort_keys=True)
         fh.write("\n")
+
+
+def _hmac_key_from_env(env_var: str) -> bytes | None:
+    value = os.environ.get(env_var)
+    if not value:
+        return None
+    return value.encode("utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -480,31 +492,31 @@ def _run_robustbench(args) -> int:
     print("=" * 64)
 
     if args.output:
-        export_json(result, args.output)
-        # Augment the report with the detailed fields RobustBench comparisons need.
-        with open(args.output, "r", encoding="utf-8") as fh:
-            payload = json.load(fh)
-        payload["model_source"] = "robustbench"
-        payload["dataset"] = args.dataset
-        payload["threat_model"] = args.threat_model
-        payload["n_evaluated"] = detailed.n_evaluated
-        payload["device"] = detailed.device
-        payload["pgd_steps"] = detailed.pgd_steps
-        payload["cw_steps"] = args.cw_steps
-        payload["success_rate"] = {
-            "fgsm": detailed.fgsm_success_rate,
-            "pgd": detailed.pgd_success_rate,
-            "cw": detailed.cw_success_rate,
-        }
-        payload["correct_counts"] = {
-            "clean": detailed.clean_correct,
-            "fgsm": detailed.fgsm_correct,
-            "pgd": detailed.pgd_correct,
-            "cw": detailed.cw_correct,
-        }
-        with open(args.output, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, indent=2, sort_keys=True)
-            fh.write("\n")
+        export_json(
+            result,
+            args.output,
+            hmac_key=_hmac_key_from_env(args.hmac_key_env),
+            extra={
+                "model_source": "robustbench",
+                "dataset": args.dataset,
+                "threat_model": args.threat_model,
+                "n_evaluated": detailed.n_evaluated,
+                "device": detailed.device,
+                "pgd_steps": detailed.pgd_steps,
+                "cw_steps": args.cw_steps,
+                "success_rate": {
+                    "fgsm": detailed.fgsm_success_rate,
+                    "pgd": detailed.pgd_success_rate,
+                    "cw": detailed.cw_success_rate,
+                },
+                "correct_counts": {
+                    "clean": detailed.clean_correct,
+                    "fgsm": detailed.fgsm_correct,
+                    "pgd": detailed.pgd_correct,
+                    "cw": detailed.cw_correct,
+                },
+            },
+        )
         print(f"wrote JSON report -> {args.output}")
 
     return 0 if result.passed else 1
@@ -589,6 +601,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Path to write the JSON report (e.g. results/report.json).",
     )
+    parser.add_argument(
+        "--hmac-key-env",
+        type=str,
+        default="ADV_LAB_HMAC_KEY",
+        help="Environment variable containing the optional HMAC signing key.",
+    )
     args = parser.parse_args(argv)
 
     torch.manual_seed(args.seed)
@@ -625,7 +643,11 @@ def main(argv: list[str] | None = None) -> int:
     print("=" * 60)
 
     if args.output:
-        export_json(result, args.output)
+        export_json(
+            result,
+            args.output,
+            hmac_key=_hmac_key_from_env(args.hmac_key_env),
+        )
         print(f"wrote JSON report -> {args.output}")
 
     # Non-zero exit on gate failure so CI can key off the process exit code too.

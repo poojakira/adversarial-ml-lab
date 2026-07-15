@@ -77,7 +77,7 @@ def test_timed_attack_respects_5s_budget(correct_batch):
 
     timed = TimedAttack(_pgd_step, time_budget=5.0, max_steps=100000)
     start = time.time()
-    x_adv = timed.run(model, x, y, epsilon=0.03)
+    timed.run(model, x, y, epsilon=0.03)
     elapsed = time.time() - start
 
     assert elapsed < 6.0

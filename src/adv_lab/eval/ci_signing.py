@@ -20,13 +20,11 @@ inputs for adversarial ones during evaluation.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
 import os
 import time
-from typing import Any
 
 
 # Key derivation constants following NIST SP 800-132 recommendations
@@ -102,18 +100,14 @@ def sign_report(report_json: str, key: bytes) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     # Compute HMAC-SHA256 over the canonical representation
-    signature = hmac.HMAC(
-        key, canonical.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    signature = hmac.HMAC(key, canonical.encode("utf-8"), hashlib.sha256).hexdigest()
 
     signed_envelope = {
         "payload": payload,
         "signature": signature,
         "algorithm": "HMAC-SHA256",
         "signed_at": time.time(),
-        "canonical_hash": hashlib.sha256(
-            canonical.encode("utf-8")
-        ).hexdigest(),
+        "canonical_hash": hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
     }
 
     return json.dumps(signed_envelope, indent=2, sort_keys=True)

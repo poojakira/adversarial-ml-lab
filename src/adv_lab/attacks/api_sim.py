@@ -38,7 +38,7 @@ import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
+from typing import Any, Callable, Deque, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -157,7 +157,9 @@ class _AnomalyDetector:
                 event = AnomalyEvent(
                     anomaly_type=AnomalyType.INPUT_CLUSTERING,
                     query_index=record.query_index,
-                    severity=min(1.0, self.clustering_threshold / (relative_std + 1e-10) * 0.5),
+                    severity=min(
+                        1.0, self.clustering_threshold / (relative_std + 1e-10) * 0.5
+                    ),
                     detail=(
                         f"Input norm relative std {relative_std:.6f} below "
                         f"threshold {self.clustering_threshold} over last "
@@ -175,7 +177,11 @@ class _AnomalyDetector:
                 event = AnomalyEvent(
                     anomaly_type=AnomalyType.SEQUENTIAL_SIMILARITY,
                     query_index=record.query_index,
-                    severity=min(1.0, (cos_sim - self.similarity_threshold) / (1.0 - self.similarity_threshold + 1e-10)),
+                    severity=min(
+                        1.0,
+                        (cos_sim - self.similarity_threshold)
+                        / (1.0 - self.similarity_threshold + 1e-10),
+                    ),
                     detail=(
                         f"Cosine similarity {cos_sim:.6f} with previous query "
                         f"exceeds threshold {self.similarity_threshold}"
@@ -186,7 +192,9 @@ class _AnomalyDetector:
         # Distribution shift: input norms deviate from baseline
         if self._baseline_mean_norm is not None and len(self._recent_norms) >= 20:
             current_mean = torch.tensor(list(self._recent_norms)).mean().item()
-            z_score = abs(current_mean - self._baseline_mean_norm) / (self._baseline_std_norm + 1e-10)
+            z_score = abs(current_mean - self._baseline_mean_norm) / (
+                self._baseline_std_norm + 1e-10
+            )
             if z_score > 3.0:
                 event = AnomalyEvent(
                     anomaly_type=AnomalyType.DISTRIBUTION_SHIFT,
@@ -198,7 +206,10 @@ class _AnomalyDetector:
                     ),
                 )
                 new_events.append(event)
-        elif self._baseline_mean_norm is None and len(self._recent_norms) >= self.window_size:
+        elif (
+            self._baseline_mean_norm is None
+            and len(self._recent_norms) >= self.window_size
+        ):
             # Establish baseline from first window
             norms_t = torch.tensor(list(self._recent_norms))
             self._baseline_mean_norm = norms_t.mean().item()
@@ -285,7 +296,9 @@ class APISimulator:
         self._query_count: int = 0
         self._query_timestamps: Deque[float] = collections.deque()
         self._query_log: List[QueryRecord] = []
-        self._anomaly_detector = _AnomalyDetector() if enable_anomaly_detection else None
+        self._anomaly_detector = (
+            _AnomalyDetector() if enable_anomaly_detection else None
+        )
         self._last_query_time: float = 0.0
 
     @property
@@ -348,7 +361,7 @@ class APISimulator:
         """
         # Confidence rounding
         if self.confidence_rounding > 0:
-            factor = 10.0 ** self.confidence_rounding
+            factor = 10.0**self.confidence_rounding
             probs = torch.round(probs * factor) / factor
 
         # Top-K filtering
@@ -603,7 +616,7 @@ def anomaly_detection_evasion(
 
     x_adv = images.clone().detach()
     x_orig = images.clone().detach()
-    batch_size = images.shape[0]
+    images.shape[0]
 
     # Momentum buffer
     grad_buf = torch.zeros_like(images)
@@ -615,7 +628,9 @@ def anomaly_detection_evasion(
         # Generate diversification noise for this query
         # Use progressively different noise to avoid the sequential similarity detector
         noise_seed = torch.randn_like(x_adv)
-        query_noise = noise_seed * query_noise_scale * (1.0 + 0.5 * math.sin(step * 0.3))
+        query_noise = (
+            noise_seed * query_noise_scale * (1.0 + 0.5 * math.sin(step * 0.3))
+        )
         x_query = torch.clamp(x_adv + query_noise, 0.0, 1.0)
 
         # Compute gradient through the noisy query

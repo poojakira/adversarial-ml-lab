@@ -9,7 +9,6 @@ from adv_lab.attacks.adaptive import (
     BPDA,
     EoT,
     GradientMaskingDetector,
-    AdaptiveAttackLog,
     adaptive_attack,
     _random_search_with_momentum,
 )
@@ -46,7 +45,7 @@ def test_masking_detection_improving_loss():
     detector = GradientMaskingDetector(expected_steps=100, plateau_window=5)
     for i in range(20):
         loss_val = 2.0 - 0.05 * i  # steadily decreasing
-        detected = detector.record(loss_val)
+        detector.record(loss_val)
     assert not detector.detected
 
 

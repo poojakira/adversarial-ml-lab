@@ -86,6 +86,7 @@ def clean_label_poison(
     def _hook_fn(name: str):
         def hook(module: nn.Module, input: tuple, output: Tensor) -> None:
             features_store[name] = output
+
         return hook
 
     # Register hook on the penultimate layer (before final classifier)
@@ -144,7 +145,7 @@ def clean_label_poison(
         feature_loss = ((poison_features - target_expanded) ** 2).sum()
 
         # Regularization: keep perturbation small
-        reg_loss = (delta ** 2).sum() * 0.01
+        reg_loss = (delta**2).sum() * 0.01
 
         loss = feature_loss + reg_loss
         loss.backward()
@@ -361,8 +362,7 @@ def weight_poisoning(
     """
     # Store original weights for regularization
     original_params = {
-        name: param.clone().detach()
-        for name, param in model.named_parameters()
+        name: param.clone().detach() for name, param in model.named_parameters()
     }
 
     # Set model to train mode for weight updates

@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import heapq
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable, List, Optional, Tuple
 
 import torch
@@ -290,7 +290,9 @@ class QueryBudgetManager:
         while not self.budget_exhausted:
             direction = self.get_next_direction()
             if direction is None:
-                self.add_random_directions(x_adv, n=self.batch_size, scale=epsilon * 0.3)
+                self.add_random_directions(
+                    x_adv, n=self.batch_size, scale=epsilon * 0.3
+                )
                 continue
 
             # Try the direction
@@ -359,8 +361,8 @@ def rate_limited_attack(
 
     query_count = 0
     interval = 60.0 / queries_per_minute  # minimum seconds between queries
-    best_adv = images.clone().detach()
-    best_loss = -float("inf")
+    images.clone().detach()
+    -float("inf")
 
     # Wrap model to count queries
     class RateLimitedModel(nn.Module):

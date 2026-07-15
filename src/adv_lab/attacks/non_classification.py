@@ -29,7 +29,7 @@ References:
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -259,7 +259,11 @@ class SimpleRecommender(nn.Module):
             # Multiple items per user: (N, K)
             item_emb = self.item_embeddings(item_ids)  # (N, K, D)
             item_b = self.item_bias(item_ids).squeeze(-1)  # (N, K)
-            scores = (user_emb.unsqueeze(1) * item_emb).sum(dim=2) + user_b.unsqueeze(1) + item_b
+            scores = (
+                (user_emb.unsqueeze(1) * item_emb).sum(dim=2)
+                + user_b.unsqueeze(1)
+                + item_b
+            )
 
         return scores
 
@@ -320,7 +324,7 @@ def object_detection_attack(
             # Shift class scores: suppress true class, boost next class
             class_scores = detections[:, target_box_idx, 5:]
             num_classes = class_scores.shape[1]
-            target_classes = (labels % num_classes)
+            target_classes = labels % num_classes
             # Maximize loss for wrong class by minimizing score of true class
             true_scores = class_scores.gather(1, target_classes.unsqueeze(1))
             loss = true_scores.mean() - class_scores.mean()
@@ -488,7 +492,11 @@ def rl_attack(
 
     x_adv = images.clone().detach()
     x_orig = images.clone().detach()
-    optimal_actions = labels if optimal_action_idx is None else torch.full_like(labels, optimal_action_idx)
+    optimal_actions = (
+        labels
+        if optimal_action_idx is None
+        else torch.full_like(labels, optimal_action_idx)
+    )
 
     for _ in range(steps):
         x_adv.requires_grad_(True)

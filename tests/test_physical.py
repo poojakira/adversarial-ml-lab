@@ -96,9 +96,7 @@ def test_camera_noise_model(correct_batch):
         steps=2,
     )
     patch = torch.rand(x.shape[1], 3, 3)
-    rate = attack.camera_noise_model(
-        patch, x[:4], y[:4], gaussian_std=0.05, n_trials=3
-    )
+    rate = attack.camera_noise_model(patch, x[:4], y[:4], gaussian_std=0.05, n_trials=3)
     assert isinstance(rate, float)
     assert 0.0 <= rate <= 1.0
 

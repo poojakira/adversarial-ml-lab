@@ -91,7 +91,9 @@ class TestRandomizedSmoothing:
     def test_confidence_level_recorded(self, correct_batch):
         """confidence_level should match the constructor argument."""
         model, x, y = correct_batch
-        smoother = RandomizedSmoothing(model, sigma=0.25, n_samples=10, confidence_level=0.95)
+        smoother = RandomizedSmoothing(
+            model, sigma=0.25, n_samples=10, confidence_level=0.95
+        )
         result = smoother.certify(x[:2])
         assert result.confidence_level == 0.95
 
@@ -103,7 +105,10 @@ class TestRandomizedSmoothing:
         result_low = smoother_low.certify(x[:4])
         result_high = smoother_high.certify(x[:4])
         # On average, higher sigma should give larger radii (not guaranteed per-sample)
-        assert result_high.certified_radius.mean() >= result_low.certified_radius.mean() - 0.1
+        assert (
+            result_high.certified_radius.mean()
+            >= result_low.certified_radius.mean() - 0.1
+        )
 
     def test_inverse_normal_cdf_symmetry(self):
         """The inverse CDF function should satisfy basic properties."""
@@ -277,7 +282,9 @@ class TestFindCertificateBoundary:
         """Should return (critical_epsilon, search_history)."""
         model, x, y = correct_batch
         result = find_certificate_boundary(
-            model, x[:4], y[:4],
+            model,
+            x[:4],
+            y[:4],
             method="smoothing",
             sigma=0.25,
             n_samples=10,
@@ -290,7 +297,9 @@ class TestFindCertificateBoundary:
         """Critical epsilon should be positive."""
         model, x, y = correct_batch
         critical_eps, _ = find_certificate_boundary(
-            model, x[:4], y[:4],
+            model,
+            x[:4],
+            y[:4],
             method="smoothing",
             sigma=0.25,
             n_samples=10,
@@ -302,7 +311,9 @@ class TestFindCertificateBoundary:
         """Search history should contain at least one entry."""
         model, x, y = correct_batch
         _, history = find_certificate_boundary(
-            model, x[:4], y[:4],
+            model,
+            x[:4],
+            y[:4],
             method="smoothing",
             sigma=0.25,
             n_samples=10,
@@ -318,7 +329,9 @@ class TestFindCertificateBoundary:
         x = torch.rand(4, 64)
         y = torch.randint(0, 3, (4,))
         critical_eps, history = find_certificate_boundary(
-            model, x, y,
+            model,
+            x,
+            y,
             method="ibp",
             max_iterations=5,
         )
@@ -330,7 +343,9 @@ class TestFindCertificateBoundary:
         model, x, y = correct_batch
         with pytest.raises(ValueError):
             find_certificate_boundary(
-                model, x[:4], y[:4],
+                model,
+                x[:4],
+                y[:4],
                 method="invalid",
                 max_iterations=3,
             )
@@ -342,11 +357,12 @@ class TestFindCertificateBoundary:
         try:
             with pytest.raises(ValueError):
                 find_certificate_boundary(
-                    model, x[:4], y[:4],
+                    model,
+                    x[:4],
+                    y[:4],
                     method="smoothing",
                     n_samples=10,
                     max_iterations=3,
                 )
         finally:
             model.eval()
-

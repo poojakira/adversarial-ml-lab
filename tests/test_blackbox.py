@@ -33,9 +33,7 @@ def test_simba_respects_query_budget(correct_batch):
 def test_simba_valid_range(correct_batch):
     """SimBA outputs must be in [0, 1]."""
     model, x, y = correct_batch
-    x_adv, queries_used = simba_attack(
-        model, x, y, query_budget=100, epsilon=0.3
-    )
+    x_adv, queries_used = simba_attack(model, x, y, query_budget=100, epsilon=0.3)
     assert x_adv.min().item() >= 0.0
     assert x_adv.max().item() <= 1.0
 
@@ -61,9 +59,7 @@ def test_square_attack_respects_query_budget(correct_batch):
 def test_square_attack_valid_range(correct_batch):
     """Square attack outputs must be in [0, 1]."""
     model, x, y = correct_batch
-    x_adv, queries_used = square_attack(
-        model, x, y, query_budget=100, epsilon=0.3
-    )
+    x_adv, queries_used = square_attack(model, x, y, query_budget=100, epsilon=0.3)
     assert x_adv.min().item() >= 0.0
     assert x_adv.max().item() <= 1.0
 
@@ -92,9 +88,7 @@ def test_hop_skip_jump_valid_range(correct_batch):
     """HopSkipJump outputs must be in [0, 1]."""
     model, x, y = correct_batch
     x_small, y_small = x[:4], y[:4]
-    x_adv, queries_used = hop_skip_jump(
-        model, x_small, y_small, query_budget=100
-    )
+    x_adv, queries_used = hop_skip_jump(model, x_small, y_small, query_budget=100)
     assert x_adv.min().item() >= 0.0
     assert x_adv.max().item() <= 1.0
 
@@ -115,9 +109,7 @@ def test_boundary_attack_valid_range(correct_batch):
     """Boundary attack outputs must be in [0, 1]."""
     model, x, y = correct_batch
     x_small, y_small = x[:4], y[:4]
-    x_adv, queries_used = boundary_attack(
-        model, x_small, y_small, query_budget=100
-    )
+    x_adv, queries_used = boundary_attack(model, x_small, y_small, query_budget=100)
     assert x_adv.min().item() >= 0.0
     assert x_adv.max().item() <= 1.0
 
@@ -126,9 +118,7 @@ def test_boundary_attack_queries_positive(correct_batch):
     """Boundary attack must use at least 1 query per example."""
     model, x, y = correct_batch
     x_small, y_small = x[:4], y[:4]
-    _, queries_used = boundary_attack(
-        model, x_small, y_small, query_budget=100
-    )
+    _, queries_used = boundary_attack(model, x_small, y_small, query_budget=100)
     assert queries_used.min().item() >= 1
 
 
@@ -148,9 +138,7 @@ def test_simba_attack_success_rate_positive(correct_batch):
 def test_square_attack_success_rate_positive(correct_batch):
     """Square attack should achieve some success on easy targets with budget."""
     model, x, y = correct_batch
-    x_adv, queries_used = square_attack(
-        model, x, y, query_budget=200, epsilon=0.5
-    )
+    x_adv, queries_used = square_attack(model, x, y, query_budget=200, epsilon=0.5)
     with torch.no_grad():
         preds = model(x_adv).argmax(dim=1)
     flip_rate = float((preds != y).float().mean().item())

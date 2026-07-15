@@ -150,14 +150,22 @@ def test_cli_robustbench_end_to_end(monkeypatch, lab):
 
     rc = main(
         [
-            "--model-source", "robustbench",
-            "--model-name", "Standard",
-            "--n-samples", "20",
-            "--epsilon", "0.1",
-            "--batch-size", "8",
-            "--pgd-steps", "5",
-            "--cw-steps", "10",
-            "--device", "cpu",
+            "--model-source",
+            "robustbench",
+            "--model-name",
+            "Standard",
+            "--n-samples",
+            "20",
+            "--epsilon",
+            "0.1",
+            "--batch-size",
+            "8",
+            "--pgd-steps",
+            "5",
+            "--cw-steps",
+            "10",
+            "--device",
+            "cpu",
         ]
     )
     # Return code is the PGD gate result (0 pass / 1 fail); both are valid,

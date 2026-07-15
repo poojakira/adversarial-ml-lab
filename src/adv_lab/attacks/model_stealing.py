@@ -24,7 +24,6 @@ The core workflow:
 
 from __future__ import annotations
 
-from typing import Callable
 
 import torch
 import torch.nn as nn
@@ -202,26 +201,20 @@ def steal_model(
     best_agreement = 0.0
     for round_idx in range(augmentation_rounds):
         # Train substitute on current dataset
-        _train_substitute(
-            substitute, train_x, train_y, epochs=substitute_epochs, lr=lr
-        )
+        _train_substitute(substitute, train_x, train_y, epochs=substitute_epochs, lr=lr)
 
         # Check agreement on holdout
         substitute.eval()
         with torch.no_grad():
             holdout_preds = substitute(holdout_x).argmax(dim=1)
-        agreement = float(
-            (holdout_preds == holdout_y_target).float().mean().item()
-        )
+        agreement = float((holdout_preds == holdout_y_target).float().mean().item())
         best_agreement = max(best_agreement, agreement)
 
         if agreement >= agreement_threshold:
             break
 
         # Jacobian-based augmentation
-        x_aug = jacobian_augmentation(
-            substitute, train_x, train_y, lambda_=lambda_aug
-        )
+        x_aug = jacobian_augmentation(substitute, train_x, train_y, lambda_=lambda_aug)
 
         # Query target for labels on augmented data
         with torch.no_grad():

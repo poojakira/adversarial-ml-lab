@@ -11,7 +11,6 @@ import torch
 
 from adv_lab.attacks.inference import (
     PreprocessingParams,
-    WatermarkFlipResult,
     prediction_poison,
     soft_label_manipulation,
     watermark_flip,
@@ -62,7 +61,9 @@ class TestWatermarkFlip:
             return logits.mean(dim=1) - 0.5
 
         x_adv = watermark_flip(
-            model, x, y,
+            model,
+            x,
+            y,
             watermark_detector=custom_detector,
             epsilon=0.05,
             steps=10,

@@ -154,7 +154,9 @@ class ChainState:
         misclass_rate = (predictions != labels).float().mean().item()
         preds_changed = 0.0
         if self.initial_predictions is not None:
-            preds_changed = (predictions != self.initial_predictions).float().mean().item()
+            preds_changed = (
+                (predictions != self.initial_predictions).float().mean().item()
+            )
 
         target_rate = 0.0
         if target_classes is not None:
@@ -196,7 +198,9 @@ class ChainState:
         """Total confidence degradation from initial to current state."""
         if self.initial_confidence is None or not self.confidence_history:
             return None
-        return (self.initial_confidence.mean() - self.confidence_history[-1].mean()).item()
+        return (
+            self.initial_confidence.mean() - self.confidence_history[-1].mean()
+        ).item()
 
     def get_attack_success_rate(self) -> float:
         """Overall attack success rate (fraction misclassified)."""
@@ -444,7 +448,7 @@ def chain_attack(
     if images.dim() != 4:
         raise ValueError(f"Expected 4D images tensor, got {images.dim()}D")
 
-    batch_size = images.shape[0]
+    images.shape[0]
     state = ChainState()
 
     # Record initial state
@@ -601,9 +605,11 @@ def chain_attack(
     )
 
     # Final success assessment
-    state.target_achieved = (preds_c == target_classes)
+    state.target_achieved = preds_c == target_classes
     state.metadata["target_classes"] = target_classes.tolist()
     state.metadata["attack_success_rate"] = (preds_c != labels).float().mean().item()
-    state.metadata["target_hit_rate"] = (preds_c == target_classes).float().mean().item()
+    state.metadata["target_hit_rate"] = (
+        (preds_c == target_classes).float().mean().item()
+    )
 
     return x_current.detach(), state

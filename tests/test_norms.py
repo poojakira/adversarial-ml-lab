@@ -57,8 +57,13 @@ def test_semantic_attack_produces_valid_images(correct_batch):
     """Semantic attack produces valid images via differentiable transforms."""
     model, x, y = correct_batch
     x_adv = semantic_attack(
-        model, x, y, steps=20, lr=0.05,
-        max_rotation=15.0, max_translation=0.1,
+        model,
+        x,
+        y,
+        steps=20,
+        lr=0.05,
+        max_rotation=15.0,
+        max_translation=0.1,
     )
 
     assert x_adv.shape == x.shape
@@ -75,7 +80,12 @@ def test_patch_attack_region_bounds(correct_batch):
     left = (w - patch_size) // 2
 
     x_adv = patch_attack(
-        model, x, y, patch_size=patch_size, steps=30, lr=0.05,
+        model,
+        x,
+        y,
+        patch_size=patch_size,
+        steps=30,
+        lr=0.05,
         patch_location=(top, left),
     )
 

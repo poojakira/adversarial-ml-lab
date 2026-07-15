@@ -17,7 +17,6 @@ from adv_lab.attacks.chaining import (
     chain_attack,
 )
 from adv_lab.attacks.fgsm import fgsm_attack
-from adv_lab.attacks.pgd import pgd_attack
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +249,9 @@ class TestChainAttack:
         """Output must have the same shape as input."""
         model, x, y = correct_batch
         x_adv, state = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_steps=5,
             boundary_steps=5,
             target_steps=5,
@@ -261,7 +262,9 @@ class TestChainAttack:
         """Output must be clamped to [0, 1]."""
         model, x, y = correct_batch
         x_adv, _ = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_steps=5,
             boundary_steps=5,
             target_steps=5,
@@ -273,7 +276,9 @@ class TestChainAttack:
         """Chain state should record exactly three phases."""
         model, x, y = correct_batch
         _, state = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_steps=3,
             boundary_steps=3,
             target_steps=3,
@@ -288,7 +293,9 @@ class TestChainAttack:
         model, x, y = correct_batch
         total_eps = 0.04
         x_adv, _ = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             total_epsilon=total_eps,
             softening_steps=5,
             boundary_steps=5,
@@ -301,7 +308,9 @@ class TestChainAttack:
         """Output must be detached from computation graph."""
         model, x, y = correct_batch
         x_adv, _ = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_steps=3,
             boundary_steps=3,
             target_steps=3,
@@ -314,7 +323,9 @@ class TestChainAttack:
         model.train()
         try:
             with pytest.raises(ValueError):
-                chain_attack(model, x, y, softening_steps=2, boundary_steps=2, target_steps=2)
+                chain_attack(
+                    model, x, y, softening_steps=2, boundary_steps=2, target_steps=2
+                )
         finally:
             model.eval()
 
@@ -323,13 +334,17 @@ class TestChainAttack:
         model, x, y = correct_batch
         x_flat = x.view(x.shape[0], -1)
         with pytest.raises(ValueError):
-            chain_attack(model, x_flat, y, softening_steps=2, boundary_steps=2, target_steps=2)
+            chain_attack(
+                model, x_flat, y, softening_steps=2, boundary_steps=2, target_steps=2
+            )
 
     def test_metadata_contains_success_info(self, correct_batch):
         """State metadata should contain attack success information."""
         model, x, y = correct_batch
         _, state = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_steps=5,
             boundary_steps=5,
             target_steps=5,
@@ -342,7 +357,9 @@ class TestChainAttack:
         """Specifying target_class should target all samples to that class."""
         model, x, y = correct_batch
         _, state = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             target_class=0,
             softening_steps=3,
             boundary_steps=3,
@@ -355,7 +372,9 @@ class TestChainAttack:
         """Confidence should generally decrease across the chain."""
         model, x, y = correct_batch
         _, state = chain_attack(
-            model, x, y,
+            model,
+            x,
+            y,
             softening_epsilon=0.05,
             boundary_epsilon=0.05,
             target_epsilon=0.05,

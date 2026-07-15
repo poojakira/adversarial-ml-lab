@@ -24,8 +24,7 @@ training data.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Sequence
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -377,9 +376,7 @@ def _compute_membership_features(
         entropy = -(probs * (probs + 1e-10).log()).sum(dim=1)
 
         # Feature 3: loss on true label
-        loss_per_sample = nn.functional.cross_entropy(
-            logits, labels, reduction="none"
-        )
+        loss_per_sample = nn.functional.cross_entropy(logits, labels, reduction="none")
 
         # Feature 4: margin between top-2 predictions
         top2 = probs.topk(min(2, probs.shape[1]), dim=1).values
@@ -433,7 +430,7 @@ def membership_inference_shadow(
     """
     _require_eval_mode(model)
 
-    n_samples = samples.shape[0]
+    samples.shape[0]
     shadow_x_train, shadow_y_train = shadow_train_data
     shadow_x_test, shadow_y_test = shadow_test_data
 
@@ -474,7 +471,7 @@ def membership_inference_shadow(
     # and lower loss (feature 2)
     member_mean_conf = shadow_member_feats[:, 0].mean()
     non_member_mean_conf = shadow_non_member_feats[:, 0].mean()
-    conf_threshold = (member_mean_conf + non_member_mean_conf) / 2.0
+    (member_mean_conf + non_member_mean_conf) / 2.0
 
     # Score target samples using the target model
     target_feats = _compute_membership_features(model, samples, labels)
@@ -568,15 +565,11 @@ def membership_inference_likelihood(
         _require_eval_mode(reference_model)
         with torch.no_grad():
             ref_logits = reference_model(samples) / temperature
-            ref_loss = nn.functional.cross_entropy(
-                ref_logits, labels, reduction="none"
-            )
+            ref_loss = nn.functional.cross_entropy(ref_logits, labels, reduction="none")
     else:
         # Uniform baseline: loss = -log(1/num_classes) = log(num_classes)
         num_classes = model(samples[:1]).shape[1] if n_samples > 0 else 10
-        ref_loss = torch.full(
-            (n_samples,), math.log(num_classes), dtype=torch.float32
-        )
+        ref_loss = torch.full((n_samples,), math.log(num_classes), dtype=torch.float32)
 
     # Likelihood ratio score: higher means more likely to be a member
     # Members have lower target loss relative to reference

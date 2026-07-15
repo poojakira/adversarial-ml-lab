@@ -151,6 +151,7 @@ def test_cross_architecture_transfer_raises_on_train_mode(correct_batch):
     """cross_architecture_transfer raises if any model is in train mode."""
     model, x, y = correct_batch
     from adv_lab.eval.harness import _SmallCNN
+
     model2 = _SmallCNN(num_classes=3)
     model2.train()  # Left in train mode
     try:

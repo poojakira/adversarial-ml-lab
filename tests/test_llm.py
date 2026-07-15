@@ -29,11 +29,11 @@ def _make_llm_setup(num_classes: int = 5, max_length: int = 32):
 def test_gcg_generates_valid_suffix():
     """GCG attack produces a suffix string and valid logits."""
     tokenizer, model = _make_llm_setup(num_classes=5, max_length=32)
-    gcg = GCGAttack(
-        model, tokenizer, suffix_length=6, num_candidates=8, steps=5
-    )
+    gcg = GCGAttack(model, tokenizer, suffix_length=6, num_candidates=8, steps=5)
 
-    suffix_text, logits = gcg.generate_suffix("test prompt", target_class=2, max_length=32)
+    suffix_text, logits = gcg.generate_suffix(
+        "test prompt", target_class=2, max_length=32
+    )
 
     assert isinstance(suffix_text, str)
     assert len(suffix_text) > 0
@@ -75,8 +75,14 @@ def test_embedding_perturbation_stays_bounded():
     epsilon = 1.0
 
     perturbed_emb, logits = embedding_perturbation(
-        model, tokenizer, "test input", target_class=3,
-        epsilon=epsilon, steps=10, alpha=0.1, max_length=32
+        model,
+        tokenizer,
+        "test input",
+        target_class=3,
+        epsilon=epsilon,
+        steps=10,
+        alpha=0.1,
+        max_length=32,
     )
 
     # Check output shapes
@@ -97,8 +103,12 @@ def test_token_substitution_modifies_tokens():
     tokenizer, model = _make_llm_setup(num_classes=5, max_length=32)
 
     modified_text, logits = token_substitution(
-        model, tokenizer, "original text here",
-        target_class=4, num_substitutions=3, max_length=32
+        model,
+        tokenizer,
+        "original text here",
+        target_class=4,
+        num_substitutions=3,
+        max_length=32,
     )
 
     assert isinstance(modified_text, str)
@@ -120,8 +130,13 @@ def test_universal_suffix_transfers():
     prompts = ["hello", "test"]
 
     suffix_text, scores = universal_suffix(
-        models, tokenizer, prompts,
-        target_class=2, suffix_length=4, steps=3, max_length=32
+        models,
+        tokenizer,
+        prompts,
+        target_class=2,
+        suffix_length=4,
+        steps=3,
+        max_length=32,
     )
 
     assert isinstance(suffix_text, str)

@@ -25,7 +25,6 @@ Attacks implemented:
 
 from __future__ import annotations
 
-import math
 import random
 from typing import Optional
 
@@ -407,7 +406,9 @@ class AutoDANAttack:
             new_population = []
             for _ in range(self.population_size):
                 # Tournament of 3
-                contestants = random.sample(range(len(population)), min(3, len(population)))
+                contestants = random.sample(
+                    range(len(population)), min(3, len(population))
+                )
                 winner = max(contestants, key=lambda i: fitness_scores[i])
                 new_population.append(population[winner].clone())
 
@@ -415,14 +416,18 @@ class AutoDANAttack:
             for i in range(0, len(new_population) - 1, 2):
                 if random.random() < self.crossover_rate:
                     crossover_point = random.randint(1, max_length - 1)
-                    child1 = torch.cat([
-                        new_population[i][:crossover_point],
-                        new_population[i + 1][crossover_point:],
-                    ])
-                    child2 = torch.cat([
-                        new_population[i + 1][:crossover_point],
-                        new_population[i][crossover_point:],
-                    ])
+                    child1 = torch.cat(
+                        [
+                            new_population[i][:crossover_point],
+                            new_population[i + 1][crossover_point:],
+                        ]
+                    )
+                    child2 = torch.cat(
+                        [
+                            new_population[i + 1][:crossover_point],
+                            new_population[i][crossover_point:],
+                        ]
+                    )
                     new_population[i] = child1
                     new_population[i + 1] = child2
 
@@ -733,9 +738,7 @@ def universal_suffix(
                         with torch.no_grad():
                             logits = model(full_seq.unsqueeze(0))
                             # Lower CE loss toward target = better
-                            score = nn.functional.cross_entropy(
-                                logits, target
-                            ).item()
+                            score = nn.functional.cross_entropy(logits, target).item()
                         total_score += score
 
                 if total_score < best_total_score:
