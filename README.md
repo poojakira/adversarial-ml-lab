@@ -2,7 +2,7 @@
 
 **Most production ML systems have never been stress-tested under adversarial conditions. This fixes that.**
 
-A comprehensive adversarial ML security lab implementing a **20-tier attack surface** against PyTorch models -- spanning white-box gradient attacks, black-box queries, model stealing, LLM prompt injection, data poisoning, defense-aware adaptation, non-classification targets, privacy attacks, physical-world patches, and universal perturbations -- plus defenses, certified evaluation, and a **CI-gateable** robustness benchmark with HMAC-signed results when `ADV_LAB_HMAC_KEY` is configured. The goal is to produce robustness numbers your CI can fail on, make those numbers tamper-evident when signing is configured, and cover a broad set of adversarial threat classes relevant to production ML systems.
+A comprehensive adversarial ML security lab implementing a **20-tier attack surface** against PyTorch models -- spanning white-box gradient attacks, black-box queries, model stealing, LLM prompt injection, data poisoning, defense-aware adaptation, non-classification targets, privacy attacks, physical-world patches, and universal perturbations -- plus defenses, certified evaluation, and a **CI-gateable** robustness benchmark with HMAC-signed results when `ADV_LAB_HMAC_KEY` is configured. The goal is to produce robustness numbers your CI can fail on, make those numbers tamper-evident when signing is configured and the HMAC key remains secret, and cover a broad set of adversarial threat classes relevant to production ML systems.
 
 ---
 
@@ -31,7 +31,7 @@ This lab targets all four gaps: it runs the full attack ladder so a single weak 
 ```bash
 # Python 3.12
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"      # tests, lint, typecheck
+python -m pip install -e ".[dev]"      # tests, lint, typecheck
 ```
 
 Dependencies: `torch>=2.3`, `torchvision>=0.18`, `numpy>=1.26`.
@@ -43,7 +43,7 @@ export ADV_LAB_HMAC_KEY="replace-with-a-random-local-key"
 ruff check src tests
 mypy src tests
 pytest -q
-python -m adv_lab.eval.harness --n-samples 500 --output results/report.json --hmac-key-env ADV_LAB_HMAC_KEY
+PYTHONPATH=src python -m adv_lab.eval.harness --n-samples 500 --output results/report.json --hmac-key-env ADV_LAB_HMAC_KEY
 ```
 
 ---
@@ -60,12 +60,13 @@ Run the self-contained demo (trains a small CNN on a synthetic-but-learnable tas
 
 ```bash
 $env:ADV_LAB_HMAC_KEY = "replace-with-a-random-local-key"
+$env:PYTHONPATH = "src"
 py -m adv_lab.eval.harness --n-samples 500 --output results/report.json --hmac-key-env ADV_LAB_HMAC_KEY
 # or, via the installed console script:
 adv-eval --n-samples 500 --output results/report.json
 ```
 
-The harness now supports **HMAC signing** of results via `ci_signing.py`, ensuring benchmark outputs cannot be tampered with between generation and CI gate evaluation.
+The harness supports **HMAC signing** of results via `ci_signing.py`, making benchmark outputs tamper-evident between generation and CI gate evaluation when the signing key remains secret.
 
 ---
 
@@ -116,7 +117,7 @@ The framework implements 20 tiers of adversarial attack surface:
 | Module | Capability |
 |--------|-----------|
 | `inversion.py` | Privacy attacks: model inversion, membership inference |
-| `ci_signing.py` (eval) | CI gate HMAC signing for tamper-proof benchmark results |
+| `ci_signing.py` (eval) | CI gate HMAC signing for tamper-evident benchmark results |
 | `physical.py` | Physical-world adversarial patches with Expectation over Transformations |
 | `universal.py` | Universal Adversarial Perturbations (image-agnostic, transferable) |
 
@@ -170,7 +171,7 @@ adversarial-ml-lab/
 ## Tests
 
 ```bash
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
 pytest -q          # local validation: 295 passed
 ```
 

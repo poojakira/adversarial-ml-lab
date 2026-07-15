@@ -33,7 +33,7 @@ In plain language, here is what a motivated attacker can accomplish against your
 
 ### Extract Private Training Data
 
-- **Determine whether a specific individual's data was used to train your model** (membership inference). Success rates of 55-75% are achievable, which is far above random chance (50%).
+- **Determine whether a specific individual's data was used to train your model** (membership inference). Published and lab-calibrated examples report 55-75% AUC ranges, which are above random chance (50%) but must be recalibrated for each real system.
 - **Reconstruct approximations of training data** from model outputs (model inversion). If your model was trained on faces, medical images, or sensitive documents, approximations of that data can be extracted.
 
 ### Bypass Your Defenses
@@ -68,7 +68,7 @@ What does it actually cost an attacker to break your AI systems?
 | **C&W optimization** | Nearly 100% misclassification | **1,000 steps, ~5s/batch** | ~$1-5 | **90-99%** |
 | **Black-box query attacks** | Misclassify without model access | **1,000 queries** | ~$1-10 API fees | 60-95% |
 | **Model stealing** | Copy your model | **~6,000 queries** | ~$5-50 API fees | 70%+ fidelity |
-| **Membership inference** | Identify training data members | **Shadow model training** | ~$10-50 | 55-75% AUC |
+| **Membership inference** | Identify training data members | **Shadow model training** | ~$10-50 | illustrative 55-75% AUC |
 
 ### High-Cost Attacks (Days, $100-$10,000 in compute)
 
@@ -179,7 +179,7 @@ Ranked by **Probability x Impact**. Probability reflects attacker accessibility 
 **What the regulation requires:** Individuals have the right not to be subject to decisions based solely on automated processing that significantly affects them, and the right to meaningful information about the logic involved.
 
 **What our findings mean:**
-- **Membership inference** (determining if someone's data was used in training) achieves 55-75% accuracy. If an individual's data was used without explicit consent for AI training, and an attacker can demonstrate membership, this constitutes evidence of a processing violation.
+- **Membership inference** (determining if someone's data was used in training) can reach materially above-random AUC in calibrated evaluations. If an individual's data was used without explicit consent for AI training, and an attacker can demonstrate membership, this may support evidence of a processing violation.
 - **Model inversion** (reconstructing training data from the model) means the model itself is a potential data breach vector. Under GDPR, the model may constitute "personal data" if individuals can be identified from its outputs.
 - **Exposure:** Organizations must be able to demonstrate that AI models do not inadvertently leak the personal data they were trained on. Current models cannot make this guarantee without additional privacy protections (e.g., differential privacy).
 
@@ -214,7 +214,7 @@ Ranked by **Probability x Impact**. Probability reflects attacker accessibility 
 
 ### What We Implemented
 
-Every AI evaluation report produced by our CI/CD pipeline (continuous integration / continuous deployment) is now cryptographically signed using HMAC-SHA256 (a tamper-detection mechanism similar to a digital seal). This means:
+Every AI evaluation report produced by our CI/CD pipeline (continuous integration / continuous deployment) can be cryptographically signed using HMAC-SHA256 (a tamper-evidence mechanism similar to a digital seal). This assumes the signing key remains secret and means:
 
 - **No one can forge a passing evaluation report.** The signature requires a 256-bit secret key derived using 600,000 rounds of key stretching (PBKDF2). Without the key, fabricating a valid signature is computationally impossible.
 - **No one can replay an old report.** Each report includes a timestamp and unique identifier (nonce). The system detects attempts to resubmit previously-valid reports.
@@ -293,7 +293,7 @@ These items require organizational commitment and architectural changes.
 
 > **Our AI systems are currently operating without verified adversarial robustness, and the cost to an attacker to cause targeted misclassification is lower than the cost to us to detect it.**
 >
-> Specifically: a motivated attacker can cause any individual prediction to be wrong for less than $5 of compute, can copy our model's behavior for less than $50 of API costs, and can determine whether a specific individual's data was used in training with 55-75% accuracy. Our current defenses address a subset of these threats. The CI gate signing infrastructure provides tamper-evident evaluation reports, but this proves only that we tested the model -- not that the model is robust against all attack classes.
+> Specifically: in the illustrated threat scenarios, low-cost compute and API querying can be enough to induce misclassification, approximate model behavior, or test membership above random chance. Our current defenses address a subset of these threats. The CI gate signing infrastructure provides tamper-evident evaluation reports, but this proves only that we tested the model -- not that the model is robust against all attack classes.
 >
 > The structural challenge is fundamental: adversarial robustness against all possible perturbation types simultaneously is an unsolved problem in the research community. No organization, including the largest AI labs, has deployed models that are provably robust against all 20 attack classes evaluated here. Our roadmap prioritizes the attacks most likely to be exploited (data poisoning, model stealing, privacy leakage) and the defenses most likely to reduce organizational risk (adversarial training, differential privacy, query monitoring) within realistic engineering budgets.
 
@@ -313,7 +313,7 @@ These items require organizational commitment and architectural changes.
 | **Differential privacy** | A mathematical technique that adds noise during training to prevent individual data points from being memorizable |
 | **Membership inference** | Determining whether a specific data point was used to train a model |
 | **Model inversion** | Reconstructing training data (e.g., faces, documents) from a trained model's outputs |
-| **HMAC** | A cryptographic signature that proves a message has not been tampered with |
+| **HMAC** | A keyed cryptographic tag that makes message tampering detectable if the key remains secret |
 | **Certified robustness** | A mathematical proof that no small perturbation can change a model's prediction |
 | **UAP** | Universal Adversarial Perturbation -- a single noise pattern that causes misclassification on most inputs |
 | **EOT** | Expectation over Transformations -- optimizing an attack to work under varying real-world conditions (angles, lighting) |

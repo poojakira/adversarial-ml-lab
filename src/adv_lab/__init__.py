@@ -4,4 +4,4 @@ Implements the canonical white-box attack ladder (FGSM < PGD < C&W L2),
 PGD-based adversarial training, and a CI-gateable benchmark harness.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

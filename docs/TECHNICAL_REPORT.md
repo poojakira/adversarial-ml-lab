@@ -694,7 +694,7 @@ Higher quality than gradient inversion when a pretrained generator is available.
 **Shadow model approach** (`membership_inference_shadow`):
 - Train N shadow models on known member/non-member splits
 - Train binary classifier on shadow model outputs
-- Expected AUC: 0.55-0.75 (baseline random = 0.50)
+- Illustrative AUC range: 0.55-0.75 on calibrated representative data (baseline random = 0.50)
 
 **Likelihood ratio approach** (`membership_inference_likelihood`):
 - Compare per-sample loss to population distribution
@@ -781,17 +781,17 @@ security-critical value is exposed as a function argument with a documented defa
 
 ## 12. Honest Assessment
 
-### 12.1 What Works in Production
+### 12.1 What Is Ready for CI Evaluation
 
 | Capability | Readiness | Evidence |
 |-----------|-----------|---------|
-| FGSM/PGD/C&W white-box attacks | Production-ready | Standard implementations, well-validated algorithms |
-| CI gate with HMAC signing | Production-ready | Uses stdlib crypto, follows OWASP/NIST guidance |
-| Benchmark harness (JSON output) | Production-ready | Deterministic, reproducible, CI-integrable |
-| Multi-norm attack suite | Production-ready | L0/L1/L2/Linf all follow published algorithms |
-| Input hashing and replay detection | Production-ready | SHA-256, timestamp-based nonce |
-| Gradient masking detection | Production-ready | Loss trajectory monitoring is well-understood |
-| Adversarial training (PGD-AT) | Production-ready | Madry et al. is the standard approach |
+| FGSM/PGD/C&W white-box attacks | CI-evaluation ready | Standard implementations, well-validated algorithms |
+| CI gate with HMAC signing | CI-evaluation ready | Uses stdlib crypto, follows OWASP/NIST guidance |
+| Benchmark harness (JSON output) | CI-evaluation ready | Deterministic, reproducible, CI-integrable |
+| Multi-norm attack suite | CI-evaluation ready | L0/L1/L2/Linf all follow published algorithms |
+| Input hashing and replay detection | CI-evaluation ready | SHA-256, timestamp-based nonce |
+| Gradient masking detection | CI-evaluation ready | Loss trajectory monitoring is well-understood |
+| Adversarial training (PGD-AT) | CI-evaluation ready | Madry et al. is the standard approach |
 
 ### 12.2 What Remains a Lab Demo
 
