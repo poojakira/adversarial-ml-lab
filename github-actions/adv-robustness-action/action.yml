@@ -1,0 +1,145 @@
+# GitHub Action for Adversarial Robustness 
+# ========================================= 
+# uses: poojakira/adv-robustness-action@v1 
+# Policy-as-code: Rego rules for robustness gates 
+# robust_acc_pgd_linf_8_255  blocks promotion 
+ 
+name: 'Adversarial Robustness Action' 
+description: 'Run adversarial robustness evaluation and enforce policy gates' 
+author: 'Pooja Kira' 
+branding: 
+  icon: 'shield' 
+  color: 'red' 
+ 
+inputs: 
+  model-endpoint: 
+    description: 'Model endpoint URL (Triton/TorchServe/vLLM/TGI)' 
+    required: true 
+  model-name: 
+    description: 'Model name/identifier' 
+    required: true 
+  attacks: 
+    description: 'Comma-separated list of attacks to run' 
+    required: false 
+    default: 'pgd,autoattack' 
+  dataset: 
+    description: 'Dataset name (cifar10, cifar100, imagenet)' 
+    required: false 
+    default: 'cifar10' 
+  num-samples: 
+    description: 'Number of samples to evaluate' 
+    required: false 
+    default: '1000' 
+  epsilon: 
+    description: 'Perturbation budget (e.g., 8/255)' 
+    required: false 
+    default: '0.031' 
+  norm: 
+    description: 'Attack norm (linf, l2, l1)' 
+    required: false 
+    default: 'linf' 
+  gate-threshold: 
+    description: 'Robust accuracy gate threshold' 
+    required: false 
+    default: '0.35' 
+  policy-file: 
+    description: 'OPA/Rego policy file path' 
+    required: false 
+    default: 'policies/robustness.rego' 
+  sign-results: 
+    description: 'Sign results with KMS' 
+    required: false 
+    default: 'true' 
+  kms-provider: 
+    description: 'KMS provider (aws, gcp, vault)' 
+    required: false 
+    default: 'aws' 
+  registry-url: 
+    description: 'OCI registry for attack containers' 
+    required: false 
+    default: 'ghcr.io/poojakira/adv-lab' 
+  github-token: 
+    description: 'GitHub token for API access' 
+    required: false 
+    default: 'GH_TOKEN' 
+ 
+outputs: 
+  job-id: 
+    description: 'Evaluation job ID' 
+    value: 'STEPS_EVALUATE_OUTPUTS_JOB_ID' 
+  robust-accuracy: 
+    description: 'Robust accuracy achieved' 
+    value: 'STEPS_EVALUATE_OUTPUTS_ROBUST_ACCURACY' 
+  gate-passed: 
+    description: 'Whether policy gate passed' 
+    value: 'STEPS_GATE_OUTPUTS_GATE_PASSED' 
+  signature: 
+    description: 'Signature of results' 
+    value: 'STEPS_SIGN_OUTPUTS_SIGNATURE' 
+  rekor-entry-id: 
+    description: 'Rekor transparency log entry ID' 
+    value: 'STEPS_SIGN_OUTPUTS_REKOR_ENTRY_ID' 
+ 
+runs: 
+  using: 'composite' 
+  steps: 
+    - name: 'Setup Python' 
+      uses: actions/setup-python@v5 
+      with: 
+        python-version: '3.11' 
+        cache: 'pip' 
+    - name: 'Install adv-lab' 
+      shell: bash 
+        pip install -U pip 
+        pip install adv-lab[all] --extra-index-url https://pypi.org/simple 
+    - name: 'Install OPA' 
+      shell: bash 
+        curl -L -o opa https://openpolicyagent.org/downloads/v0.65.0/opa_linux_amd64_static 
+        chmod +x opa 
+        sudo mv opa /usr/local/bin/ 
+    - name: 'Install Cosign' 
+      shell: bash 
+        curl -O -L https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 
+        chmod +x cosign-linux-amd64 
+        sudo mv cosign-linux-amd64 /usr/local/bin/cosign 
+    - name: 'Install ORAS' 
+      shell: bash 
+        curl -LO https://github.com/oras-project/oras/releases/latest/download/oras_linux_amd64.tar.gz 
+        tar -xzf oras_linux_amd64.tar.gz 
+        sudo mv oras /usr/local/bin/ 
+    - name: 'Pull attack containers' 
+      shell: bash 
+        ATTACKS=\" "INPUTS_ATTACKS\ 
+        for attack in \" "\; do 
+          oras pull INPUTS_REGISTRY_URL/attacks/ 
+        done 
+    - name: 'Run evaluation' 
+      id: evaluate 
+      shell: bash 
+      env: 
+        ADV_LAB_API_URL: SECRETS_ADV_LAB_API_URL 
+        ADV_LAB_API_KEY: SECRETS_ADV_LAB_API_KEY 
+        AWS_REGION: SECRETS_AWS_REGION 
+        AWS_ACCESS_KEY_ID: SECRETS_AWS_ACCESS_KEY_ID 
+        AWS_SECRET_ACCESS_KEY: SECRETS_AWS_SECRET_ACCESS_KEY 
+        GCP_PROJECT_ID: SECRETS_GCP_PROJECT_ID 
+        GCP_CREDENTIALS: SECRETS_GCP_CREDENTIALS 
+        VAULT_ADDR: SECRETS_VAULT_ADDR 
+        VAULT_TOKEN: SECRETS_VAULT_TOKEN 
+        python -m adv_lab.cli evaluate \ 
+          --model-endpoint \" "INPUTS_MODEL_ENDPOINT\ \ 
+          --model-name \" "INPUTS_MODEL_NAME\ \ 
+          --attacks \" "INPUTS_ATTACKS\ \ 
+          --dataset \" "INPUTS_DATASET\ \ 
+          --num-samples INPUTS_NUM_SAMPLES \ 
+          --epsilon INPUTS_EPSILON \ 
+          --norm INPUTS_NORM \ 
+          --output results.json \ 
+          --sign-results INPUTS_SIGN_RESULTS \ 
+          --kms-provider INPUTS_KMS_PROVIDER 
+ 
+        JOB_ID=\ 
+        ROBUST_ACC=\ 
+ 
+        echo \" "job-id=\\ 
+        echo \" "robust-accuracy=\\ 

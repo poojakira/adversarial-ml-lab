@@ -1,0 +1,12 @@
+numpy
+torch
+torchvision
+requests
+
+[dev]
+pytest
+ruff
+mypy
+bandit
+pip-audit
+pytest-cov

@@ -1,0 +1,37 @@
+﻿apiVersion: v2
+name: adv-lab
+description: Production-grade Adversarial Robustness Evaluation Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - adversarial
+  - robustness
+  - ml-security
+  - kms
+  - sigstore
+  - rekor
+  - robustbench
+home: https://github.com/poojakira/adversarial-ml-lab
+sources:
+  - https://github.com/poojakira/adversarial-ml-lab
+maintainers:
+  - name: Pooja Kira
+    email: pooja@poojakira.dev
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: queue.enabled
+  - name: prometheus
+    version: "15.x.x"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: monitoring.prometheus.enabled
+  - name: grafana
+    version: "6.x.x"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: monitoring.grafana.enabled
