@@ -36,6 +36,7 @@ robustbench = [
 
 [project.scripts]
 adv-eval = "adv_lab.eval.harness:main"
+benchmark-verify = "adv_lab.eval.benchmark_verify:main"
 
 [project.urls]
 Homepage = "https://github.com/poojakira/adversarial-ml-lab"
