@@ -10,13 +10,13 @@ class ATTACKEnricher:
     def __init__(self, index: ATTACKIndex):
         self.index = index
         self._rule_table = {
-            "adversarial_evasion_success": ["T1562", "T1036.005"],
+            "adversarial_evasion_success": ["T1685", "T1036.005"],
             "adversarial_patch_detected": ["T1036", "T1027"],
-            "model_bypass_via_perturbation": ["T1562.001", "T1027"],
-            "transfer_attack_success": ["T1562", "T1190"],
-            "black_box_query_attack": ["T1595", "T1190"],
-            "adversarial_robustness_failure": ["T1562", "T1499"],
-            "certified_defense_bypass": ["T1562.001"],
+            "model_bypass_via_perturbation": ["T1685", "T1027", "T1689"],
+            "transfer_attack_success": ["T1685", "T1190"],
+            "black_box_query_attack": ["T1595", "T1190", "T1682"],
+            "adversarial_robustness_failure": ["T1685", "T1499"],
+            "certified_defense_bypass": ["T1685", "T1689"],
             "physical_adversarial_attack": ["T1200", "T1036"],
         }
 
