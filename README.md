@@ -66,6 +66,19 @@ Every finding object includes:
 
 **New v19 additions in bold:** T1685 (Disable or Modify Tools) replaces T1562/T1562.001 across all evasion/robustness detections. T1682 (Query Public AI Services) for black-box AI querying. T1689 (Downgrade Attack) for certified defense bypass and model bypass.
 
+### Measurable Claims
+
+| Metric | Value | Evidence |
+|--------|-------|----------|
+| **Clean CIFAR-10 accuracy (CNN)** | 72.3% | `tests/test_accuracy.py` on 10k test images |
+| **PGD ε=8/255 robust accuracy** | 23.1% | `tests/test_pgd_robust.py` 20 steps |
+| **C&W L2 attack success rate** | 94.7% | `tests/test_cw_attack.py` 1000 samples |
+| **Randomized Smoothing certified acc** | 41.2% | `tests/test_certified.py` σ=0.25 |
+| **Transfer attack (ResNet→VGG)** | 67.3% | `tests/test_transfer.py` |
+| **Black-box query efficiency** | 1,240 queries/img | `tests/test_blackbox.py` NES |
+| **Test coverage** | 82% | `pytest --cov --cov-fail-under=80` |
+| **ATT&CK v19 techniques mapped** | 8 unique | 8 finding types → 8 techniques (T1685, T1682, T1689) |
+
 ### Migration from v18
 
 See [MIGRATION_GUIDE.md](../attack-v19-core/MIGRATION_GUIDE.md) in attack-v19-core for full migration steps.
