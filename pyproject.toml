@@ -1,47 +1,29 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "adv-lab"
-version = "0.1.0"
-description = "A stress-test lab for PyTorch classifiers: FGSM, PGD (L-inf/L2), and C&W L2 attacks with a CI-gateable robustness benchmark."
+name = "adversarial-ml-lab"
+version = "1.0.0"
+description = "Adversarial ML robustness evaluation and certified defense testing"
 readme = "README.md"
-requires-python = ">=3.12"
-license = { text = "MIT" }
-authors = [{ name = "poojakira" }]
-keywords = ["adversarial", "robustness", "pytorch", "fgsm", "pgd", "carlini-wagner", "security"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
+requires-python = ">=3.10"
+license = {text = "MIT"}
 dependencies = [
-    "torch>=2.3",
-    "torchvision>=0.18",
-    "numpy>=1.26",
+    "attack-v19-core @ git+https://github.com/poojakira/attack-v19-core.git@1.0.0",
+    "mitreattack-python==3.0.3",
+    "stix2==3.0.1",
+    "pydantic==2.7.4",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.2",
-    "pytest-cov>=5.0",
+    "pytest>=8.2.1",
 ]
 
-[project.scripts]
-adv-eval = "adv_lab.eval.harness:main"
-
-[project.urls]
-Homepage = "https://github.com/poojakira/adversarial-ml-lab"
-Repository = "https://github.com/poojakira/adversarial-ml-lab"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/adv_lab"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
-
-[tool.coverage.run]
-source = ["adv_lab"]
