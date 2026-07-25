@@ -262,7 +262,7 @@ def hop_skip_jump(
     # Initialize: find an adversarial starting point via random perturbation
     for idx in range(batch_size):
         found = False
-        for attempt in range(min(25, query_budget)):
+        for _attempt in range(min(25, query_budget)):
             # Random initialization: uniform noise
             x_rand = torch.rand_like(images[idx : idx + 1])
             with torch.no_grad():
@@ -379,7 +379,7 @@ def boundary_attack(
     # Initialize: find an adversarial starting point
     for idx in range(batch_size):
         found = False
-        for attempt in range(min(25, query_budget)):
+        for _attempt in range(min(25, query_budget)):
             x_rand = torch.rand_like(images[idx : idx + 1])
             with torch.no_grad():
                 pred = model(x_rand).argmax(dim=1)
@@ -457,8 +457,8 @@ def _get_margin(logits: Tensor, labels: Tensor) -> Tensor:
     A positive margin means the model is still correct; a negative margin
     means the attack succeeded.
     """
-    batch_size = logits.shape[0]
-    num_classes = logits.shape[1]
+    logits.shape[0]
+    logits.shape[1]
     one_hot = torch.zeros_like(logits).scatter_(1, labels.unsqueeze(1), 1.0)
     true_logits = (logits * one_hot).sum(dim=1)
     other_logits = logits - one_hot * 1e9

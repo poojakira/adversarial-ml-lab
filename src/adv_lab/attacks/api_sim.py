@@ -36,9 +36,10 @@ import collections
 import logging
 import math
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -132,16 +133,16 @@ class _AnomalyDetector:
         self.window_size = window_size
         self.clustering_threshold = clustering_threshold
         self.similarity_threshold = similarity_threshold
-        self._recent_norms: Deque[float] = collections.deque(maxlen=window_size)
-        self._recent_entropies: Deque[float] = collections.deque(maxlen=window_size)
-        self._last_input_flat: Optional[Tensor] = None
-        self._baseline_mean_norm: Optional[float] = None
-        self._baseline_std_norm: Optional[float] = None
-        self.events: List[AnomalyEvent] = []
+        self._recent_norms: collections.deque[float] = collections.deque(maxlen=window_size)
+        self._recent_entropies: collections.deque[float] = collections.deque(maxlen=window_size)
+        self._last_input_flat: Tensor | None = None
+        self._baseline_mean_norm: float | None = None
+        self._baseline_std_norm: float | None = None
+        self.events: list[AnomalyEvent] = []
 
-    def check(self, record: QueryRecord, input_flat: Tensor) -> List[AnomalyEvent]:
+    def check(self, record: QueryRecord, input_flat: Tensor) -> list[AnomalyEvent]:
         """Run all anomaly checks on a new query record."""
-        new_events: List[AnomalyEvent] = []
+        new_events: list[AnomalyEvent] = []
 
         self._recent_norms.append(record.input_l2_norm)
         self._recent_entropies.append(record.response_entropy)
@@ -283,8 +284,8 @@ class APISimulator:
         self.enable_anomaly_detection = enable_anomaly_detection
 
         self._query_count: int = 0
-        self._query_timestamps: Deque[float] = collections.deque()
-        self._query_log: List[QueryRecord] = []
+        self._query_timestamps: collections.deque[float] = collections.deque()
+        self._query_log: list[QueryRecord] = []
         self._anomaly_detector = _AnomalyDetector() if enable_anomaly_detection else None
         self._last_query_time: float = 0.0
 
@@ -301,12 +302,12 @@ class APISimulator:
         return max(0, self.total_budget - self._query_count)
 
     @property
-    def query_log(self) -> List[QueryRecord]:
+    def query_log(self) -> list[QueryRecord]:
         """Full query log for analysis."""
         return self._query_log
 
     @property
-    def anomaly_events(self) -> List[AnomalyEvent]:
+    def anomaly_events(self) -> list[AnomalyEvent]:
         """All anomaly events detected."""
         if self._anomaly_detector is None:
             return []
@@ -466,11 +467,11 @@ class _APIModelWrapper(nn.Module):
         logits = self._api.model(x)
         return logits
 
-    def eval(self) -> "_APIModelWrapper":
+    def eval(self) -> _APIModelWrapper:
         self.training = False
         return self
 
-    def train(self, mode: bool = True) -> "_APIModelWrapper":
+    def train(self, mode: bool = True) -> _APIModelWrapper:
         self.training = mode
         return self
 
@@ -486,7 +487,7 @@ def simulated_api_attack(
     confidence_rounding: int = 2,
     enable_anomaly_detection: bool = True,
     **attack_kwargs: Any,
-) -> Tuple[Tensor, APISimulator]:
+) -> tuple[Tensor, APISimulator]:
     """Execute an attack function through the API simulator envelope.
 
     Wraps the target model with an APISimulator and passes the wrapped model
@@ -603,7 +604,7 @@ def anomaly_detection_evasion(
 
     x_adv = images.clone().detach()
     x_orig = images.clone().detach()
-    batch_size = images.shape[0]
+    images.shape[0]
 
     # Momentum buffer
     grad_buf = torch.zeros_like(images)

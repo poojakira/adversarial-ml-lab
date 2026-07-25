@@ -31,8 +31,7 @@ from __future__ import annotations
 
 import logging
 import math
-from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -262,7 +261,7 @@ class LipschitzNetwork(nn.Module):
         num_layers: int = 2,
     ) -> None:
         super().__init__()
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         in_dim = input_dim
         for _ in range(num_layers):
             layers.append(_SpectralNormLinear(in_dim, hidden_dim))
@@ -284,7 +283,7 @@ def lipschitz_eval(
     epsilon: float = 0.03,
     attack_steps: int = 40,
     alpha: float = 0.005,
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Evaluate attacks against a Lipschitz-constrained network.
 
     Tests PGD attacks against the given model and reports both clean accuracy
@@ -359,8 +358,8 @@ class IBPBounds:
 
 
 def _ibp_linear(
-    lower: Tensor, upper: Tensor, weight: Tensor, bias: Optional[Tensor]
-) -> Tuple[Tensor, Tensor]:
+    lower: Tensor, upper: Tensor, weight: Tensor, bias: Tensor | None
+) -> tuple[Tensor, Tensor]:
     """Propagate interval bounds through a linear layer.
 
     For a linear layer y = Wx + b, the bounds are:
@@ -382,7 +381,7 @@ def _ibp_linear(
     return new_lower, new_upper
 
 
-def _ibp_relu(lower: Tensor, upper: Tensor) -> Tuple[Tensor, Tensor]:
+def _ibp_relu(lower: Tensor, upper: Tensor) -> tuple[Tensor, Tensor]:
     """Propagate interval bounds through a ReLU activation.
 
     ReLU preserves positivity: max(0, x).
@@ -473,13 +472,13 @@ def ibp_eval(
     )
 
 
-def _extract_sequential_modules(model: nn.Module) -> List[nn.Module]:
+def _extract_sequential_modules(model: nn.Module) -> list[nn.Module]:
     """Extract leaf modules from a model in sequential order.
 
     Recursively traverses the model to find all leaf modules (Linear, ReLU,
     Flatten, etc.) in their forward-pass order.
     """
-    modules: List[nn.Module] = []
+    modules: list[nn.Module] = []
 
     def _recurse(m: nn.Module) -> None:
         children = list(m.children())
@@ -509,7 +508,7 @@ def find_certificate_boundary(
     eps_high: float = 1.0,
     tolerance: float = 0.001,
     max_iterations: int = 30,
-) -> Tuple[float, List[Tuple[float, float]]]:
+) -> tuple[float, list[tuple[float, float]]]:
     """Binary search for exact epsilon where the certificate breaks down.
 
     Finds the critical epsilon value where the certified accuracy transitions
@@ -545,7 +544,7 @@ def find_certificate_boundary(
     """
     _require_eval_mode(model)
 
-    search_history: List[Tuple[float, float]] = []
+    search_history: list[tuple[float, float]] = []
 
     def _eval_certified_accuracy(eps: float) -> float:
         """Evaluate certified accuracy at a given epsilon."""

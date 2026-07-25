@@ -16,7 +16,7 @@ quantify real-world deployment risk.
 
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 import torch
 import torch.nn as nn
@@ -191,7 +191,7 @@ def uap_generate(
     input_shape = x_all.shape[1:]  # (C, H, W)
     delta = torch.zeros(input_shape)
 
-    for epoch in range(max_epochs):
+    for _epoch in range(max_epochs):
         # Shuffle order each epoch
         perm = torch.randperm(n_total)
 
@@ -268,7 +268,7 @@ def fast_uap(
     delta = torch.zeros(input_shape, requires_grad=True)
     optimizer = torch.optim.Adam([delta], lr=lr)
 
-    for step in range(steps):
+    for _step in range(steps):
         optimizer.zero_grad()
 
         # Create a batch of random inputs with the perturbation applied

@@ -25,14 +25,13 @@ References:
 from __future__ import annotations
 
 import math
-from typing import Callable, List, Optional, Tuple
+from collections.abc import Callable
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from adv_lab.attacks.fgsm import _require_eval_mode
-
 
 # ---------------------------------------------------------------------------
 # Differentiable JPEG Approximation
@@ -171,7 +170,7 @@ def jpeg_robust_attack(
     epsilon: float = 0.05,
     alpha: float = 0.01,
     steps: int = 100,
-    quality_range: Tuple[int, int] = (50, 95),
+    quality_range: tuple[int, int] = (50, 95),
 ) -> Tensor:
     """Craft adversarial examples that survive JPEG compression.
 
@@ -425,8 +424,8 @@ def detector_evasion(
     lid_weight: float = 0.1,
     mahal_weight: float = 0.1,
     lid_k: int = 20,
-    class_means: Optional[Tensor] = None,
-    precision: Optional[Tensor] = None,
+    class_means: Tensor | None = None,
+    precision: Tensor | None = None,
 ) -> Tensor:
     """Craft adversarial examples that evade LID and Mahalanobis detectors.
 

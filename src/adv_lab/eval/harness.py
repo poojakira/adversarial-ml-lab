@@ -18,8 +18,8 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
-from typing import Iterable
 
 import torch
 import torch.nn as nn
@@ -424,6 +424,8 @@ def _run_robustbench(args) -> int:
     """
     from adv_lab.eval.robustbench_loader import (
         load_cifar10 as _load_cifar10,
+    )
+    from adv_lab.eval.robustbench_loader import (
         load_robustbench_model as _load_rb_model,
     )
 
@@ -482,7 +484,7 @@ def _run_robustbench(args) -> int:
     if args.output:
         export_json(result, args.output)
         # Augment the report with the detailed fields RobustBench comparisons need.
-        with open(args.output, "r", encoding="utf-8") as fh:
+        with open(args.output, encoding="utf-8") as fh:
             payload = json.load(fh)
         payload["model_source"] = "robustbench"
         payload["dataset"] = args.dataset

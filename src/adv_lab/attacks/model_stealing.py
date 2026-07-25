@@ -24,8 +24,6 @@ The core workflow:
 
 from __future__ import annotations
 
-from typing import Callable
-
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -200,7 +198,7 @@ def steal_model(
 
     # Active learning loop with Jacobian augmentation
     best_agreement = 0.0
-    for round_idx in range(augmentation_rounds):
+    for _round_idx in range(augmentation_rounds):
         # Train substitute on current dataset
         _train_substitute(
             substitute, train_x, train_y, epochs=substitute_epochs, lr=lr

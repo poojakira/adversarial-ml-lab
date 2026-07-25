@@ -26,14 +26,13 @@ References:
 
 from __future__ import annotations
 
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from adv_lab.attacks.fgsm import _require_eval_mode
-
 
 # ---------------------------------------------------------------------------
 # Ensemble attack
@@ -47,7 +46,7 @@ def ensemble_attack(
     epsilon: float = 0.03,
     alpha: float = 0.007,
     steps: int = 40,
-    weights: Optional[List[float]] = None,
+    weights: list[float] | None = None,
     random_start: bool = True,
 ) -> Tensor:
     """PGD-style attack optimizing combined loss across N models.
@@ -96,7 +95,7 @@ def ensemble_attack(
 
         # Compute weighted ensemble loss
         total_loss = torch.tensor(0.0, device=images.device, requires_grad=True)
-        for model, weight in zip(models, weights):
+        for model, weight in zip(models, weights, strict=False):
             logits = model(x_adv)
             loss_i = nn.functional.cross_entropy(logits, labels)
             total_loss = total_loss + weight * loss_i
@@ -117,10 +116,10 @@ def ensemble_attack(
 
 
 def build_attacker_ensemble(
-    model_constructors: List[Callable[[], nn.Module]],
-    train_fn: Optional[Callable[[nn.Module], nn.Module]] = None,
-    device: Optional[torch.device] = None,
-) -> List[nn.Module]:
+    model_constructors: list[Callable[[], nn.Module]],
+    train_fn: Callable[[nn.Module], nn.Module] | None = None,
+    device: torch.device | None = None,
+) -> list[nn.Module]:
     """Construct an attacker-side ensemble from model constructors.
 
     In practical black-box attacks, the attacker builds an ensemble of
@@ -151,7 +150,7 @@ def build_attacker_ensemble(
         ensemble = build_attacker_ensemble(constructors, train_fn=my_trainer)
         x_adv = ensemble_attack(ensemble, images, labels)
     """
-    ensemble: List[nn.Module] = []
+    ensemble: list[nn.Module] = []
 
     for constructor in model_constructors:
         model = constructor()
@@ -177,11 +176,11 @@ def weighted_ensemble_pgd(
     epsilon: float = 0.03,
     alpha: float = 0.007,
     steps: int = 40,
-    weights: Optional[List[float]] = None,
+    weights: list[float] | None = None,
     random_start: bool = True,
     momentum: float = 0.0,
     targeted: bool = False,
-    target_labels: Optional[Tensor] = None,
+    target_labels: Tensor | None = None,
 ) -> Tensor:
     """Full PGD implementation with weighted multi-model loss.
 
@@ -238,7 +237,7 @@ def weighted_ensemble_pgd(
 
         # Accumulate gradients from all models
         total_loss = torch.tensor(0.0, device=images.device, requires_grad=True)
-        for model, weight in zip(models, weights):
+        for model, weight in zip(models, weights, strict=False):
             logits = model(x_adv)
             loss_i = nn.functional.cross_entropy(logits, attack_labels)
             total_loss = total_loss + weight * loss_i

@@ -21,8 +21,8 @@ authentication -- none of these matter when the attack lives on a sticker.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence
 
 import torch
 import torch.nn as nn
@@ -298,7 +298,7 @@ class PhysicalPatchAttack:
         patch = torch.rand(c, ph, pw, requires_grad=True)
         optimizer = torch.optim.Adam([patch], lr=self.lr)
 
-        for step in range(self.steps):
+        for _step in range(self.steps):
             optimizer.zero_grad()
             total_loss = torch.tensor(0.0)
             n_transforms = 0
@@ -464,7 +464,7 @@ class PhysicalPatchAttack:
             Average attack success rate under camera noise.
         """
         total_rate = 0.0
-        for trial in range(n_trials):
+        for _trial in range(n_trials):
             patched = _apply_patch_to_images(images, patch)
             noisy = _apply_camera_noise(
                 patched, gaussian_std=gaussian_std, poisson_scale=poisson_scale

@@ -25,14 +25,11 @@ Attacks implemented:
 
 from __future__ import annotations
 
-import math
 import random
-from typing import Optional
 
 import torch
 import torch.nn as nn
 from torch import Tensor
-
 
 # --------------------------------------------------------------------------- #
 # Simulated Tokenizer and LLM
@@ -126,7 +123,7 @@ class SimulatedLLM(nn.Module):
         vocab_size: int = 128,
         max_length: int = 64,
         hidden_dim: int = 64,
-        num_classes: Optional[int] = None,
+        num_classes: int | None = None,
     ) -> None:
         super().__init__()
         self.vocab_size = vocab_size
@@ -251,7 +248,7 @@ class GCGAttack:
         full_seq = prompt_tokens.clone()
         suffix_start = prompt_len
 
-        for step in range(self.steps):
+        for _step in range(self.steps):
             # Place current suffix into the sequence
             full_seq_current = full_seq.clone()
             end_pos = min(suffix_start + self.suffix_length, max_length)
@@ -388,7 +385,7 @@ class AutoDANAttack:
         best_candidate = base_tokens.clone()
         best_score = float("-inf")
 
-        for gen in range(self.generations):
+        for _gen in range(self.generations):
             # Evaluate fitness of each candidate
             fitness_scores = []
             batch = torch.stack(population)
@@ -708,7 +705,7 @@ def universal_suffix(
 
     target = torch.tensor([target_class], dtype=torch.long)
 
-    for step in range(steps):
+    for _step in range(steps):
         # For each suffix position, find the best token across all models/prompts
         for pos_offset in range(suffix_length):
             best_token = suffix_tokens[pos_offset].item()
@@ -724,7 +721,7 @@ def universal_suffix(
                 trial_suffix[pos_offset] = cand.item()
 
                 for model in models:
-                    for prompt_tokens, s_start in zip(encoded_prompts, suffix_starts):
+                    for prompt_tokens, s_start in zip(encoded_prompts, suffix_starts, strict=False):
                         full_seq = prompt_tokens.clone()
                         end_pos = min(s_start + suffix_length, max_length)
                         actual_len = end_pos - s_start
@@ -749,7 +746,7 @@ def universal_suffix(
     for model in models:
         model_score = 0.0
         count = 0
-        for prompt_tokens, s_start in zip(encoded_prompts, suffix_starts):
+        for prompt_tokens, s_start in zip(encoded_prompts, suffix_starts, strict=False):
             full_seq = prompt_tokens.clone()
             end_pos = min(s_start + suffix_length, max_length)
             actual_len = end_pos - s_start

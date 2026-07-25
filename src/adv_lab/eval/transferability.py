@@ -27,13 +27,12 @@ The module provides:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 import torch
 import torch.nn as nn
 from torch import Tensor
-
 
 # --------------------------------------------------------------------------- #
 # Heterogeneous architecture definitions
