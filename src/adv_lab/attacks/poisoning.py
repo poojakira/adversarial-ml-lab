@@ -20,12 +20,10 @@ These attacks corrupt the training pipeline rather than the inference inputs:
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
 from torch import Tensor
-
 
 # --------------------------------------------------------------------------- #
 # Clean-Label Poisoning
@@ -41,7 +39,7 @@ def clean_label_poison(
     steps: int = 100,
     lr: float = 0.01,
     epsilon: float = 0.1,
-    feature_layer: Optional[str] = None,
+    feature_layer: str | None = None,
 ) -> Tensor:
     """Clean-label feature collision poisoning.
 
@@ -170,7 +168,7 @@ def badnets_trigger(
     images: Tensor,
     labels: Tensor,
     target_label: int,
-    trigger_pattern: Optional[Tensor] = None,
+    trigger_pattern: Tensor | None = None,
     trigger_size: int = 3,
     trigger_location: str = "bottom_right",
     poison_fraction: float = 0.1,

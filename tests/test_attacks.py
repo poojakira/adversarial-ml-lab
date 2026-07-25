@@ -6,7 +6,7 @@ import torch.nn as nn
 from adv_lab.attacks.cw import generate as cw_generate
 from adv_lab.attacks.fgsm import generate as fgsm_generate
 from adv_lab.attacks.pgd import generate as pgd_generate
-from adv_lab.eval.harness import evaluate_robustness, RobustnessGate, run_evaluation
+from adv_lab.eval.harness import RobustnessGate, evaluate_robustness
 
 
 class DummyModel(nn.Module):
@@ -128,6 +128,6 @@ def test_model_training_mode_raises() -> None:
 
     try:
         evaluate_robustness(model, dataloader, attack="clean")
-        assert False, "Should have raised RuntimeError"
+        raise AssertionError("Should have raised RuntimeError")
     except RuntimeError as e:
         assert "eval() mode" in str(e)

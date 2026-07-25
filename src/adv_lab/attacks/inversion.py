@@ -24,8 +24,7 @@ training data.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Sequence
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -177,7 +176,7 @@ def gradient_inversion(
     optimizer = torch.optim.Adam([dummy], lr=lr)
 
     final_loss = float("inf")
-    for step in range(steps):
+    for _step in range(steps):
         optimizer.zero_grad()
 
         # Forward pass with dummy input
@@ -192,7 +191,7 @@ def gradient_inversion(
         # Gradient matching loss: minimize cosine distance between observed and
         # reconstructed gradients
         grad_loss = torch.tensor(0.0)
-        for dg, tg in zip(dummy_grads, target_gradients):
+        for dg, tg in zip(dummy_grads, target_gradients, strict=False):
             dg_flat = dg.reshape(-1)
             tg_flat = tg.reshape(-1).detach()
             # Cosine similarity -> we minimize 1 - cos_sim
@@ -291,7 +290,7 @@ def gan_inversion(
     optimizer = torch.optim.Adam([z], lr=lr)
 
     final_loss = float("inf")
-    for step in range(steps):
+    for _step in range(steps):
         optimizer.zero_grad()
 
         # Generate candidate images from latent codes
@@ -433,7 +432,7 @@ def membership_inference_shadow(
     """
     _require_eval_mode(model)
 
-    n_samples = samples.shape[0]
+    samples.shape[0]
     shadow_x_train, shadow_y_train = shadow_train_data
     shadow_x_test, shadow_y_test = shadow_test_data
 
@@ -474,7 +473,7 @@ def membership_inference_shadow(
     # and lower loss (feature 2)
     member_mean_conf = shadow_member_feats[:, 0].mean()
     non_member_mean_conf = shadow_non_member_feats[:, 0].mean()
-    conf_threshold = (member_mean_conf + non_member_mean_conf) / 2.0
+    (member_mean_conf + non_member_mean_conf) / 2.0
 
     # Score target samples using the target model
     target_feats = _compute_membership_features(model, samples, labels)

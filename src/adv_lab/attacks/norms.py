@@ -19,14 +19,12 @@ Each attack includes an epsilon search schedule for automated budget tuning.
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from adv_lab.attacks.fgsm import _require_eval_mode
-
 
 # --------------------------------------------------------------------------- #
 # Epsilon search schedule utilities
@@ -59,7 +57,7 @@ def pgd_l0(
     max_pixels: int = 10,
     steps: int = 50,
     alpha: float = 0.1,
-    epsilon_schedule: Optional[list[int]] = None,
+    epsilon_schedule: list[int] | None = None,
 ) -> Tensor:
     """L0-constrained sparse adversarial attack.
 
@@ -90,7 +88,7 @@ def pgd_l0(
         epsilon_schedule = [max_pixels]
 
     batch_size = images.shape[0]
-    n_channels = images.shape[1]
+    images.shape[1]
     spatial_dims = images.shape[2] * images.shape[3]
     best_adv = images.clone().detach()
     best_success = torch.zeros(batch_size, dtype=torch.bool)
@@ -206,7 +204,7 @@ def pgd_l1(
     alpha: float = 0.5,
     steps: int = 50,
     random_start: bool = True,
-    epsilon_schedule: Optional[list[float]] = None,
+    epsilon_schedule: list[float] | None = None,
 ) -> Tensor:
     """L1-constrained Projected Gradient Descent.
 
@@ -295,7 +293,7 @@ def wasserstein_attack(
     alpha: float = 0.01,
     sinkhorn_iters: int = 10,
     reg: float = 0.1,
-    epsilon_schedule: Optional[list[float]] = None,
+    epsilon_schedule: list[float] | None = None,
 ) -> Tensor:
     """Wasserstein-distance constrained adversarial attack.
 
@@ -385,7 +383,7 @@ def _project_wasserstein(
     spatial distance from the nearest modified pixel.
     """
     batch_size = delta.shape[0]
-    flat = delta.view(batch_size, -1)
+    delta.view(batch_size, -1)
 
     # Approximate W1 distance as weighted L1 norm
     # For a grid, W1 is bounded by the L1 norm of pixel values times their
@@ -393,7 +391,7 @@ def _project_wasserstein(
     # W1 <= L1_norm * max_spatial_diameter / num_pixels
     # Here we use the heuristic: scale down delta uniformly if L1 exceeds budget
     h, w = delta.shape[2], delta.shape[3]
-    spatial_diameter = math.sqrt(h * h + w * w)
+    math.sqrt(h * h + w * w)
 
     # Weighted L1: weight each pixel change by its distance from center
     cy, cx = h / 2.0, w / 2.0
@@ -436,7 +434,7 @@ def semantic_attack(
     max_translation: float = 0.2,
     max_hue_shift: float = 0.1,
     max_contrast: float = 0.3,
-    epsilon_schedule: Optional[list[float]] = None,
+    epsilon_schedule: list[float] | None = None,
 ) -> Tensor:
     """Semantic adversarial attack via differentiable transforms.
 
@@ -551,7 +549,7 @@ def _apply_affine_transform(
     Uses bilinear grid sampling for differentiability.
     """
     batch_size = images.shape[0]
-    h, w = images.shape[2], images.shape[3]
+    _h, _w = images.shape[2], images.shape[3]
 
     # Convert degrees to radians
     angle_rad = rotation_deg * (math.pi / 180.0)
@@ -622,9 +620,9 @@ def patch_attack(
     patch_size: int = 3,
     steps: int = 100,
     lr: float = 0.01,
-    patch_location: Optional[tuple[int, int]] = None,
+    patch_location: tuple[int, int] | None = None,
     printable_gamut: bool = True,
-    epsilon_schedule: Optional[list[int]] = None,
+    epsilon_schedule: list[int] | None = None,
 ) -> Tensor:
     """Adversarial patch attack with printable sRGB gamut constraint.
 
@@ -655,7 +653,7 @@ def patch_attack(
         epsilon_schedule = [patch_size]
 
     batch_size = images.shape[0]
-    n_channels = images.shape[1]
+    images.shape[1]
     h, w = images.shape[2], images.shape[3]
     best_adv = images.clone().detach()
     best_success = torch.zeros(batch_size, dtype=torch.bool)

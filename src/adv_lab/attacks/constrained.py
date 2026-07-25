@@ -23,15 +23,14 @@ from __future__ import annotations
 
 import heapq
 import time
-from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from adv_lab.attacks.fgsm import _require_eval_mode
-
 
 # ---------------------------------------------------------------------------
 # TimedAttack
@@ -150,7 +149,7 @@ class PerturbationDirection:
     direction: Tensor
     loss_decrease: float = 0.0
 
-    def __lt__(self, other: "PerturbationDirection") -> bool:
+    def __lt__(self, other: PerturbationDirection) -> bool:
         """Higher priority = better. Use negative for min-heap -> max behavior."""
         return self.priority > other.priority
 
@@ -188,9 +187,9 @@ class QueryBudgetManager:
         self.query_budget = query_budget
         self.batch_size = batch_size
         self.queries_used: int = 0
-        self._queue: List[PerturbationDirection] = []
+        self._queue: list[PerturbationDirection] = []
         self.best_loss: float = -float("inf")
-        self.best_adv: Optional[Tensor] = None
+        self.best_adv: Tensor | None = None
 
     @property
     def budget_exhausted(self) -> bool:
@@ -216,7 +215,7 @@ class QueryBudgetManager:
         entry = PerturbationDirection(priority=priority, direction=direction)
         heapq.heappush(self._queue, entry)
 
-    def get_next_direction(self) -> Optional[Tensor]:
+    def get_next_direction(self) -> Tensor | None:
         """Pop the highest-priority direction, or None if queue is empty."""
         if not self._queue:
             return None
@@ -332,7 +331,7 @@ def rate_limited_attack(
     queries_per_minute: int = 60,
     max_queries: int = 100,
     **attack_kwargs: object,
-) -> Tuple[Tensor, int]:
+) -> tuple[Tensor, int]:
     """Wrap any attack with a simulated rate limit.
 
     Simulates a production API rate limit by tracking query timestamps and
@@ -359,8 +358,8 @@ def rate_limited_attack(
 
     query_count = 0
     interval = 60.0 / queries_per_minute  # minimum seconds between queries
-    best_adv = images.clone().detach()
-    best_loss = -float("inf")
+    images.clone().detach()
+    -float("inf")
 
     # Wrap model to count queries
     class RateLimitedModel(nn.Module):

@@ -20,14 +20,11 @@ inputs for adversarial ones during evaluation.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
 import os
 import time
-from typing import Any
-
 
 # Key derivation constants following NIST SP 800-132 recommendations
 _PBKDF2_ITERATIONS = 600_000  # OWASP 2023 recommendation for SHA-256

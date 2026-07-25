@@ -26,8 +26,8 @@ References:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional
 
 import torch
 import torch.nn as nn
@@ -70,9 +70,9 @@ class GradientMaskingDetector:
     threshold_frac: float = 0.20
     tolerance: float = 1e-4
     plateau_window: int = 5
-    losses: List[float] = field(default_factory=list)
+    losses: list[float] = field(default_factory=list)
     detected: bool = False
-    detection_step: Optional[int] = None
+    detection_step: int | None = None
 
     def record(self, loss_value: float) -> bool:
         """Record a loss value and return True if masking is now detected."""
@@ -192,7 +192,7 @@ class EoT(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """Compute mean logits over n_samples random transformations."""
-        logits_sum: Optional[Tensor] = None
+        logits_sum: Tensor | None = None
         for _ in range(self.n_samples):
             x_t = self.transform_fn(x)
             logits = self.model(x_t)
@@ -285,7 +285,7 @@ def _random_search_with_momentum(
 class AdaptiveAttackLog:
     """Log of detection events and strategy switches."""
 
-    events: List[dict] = field(default_factory=list)
+    events: list[dict] = field(default_factory=list)
 
     def log_event(self, event_type: str, **kwargs: object) -> None:
         """Record an event with type and extra details."""
@@ -301,9 +301,9 @@ def adaptive_attack(
     epsilon: float = 0.03,
     alpha: float = 0.007,
     steps: int = 40,
-    defense: Optional[Callable[[Tensor], Tensor]] = None,
-    defense_approx: Optional[Callable[[Tensor], Tensor]] = None,
-    transform_fn: Optional[Callable[[Tensor], Tensor]] = None,
+    defense: Callable[[Tensor], Tensor] | None = None,
+    defense_approx: Callable[[Tensor], Tensor] | None = None,
+    transform_fn: Callable[[Tensor], Tensor] | None = None,
     eot_samples: int = 20,
     random_search_steps: int = 100,
 ) -> tuple[Tensor, AdaptiveAttackLog]:

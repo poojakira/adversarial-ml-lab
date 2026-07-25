@@ -29,7 +29,6 @@ References:
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -453,7 +452,7 @@ def rl_attack(
     epsilon: float = 0.05,
     steps: int = 40,
     alpha: float = 0.005,
-    optimal_action_idx: Optional[int] = None,
+    optimal_action_idx: int | None = None,
 ) -> Tensor:
     """Attack RL policy networks via observation perturbation.
 

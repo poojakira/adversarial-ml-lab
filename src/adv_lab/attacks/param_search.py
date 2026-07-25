@@ -25,15 +25,14 @@ References:
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from adv_lab.attacks.fgsm import _require_eval_mode
-
 
 # ---------------------------------------------------------------------------
 # Gaussian Process Implementation
@@ -80,10 +79,10 @@ class GaussianProcess:
         self.length_scale = length_scale
         self.variance = variance
         self.noise = noise
-        self.x_train: Optional[Tensor] = None
-        self.y_train: Optional[Tensor] = None
-        self._alpha: Optional[Tensor] = None
-        self._L: Optional[Tensor] = None
+        self.x_train: Tensor | None = None
+        self.y_train: Tensor | None = None
+        self._alpha: Tensor | None = None
+        self._L: Tensor | None = None
 
     def fit(self, x: Tensor, y: Tensor) -> None:
         """Fit the GP to observed data.
@@ -100,7 +99,7 @@ class GaussianProcess:
         # alpha = K^{-1} y  via Cholesky solve
         self._alpha = torch.cholesky_solve(y.unsqueeze(1), self._L).squeeze(1)
 
-    def predict(self, x_new: Tensor) -> Tuple[Tensor, Tensor]:
+    def predict(self, x_new: Tensor) -> tuple[Tensor, Tensor]:
         """Predict posterior mean and variance at new points.
 
         Args:
@@ -159,21 +158,21 @@ def _expected_improvement(
 class ParamBounds:
     """Parameter search bounds."""
 
-    epsilon: Tuple[float, float] = (0.01, 0.3)
-    step_count: Tuple[int, int] = (5, 100)
-    step_size: Tuple[float, float] = (0.001, 0.05)
-    restarts: Tuple[int, int] = (1, 10)
+    epsilon: tuple[float, float] = (0.01, 0.3)
+    step_count: tuple[int, int] = (5, 100)
+    step_size: tuple[float, float] = (0.001, 0.05)
+    restarts: tuple[int, int] = (1, 10)
 
 
 @dataclass
 class OptimizationResult:
     """Result from Bayesian optimization."""
 
-    best_params: Dict[str, float]
+    best_params: dict[str, float]
     best_score: float
     queries_used: int
-    difficulty_scores: List[float]
-    history: List[Dict[str, object]] = field(default_factory=list)
+    difficulty_scores: list[float]
+    history: list[dict[str, object]] = field(default_factory=list)
 
 
 class BayesianAttackOptimizer:
@@ -206,7 +205,7 @@ class BayesianAttackOptimizer:
         self,
         attack_fn: Callable[..., Tensor],
         query_budget: int = 1000,
-        param_bounds: Optional[ParamBounds] = None,
+        param_bounds: ParamBounds | None = None,
         n_initial: int = 5,
         n_candidates: int = 50,
     ) -> None:
@@ -217,7 +216,7 @@ class BayesianAttackOptimizer:
         self.n_candidates = n_candidates
         self.gp = GaussianProcess(length_scale=1.0, variance=1.0, noise=1e-3)
 
-    def _params_to_tensor(self, params: Dict[str, float]) -> Tensor:
+    def _params_to_tensor(self, params: dict[str, float]) -> Tensor:
         """Normalize parameters to [0, 1] for GP."""
         bounds = self.param_bounds
         eps_norm = (params["epsilon"] - bounds.epsilon[0]) / (
@@ -234,7 +233,7 @@ class BayesianAttackOptimizer:
         )
         return torch.tensor([eps_norm, sc_norm, ss_norm, r_norm])
 
-    def _tensor_to_params(self, t: Tensor) -> Dict[str, float]:
+    def _tensor_to_params(self, t: Tensor) -> dict[str, float]:
         """Denormalize [0, 1] tensor back to parameter space."""
         bounds = self.param_bounds
         t = t.clamp(0.0, 1.0)
@@ -253,7 +252,7 @@ class BayesianAttackOptimizer:
             ),
         }
 
-    def _random_params(self) -> Dict[str, float]:
+    def _random_params(self) -> dict[str, float]:
         """Sample random parameters within bounds."""
         t = torch.rand(4)
         return self._tensor_to_params(t)
@@ -263,8 +262,8 @@ class BayesianAttackOptimizer:
         model: nn.Module,
         images: Tensor,
         labels: Tensor,
-        params: Dict[str, float],
-    ) -> Tuple[float, int]:
+        params: dict[str, float],
+    ) -> tuple[float, int]:
         """Run attack with given params and return (success_rate, queries_used).
 
         Queries used = batch_size * step_count * restarts (one forward per step).
@@ -274,7 +273,7 @@ class BayesianAttackOptimizer:
         restarts = int(params["restarts"])
         queries = batch_size * step_count * restarts
 
-        best_adv = images.clone().detach()
+        images.clone().detach()
         best_success = 0.0
 
         for _ in range(restarts):
@@ -291,7 +290,6 @@ class BayesianAttackOptimizer:
             success = float((pred != labels).float().mean().item())
             if success > best_success:
                 best_success = success
-                best_adv = x_adv
 
         return best_success, queries
 
@@ -314,11 +312,11 @@ class BayesianAttackOptimizer:
         _require_eval_mode(model)
 
         total_queries = 0
-        x_observed: List[Tensor] = []
-        y_observed: List[float] = []
-        history: List[Dict[str, object]] = []
+        x_observed: list[Tensor] = []
+        y_observed: list[float] = []
+        history: list[dict[str, object]] = []
 
-        best_params: Dict[str, float] = {}
+        best_params: dict[str, float] = {}
         best_score = -1.0
 
         # Phase 1: Random exploration
@@ -401,9 +399,9 @@ def per_sample_difficulty_score(
     images: Tensor,
     labels: Tensor,
     attack_fn: Callable[..., Tensor],
-    params: Dict[str, float],
+    params: dict[str, float],
     n_trials: int = 5,
-) -> List[float]:
+) -> list[float]:
     """Compute per-sample attack difficulty scores.
 
     Difficulty is measured as (1 - success_rate) across multiple random

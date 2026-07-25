@@ -40,8 +40,9 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -110,16 +111,16 @@ class ChainState:
         metadata: arbitrary metadata dict for campaign-level info.
     """
 
-    step_logs: List[StepMetrics] = field(default_factory=list)
-    confidence_history: List[Tensor] = field(default_factory=list)
-    perturbation_history: List[Tensor] = field(default_factory=list)
+    step_logs: list[StepMetrics] = field(default_factory=list)
+    confidence_history: list[Tensor] = field(default_factory=list)
+    perturbation_history: list[Tensor] = field(default_factory=list)
     current_step: int = 0
-    initial_predictions: Optional[Tensor] = None
-    initial_confidence: Optional[Tensor] = None
-    target_achieved: Optional[Tensor] = None
+    initial_predictions: Tensor | None = None
+    initial_confidence: Tensor | None = None
+    target_achieved: Tensor | None = None
     total_linf_norm: float = 0.0
     start_time: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def log_step(
         self,
@@ -128,7 +129,7 @@ class ChainState:
         predictions: Tensor,
         perturbation: Tensor,
         labels: Tensor,
-        target_classes: Optional[Tensor] = None,
+        target_classes: Tensor | None = None,
     ) -> StepMetrics:
         """Record comprehensive metrics for a completed step.
 
@@ -192,7 +193,7 @@ class ChainState:
 
         return metrics
 
-    def get_confidence_degradation(self) -> Optional[float]:
+    def get_confidence_degradation(self) -> float | None:
         """Total confidence degradation from initial to current state."""
         if self.initial_confidence is None or not self.confidence_history:
             return None
@@ -204,7 +205,7 @@ class ChainState:
             return 0.0
         return self.step_logs[-1].misclassification_rate
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Generate a summary dict of the campaign results."""
         return {
             "total_steps": self.current_step,
@@ -245,9 +246,9 @@ class AttackConfig:
 
     name: str
     attack_fn: Callable[..., Tensor]
-    kwargs: Dict[str, Any] = field(default_factory=dict)
-    epsilon_share: Optional[float] = None
-    success_threshold: Optional[float] = None
+    kwargs: dict[str, Any] = field(default_factory=dict)
+    epsilon_share: float | None = None
+    success_threshold: float | None = None
 
 
 class PerturbationChain:
@@ -286,7 +287,7 @@ class PerturbationChain:
     def __init__(
         self,
         configs: Sequence[AttackConfig],
-        total_epsilon: Optional[float] = None,
+        total_epsilon: float | None = None,
         adaptive_budget: bool = True,
     ) -> None:
         if not configs:
@@ -301,8 +302,8 @@ class PerturbationChain:
         model: nn.Module,
         images: Tensor,
         labels: Tensor,
-        target_classes: Optional[Tensor] = None,
-    ) -> Tuple[Tensor, ChainState]:
+        target_classes: Tensor | None = None,
+    ) -> tuple[Tensor, ChainState]:
         """Execute the full perturbation chain sequentially.
 
         Each phase receives the output of the previous phase as input. After
@@ -382,10 +383,10 @@ def chain_attack(
     boundary_steps: int = 40,
     target_epsilon: float = 0.05,
     target_steps: int = 60,
-    total_epsilon: Optional[float] = None,
+    total_epsilon: float | None = None,
     momentum: float = 0.9,
-    target_class: Optional[int] = None,
-) -> Tuple[Tensor, ChainState]:
+    target_class: int | None = None,
+) -> tuple[Tensor, ChainState]:
     """Apply the canonical three-phase perturbation chain.
 
     Implements a production-grade multi-step attack campaign:
@@ -444,7 +445,7 @@ def chain_attack(
     if images.dim() != 4:
         raise ValueError(f"Expected 4D images tensor, got {images.dim()}D")
 
-    batch_size = images.shape[0]
+    images.shape[0]
     state = ChainState()
 
     # Record initial state
@@ -469,7 +470,7 @@ def chain_attack(
     alpha_a = softening_epsilon / max(softening_steps // 2, 1)
     eps_a = _effective_eps(softening_epsilon)
 
-    for step in range(softening_steps):
+    for _step in range(softening_steps):
         x_current.requires_grad_(True)
         logits = model(x_current)
         probs = torch.softmax(logits, dim=1)
@@ -522,7 +523,7 @@ def chain_attack(
     alpha_b = boundary_epsilon / max(boundary_steps // 2, 1)
     eps_b = _effective_eps(softening_epsilon + boundary_epsilon)
 
-    for step in range(boundary_steps):
+    for _step in range(boundary_steps):
         x_current.requires_grad_(True)
         logits = model(x_current)
 
@@ -565,7 +566,7 @@ def chain_attack(
     alpha_c = target_epsilon / max(target_steps // 2, 1)
     eps_c = _effective_eps(softening_epsilon + boundary_epsilon + target_epsilon)
 
-    for step in range(target_steps):
+    for _step in range(target_steps):
         x_current.requires_grad_(True)
         logits = model(x_current)
 

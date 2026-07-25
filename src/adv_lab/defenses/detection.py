@@ -21,12 +21,9 @@ to bypass each one:
 
 from __future__ import annotations
 
-from typing import Optional
-
 import torch
 import torch.nn as nn
 from torch import Tensor
-
 
 # --------------------------------------------------------------------------- #
 # STRIP Detector
@@ -61,7 +58,7 @@ class STRIPDetector:
         clean_reference: Tensor,
         num_blends: int = 10,
         blend_alpha: float = 0.5,
-        entropy_threshold: Optional[float] = None,
+        entropy_threshold: float | None = None,
     ) -> None:
         self.model = model
         self.clean_reference = clean_reference.clone().detach()
@@ -265,7 +262,7 @@ class NeuralCleanse:
         self,
         clean_images: Tensor,
         anomaly_threshold: float = 2.0,
-    ) -> tuple[Optional[int], list[float]]:
+    ) -> tuple[int | None, list[float]]:
         """Detect if the model contains a backdoor.
 
         Uses the Median Absolute Deviation (MAD) outlier test on trigger L1
@@ -332,7 +329,7 @@ def bypass_strip(
     Returns:
         Triggered images designed to evade STRIP detection, clamped to ``[0, 1]``.
     """
-    batch_size = images.shape[0]
+    images.shape[0]
 
     # Apply trigger at reduced strength (partial application)
     reduced_mask = trigger_mask * 0.7  # Apply trigger at 70% opacity
@@ -427,7 +424,7 @@ def bypass_neural_cleanse(
     poisoned_labels = labels.clone()
 
     for idx in poison_indices:
-        for pattern, (top, left) in zip(trigger_patterns, trigger_locations):
+        for pattern, (top, left) in zip(trigger_patterns, trigger_locations, strict=False):
             ts = trigger_size
             poisoned_images[idx, :, top : top + ts, left : left + ts] = pattern
         poisoned_labels[idx] = target_label

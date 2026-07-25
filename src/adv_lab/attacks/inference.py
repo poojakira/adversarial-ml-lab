@@ -39,9 +39,9 @@ References:
 from __future__ import annotations
 
 import logging
-import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Protocol, Tuple
+from typing import Protocol
 
 import torch
 import torch.nn as nn
@@ -99,7 +99,7 @@ def watermark_flip(
     model: nn.Module,
     images: Tensor,
     labels: Tensor,
-    watermark_detector: Optional[Callable[[Tensor], Tensor]] = None,
+    watermark_detector: Callable[[Tensor], Tensor] | None = None,
     epsilon: float = 0.05,
     steps: int = 100,
     alpha: float = 0.003,
@@ -178,7 +178,7 @@ def watermark_flip(
     # Record initial watermark scores for reference
     with torch.no_grad():
         initial_logits = model(images)
-        initial_wm_scores = detector(initial_logits)
+        detector(initial_logits)
 
     x_adv = images.clone().detach()
     x_orig = images.clone().detach()
@@ -261,9 +261,9 @@ class PreprocessingParams:
     brightness: float = 0.0
     contrast: float = 1.0
     gamma: float = 1.0
-    channel_shift: Optional[Tensor] = None
-    normalize_mean: Optional[Tensor] = None
-    normalize_std: Optional[Tensor] = None
+    channel_shift: Tensor | None = None
+    normalize_mean: Tensor | None = None
+    normalize_std: Tensor | None = None
 
     def apply(self, images: Tensor) -> Tensor:
         """Apply the full preprocessing pipeline to a batch of images.
@@ -365,7 +365,7 @@ def prediction_poison(
     # Target labels: cyclically shift by target_shift
     target_labels = (labels + target_shift) % num_classes
 
-    best_params: Optional[PreprocessingParams] = None
+    best_params: PreprocessingParams | None = None
     best_loss = float("inf")
 
     for restart in range(num_restarts):
@@ -395,7 +395,7 @@ def prediction_poison(
             step_size = base_step * max(0.1, 1.0 - 0.5 * step / search_steps)
 
             # Coordinate descent over each parameter
-            param_candidates: List[PreprocessingParams] = []
+            param_candidates: list[PreprocessingParams] = []
 
             # Brightness perturbations
             for direction in [-1.0, 1.0]:
@@ -493,8 +493,8 @@ class SoftLabelAttackState:
     """
 
     queries_used: int = 0
-    confidence_trajectory: List[float] = field(default_factory=list)
-    boundary_distances: List[float] = field(default_factory=list)
+    confidence_trajectory: list[float] = field(default_factory=list)
+    boundary_distances: list[float] = field(default_factory=list)
     samples_flipped: int = 0
 
 
@@ -567,7 +567,7 @@ def soft_label_manipulation(
     # Track active samples (not yet below confidence threshold)
     active_mask = torch.ones(batch_size, dtype=torch.bool, device=images.device)
 
-    for step in range(steps):
+    for _step in range(steps):
         if not active_mask.any():
             break
 
