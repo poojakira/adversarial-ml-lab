@@ -39,9 +39,7 @@ from adv_lab.attacks.fgsm import _require_eval_mode
 # ---------------------------------------------------------------------------
 
 
-def _rbf_kernel(
-    x1: Tensor, x2: Tensor, length_scale: float = 1.0, variance: float = 1.0
-) -> Tensor:
+def _rbf_kernel(x1: Tensor, x2: Tensor, length_scale: float = 1.0, variance: float = 1.0) -> Tensor:
     """Radial basis function (squared exponential) kernel.
 
     Args:
@@ -126,9 +124,7 @@ class GaussianProcess:
 # ---------------------------------------------------------------------------
 
 
-def _expected_improvement(
-    mean: Tensor, var: Tensor, best_y: float, xi: float = 0.01
-) -> Tensor:
+def _expected_improvement(mean: Tensor, var: Tensor, best_y: float, xi: float = 0.01) -> Tensor:
     """Compute Expected Improvement acquisition function.
 
     Args:
@@ -219,9 +215,7 @@ class BayesianAttackOptimizer:
     def _params_to_tensor(self, params: dict[str, float]) -> Tensor:
         """Normalize parameters to [0, 1] for GP."""
         bounds = self.param_bounds
-        eps_norm = (params["epsilon"] - bounds.epsilon[0]) / (
-            bounds.epsilon[1] - bounds.epsilon[0]
-        )
+        eps_norm = (params["epsilon"] - bounds.epsilon[0]) / (bounds.epsilon[1] - bounds.epsilon[0])
         sc_norm = (params["step_count"] - bounds.step_count[0]) / (
             bounds.step_count[1] - bounds.step_count[0]
         )
@@ -238,17 +232,14 @@ class BayesianAttackOptimizer:
         bounds = self.param_bounds
         t = t.clamp(0.0, 1.0)
         return {
-            "epsilon": bounds.epsilon[0]
-            + t[0].item() * (bounds.epsilon[1] - bounds.epsilon[0]),
+            "epsilon": bounds.epsilon[0] + t[0].item() * (bounds.epsilon[1] - bounds.epsilon[0]),
             "step_count": int(
-                bounds.step_count[0]
-                + t[1].item() * (bounds.step_count[1] - bounds.step_count[0])
+                bounds.step_count[0] + t[1].item() * (bounds.step_count[1] - bounds.step_count[0])
             ),
             "step_size": bounds.step_size[0]
             + t[2].item() * (bounds.step_size[1] - bounds.step_size[0]),
             "restarts": int(
-                bounds.restarts[0]
-                + t[3].item() * (bounds.restarts[1] - bounds.restarts[0])
+                bounds.restarts[0] + t[3].item() * (bounds.restarts[1] - bounds.restarts[0])
             ),
         }
 
@@ -367,9 +358,7 @@ class BayesianAttackOptimizer:
 
             x_observed.append(self._params_to_tensor(next_params))
             y_observed.append(score)
-            history.append(
-                {"params": next_params, "score": score, "queries": total_queries}
-            )
+            history.append({"params": next_params, "score": score, "queries": total_queries})
 
             if score > best_score:
                 best_score = score

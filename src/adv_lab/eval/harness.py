@@ -47,9 +47,7 @@ class BenchmarkResult:
     robust_accuracy_pgd: float
     robust_accuracy_cw: float
     epsilon: float
-    timestamp: str = field(
-        default_factory=lambda: _dt.datetime.now(_dt.timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: _dt.datetime.now(_dt.timezone.utc).isoformat())
     passed: bool = False
 
     def __post_init__(self) -> None:
@@ -332,9 +330,7 @@ def export_json(
     if hmac_key is not None:
         # Canonicalize payload for signing
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        signature = _hmac.new(
-            hmac_key, canonical.encode("utf-8"), _hashlib.sha256
-        ).hexdigest()
+        signature = _hmac.new(hmac_key, canonical.encode("utf-8"), _hashlib.sha256).hexdigest()
         payload["signature"] = signature
         payload["signature_algorithm"] = "HMAC-SHA256"
 
@@ -376,9 +372,7 @@ class _SmallCNN(nn.Module):
         return self.classifier(self.features(x))
 
 
-def _make_synthetic_dataset(
-    n: int, num_classes: int, seed: int
-) -> tuple[Tensor, Tensor]:
+def _make_synthetic_dataset(n: int, num_classes: int, seed: int) -> tuple[Tensor, Tensor]:
     """Generate a learnable image classification task in ``[0, 1]``.
 
     Labels come from a fixed random linear teacher over the pixels, so a small
@@ -392,16 +386,12 @@ def _make_synthetic_dataset(
     return x, y
 
 
-def _iter_batches(
-    x: Tensor, y: Tensor, batch_size: int
-) -> Iterable[tuple[Tensor, Tensor]]:
+def _iter_batches(x: Tensor, y: Tensor, batch_size: int) -> Iterable[tuple[Tensor, Tensor]]:
     for i in range(0, x.shape[0], batch_size):
         yield x[i : i + batch_size], y[i : i + batch_size]
 
 
-def _train_demo_model(
-    model: nn.Module, x: Tensor, y: Tensor, epochs: int, lr: float
-) -> None:
+def _train_demo_model(model: nn.Module, x: Tensor, y: Tensor, epochs: int, lr: float) -> None:
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     crit = nn.CrossEntropyLoss()
     model.train()

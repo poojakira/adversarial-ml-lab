@@ -157,9 +157,7 @@ def watermark_flip(
     _require_eval_mode(model)
 
     if images.dim() != 4:
-        raise ValueError(
-            f"Expected images with 4 dimensions (N, C, H, W), got {images.dim()}"
-        )
+        raise ValueError(f"Expected images with 4 dimensions (N, C, H, W), got {images.dim()}")
 
     batch_size = images.shape[0]
 
@@ -202,14 +200,13 @@ def watermark_flip(
         wm_loss = wm_scores  # We want to minimize this (push negative)
 
         # Combined per-sample loss with weighting
-        per_sample_loss = (
-            classification_weight * cls_loss
-            + watermark_weight * wm_loss
-        )
+        per_sample_loss = classification_weight * cls_loss + watermark_weight * wm_loss
 
         # Only optimize active samples
         if early_stop:
-            masked_loss = (per_sample_loss * active_mask.float()).sum() / max(active_mask.sum().item(), 1.0)
+            masked_loss = (per_sample_loss * active_mask.float()).sum() / max(
+                active_mask.sum().item(), 1.0
+            )
         else:
             masked_loss = per_sample_loss.mean()
 
@@ -400,11 +397,14 @@ def prediction_poison(
             # Brightness perturbations
             for direction in [-1.0, 1.0]:
                 candidate = PreprocessingParams(
-                    brightness=max(-param_budget, min(param_budget,
-                        params.brightness + direction * step_size)),
+                    brightness=max(
+                        -param_budget, min(param_budget, params.brightness + direction * step_size)
+                    ),
                     contrast=params.contrast,
                     gamma=params.gamma,
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -412,10 +412,14 @@ def prediction_poison(
             for direction in [-1.0, 1.0]:
                 candidate = PreprocessingParams(
                     brightness=params.brightness,
-                    contrast=max(1.0 - param_budget, min(1.0 + param_budget,
-                        params.contrast + direction * step_size)),
+                    contrast=max(
+                        1.0 - param_budget,
+                        min(1.0 + param_budget, params.contrast + direction * step_size),
+                    ),
                     gamma=params.gamma,
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -424,9 +428,13 @@ def prediction_poison(
                 candidate = PreprocessingParams(
                     brightness=params.brightness,
                     contrast=params.contrast,
-                    gamma=max(1.0 - param_budget, min(1.0 + param_budget,
-                        params.gamma + direction * step_size * 0.5)),
-                    channel_shift=params.channel_shift.clone() if params.channel_shift is not None else None,
+                    gamma=max(
+                        1.0 - param_budget,
+                        min(1.0 + param_budget, params.gamma + direction * step_size * 0.5),
+                    ),
+                    channel_shift=params.channel_shift.clone()
+                    if params.channel_shift is not None
+                    else None,
                 )
                 param_candidates.append(candidate)
 
@@ -435,8 +443,10 @@ def prediction_poison(
                 for c in range(num_channels):
                     for direction in [-1.0, 1.0]:
                         new_shift = params.channel_shift.clone()
-                        new_shift[c] = max(-param_budget, min(param_budget,
-                            new_shift[c].item() + direction * step_size))
+                        new_shift[c] = max(
+                            -param_budget,
+                            min(param_budget, new_shift[c].item() + direction * step_size),
+                        )
                         candidate = PreprocessingParams(
                             brightness=params.brightness,
                             contrast=params.contrast,
@@ -462,7 +472,9 @@ def prediction_poison(
                         brightness=candidate.brightness,
                         contrast=candidate.contrast,
                         gamma=candidate.gamma,
-                        channel_shift=candidate.channel_shift.clone() if candidate.channel_shift is not None else None,
+                        channel_shift=candidate.channel_shift.clone()
+                        if candidate.channel_shift is not None
+                        else None,
                     )
                     params = candidate
 

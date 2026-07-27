@@ -196,9 +196,7 @@ class RandomizedSmoothing:
         is_certified = torch.zeros(batch_size, dtype=torch.bool)
 
         for i in range(batch_size):
-            p_lower = self._lower_confidence_bound(
-                int(top_counts[i].item()), self.n_samples
-            )
+            p_lower = self._lower_confidence_bound(int(top_counts[i].item()), self.n_samples)
             if p_lower > 0.5:
                 radius = self.sigma * self._inverse_normal_cdf(p_lower)
                 certified_radius[i] = radius
@@ -232,9 +230,7 @@ class _SpectralNormLinear(nn.Module):
 
     def __init__(self, in_features: int, out_features: int) -> None:
         super().__init__()
-        self.linear = nn.utils.parametrizations.spectral_norm(
-            nn.Linear(in_features, out_features)
-        )
+        self.linear = nn.utils.parametrizations.spectral_norm(nn.Linear(in_features, out_features))
 
     def forward(self, x: Tensor) -> Tensor:
         return self.linear(x)
@@ -549,9 +545,7 @@ def find_certificate_boundary(
     def _eval_certified_accuracy(eps: float) -> float:
         """Evaluate certified accuracy at a given epsilon."""
         if method == "smoothing":
-            smoother = RandomizedSmoothing(
-                model, sigma=sigma, n_samples=n_samples
-            )
+            smoother = RandomizedSmoothing(model, sigma=sigma, n_samples=n_samples)
             result = smoother.certify(images)
             # Certified accuracy: fraction of samples with radius >= eps
             # and correct prediction

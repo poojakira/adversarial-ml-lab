@@ -84,6 +84,7 @@ def clean_label_poison(
     def _hook_fn(name: str):
         def hook(module: nn.Module, input: tuple, output: Tensor) -> None:
             features_store[name] = output
+
         return hook
 
     # Register hook on the penultimate layer (before final classifier)
@@ -142,7 +143,7 @@ def clean_label_poison(
         feature_loss = ((poison_features - target_expanded) ** 2).sum()
 
         # Regularization: keep perturbation small
-        reg_loss = (delta ** 2).sum() * 0.01
+        reg_loss = (delta**2).sum() * 0.01
 
         loss = feature_loss + reg_loss
         loss.backward()
@@ -309,9 +310,7 @@ def spectral_backdoor(
     poisoned_labels = labels.clone()
 
     for idx in poison_indices:
-        poisoned_images[idx] = torch.clamp(
-            poisoned_images[idx] + trigger_signal, 0.0, 1.0
-        )
+        poisoned_images[idx] = torch.clamp(poisoned_images[idx] + trigger_signal, 0.0, 1.0)
         poisoned_labels[idx] = target_label
 
     return poisoned_images.detach(), poisoned_labels.detach()
@@ -358,10 +357,7 @@ def weight_poisoning(
         The poisoned model (same object, modified in-place).
     """
     # Store original weights for regularization
-    original_params = {
-        name: param.clone().detach()
-        for name, param in model.named_parameters()
-    }
+    original_params = {name: param.clone().detach() for name, param in model.named_parameters()}
 
     # Set model to train mode for weight updates
     model.train()

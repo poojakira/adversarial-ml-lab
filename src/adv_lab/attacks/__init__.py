@@ -1,4 +1,4 @@
-"""Adversarial attacks: white-box gradient attacks, black-box query attacks, model stealing, norm attacks, LLM attacks, poisoning, adaptive, parameter search, constrained, evasion, ensemble, inference, chaining, API simulation, and non-classification."""
+"""Adversarial attack implementations for vision, API, and LLM models."""
 
 from adv_lab.attacks.adaptive import (
     BPDA,

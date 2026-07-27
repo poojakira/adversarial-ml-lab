@@ -50,9 +50,7 @@ def _dct_matrix(n: int = 8) -> Tensor:
             if k == 0:
                 mat[k, i] = 1.0 / math.sqrt(n)
             else:
-                mat[k, i] = math.sqrt(2.0 / n) * math.cos(
-                    math.pi * (2 * i + 1) * k / (2 * n)
-                )
+                mat[k, i] = math.sqrt(2.0 / n) * math.cos(math.pi * (2 * i + 1) * k / (2 * n))
     return mat
 
 
@@ -95,9 +93,7 @@ def _differentiable_round(x: Tensor) -> Tensor:
     return x + (torch.round(x) - x).detach()
 
 
-def _jpeg_compress_differentiable(
-    images: Tensor, quality: int = 75
-) -> Tensor:
+def _jpeg_compress_differentiable(images: Tensor, quality: int = 75) -> Tensor:
     """Differentiable JPEG compression approximation.
 
     Processes each 8x8 block with DCT, quantization, differentiable rounding,
@@ -206,9 +202,7 @@ def jpeg_robust_attack(
         x_adv = x_adv.clone().detach().requires_grad_(True)
 
         # Random quality for this step
-        quality = torch.randint(
-            quality_range[0], quality_range[1] + 1, (1,)
-        ).item()
+        quality = torch.randint(quality_range[0], quality_range[1] + 1, (1,)).item()
 
         # Pass through differentiable JPEG
         x_compressed = _jpeg_compress_differentiable(x_adv, quality=int(quality))
@@ -332,9 +326,7 @@ def feature_squeeze_robust(
             x_squeezed = _bit_depth_reduce(x_adv, bits=bit_depth)
         else:
             # Smoothing only
-            x_squeezed = _spatial_smoothing(
-                x_adv, kernel_size=smooth_kernel, sigma=smooth_sigma
-            )
+            x_squeezed = _spatial_smoothing(x_adv, kernel_size=smooth_kernel, sigma=smooth_sigma)
 
         logits = model(x_squeezed)
         loss = nn.functional.cross_entropy(logits, labels)
@@ -352,9 +344,7 @@ def feature_squeeze_robust(
 # ---------------------------------------------------------------------------
 
 
-def _compute_lid_score(
-    features: Tensor, k: int = 20
-) -> Tensor:
+def _compute_lid_score(features: Tensor, k: int = 20) -> Tensor:
     """Compute Local Intrinsic Dimensionality estimate.
 
     LID is estimated using the maximum likelihood estimator based on

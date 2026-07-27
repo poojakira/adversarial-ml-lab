@@ -98,9 +98,7 @@ def _rotation_matrix_2d(angle_deg: float) -> Tensor:
     cos_a = math.cos(angle_rad)
     sin_a = math.sin(angle_rad)
     # Rotation matrix (no translation)
-    matrix = torch.tensor(
-        [[cos_a, -sin_a, 0.0], [sin_a, cos_a, 0.0]], dtype=torch.float32
-    )
+    matrix = torch.tensor([[cos_a, -sin_a, 0.0], [sin_a, cos_a, 0.0]], dtype=torch.float32)
     return matrix
 
 
@@ -256,12 +254,14 @@ class PhysicalPatchAttack:
         self.model = model
         self.patch_size = patch_size
         self.target_class = target_class
-        self.angles = list(angles) if angles is not None else [
-            -30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0
-        ]
-        self.lighting_multipliers = list(lighting_multipliers) if lighting_multipliers is not None else [
-            0.5, 0.75, 1.0, 1.25, 1.5, 2.0
-        ]
+        self.angles = (
+            list(angles) if angles is not None else [-30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0]
+        )
+        self.lighting_multipliers = (
+            list(lighting_multipliers)
+            if lighting_multipliers is not None
+            else [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+        )
         self.noise_std = noise_std
         self.lr = lr
         self.steps = steps
@@ -311,9 +311,7 @@ class PhysicalPatchAttack:
                     # Apply physical transformations
                     transformed = _apply_affine_transform(patched, angle)
                     transformed = _apply_lighting(transformed, mult)
-                    transformed = _apply_camera_noise(
-                        transformed, gaussian_std=self.noise_std
-                    )
+                    transformed = _apply_camera_noise(transformed, gaussian_std=self.noise_std)
 
                     # Compute loss
                     logits = self.model(transformed)
@@ -351,9 +349,7 @@ class PhysicalPatchAttack:
             lighting_robustness=lighting_rob,
         )
 
-    def _evaluate_patch(
-        self, patch: Tensor, images: Tensor, labels: Tensor
-    ) -> float:
+    def _evaluate_patch(self, patch: Tensor, images: Tensor, labels: Tensor) -> float:
         """Evaluate attack success rate of a patch on clean images."""
         patched = _apply_patch_to_images(images, patch)
         with torch.no_grad():

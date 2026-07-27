@@ -99,18 +99,14 @@ def sign_report(report_json: str, key: bytes) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     # Compute HMAC-SHA256 over the canonical representation
-    signature = hmac.HMAC(
-        key, canonical.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    signature = hmac.HMAC(key, canonical.encode("utf-8"), hashlib.sha256).hexdigest()
 
     signed_envelope = {
         "payload": payload,
         "signature": signature,
         "algorithm": "HMAC-SHA256",
         "signed_at": time.time(),
-        "canonical_hash": hashlib.sha256(
-            canonical.encode("utf-8")
-        ).hexdigest(),
+        "canonical_hash": hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
     }
 
     return json.dumps(signed_envelope, indent=2, sort_keys=True)
@@ -145,9 +141,7 @@ def verify_report(signed_json: str, key: bytes) -> bool:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
     # Recompute HMAC
-    expected_signature = hmac.HMAC(
-        key, canonical.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    expected_signature = hmac.HMAC(key, canonical.encode("utf-8"), hashlib.sha256).hexdigest()
 
     # Constant-time comparison to prevent timing side-channels
     return hmac.compare_digest(expected_signature, stored_signature)
@@ -270,9 +264,7 @@ def create_signed_manifest(
     }
 
     manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
-    signature = hmac.HMAC(
-        key, manifest_json.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    signature = hmac.HMAC(key, manifest_json.encode("utf-8"), hashlib.sha256).hexdigest()
 
     signed = {
         "manifest": manifest,

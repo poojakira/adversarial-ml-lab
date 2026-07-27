@@ -240,9 +240,7 @@ class GCGAttack:
         prompt_len = min(len(prompt), max_length - self.suffix_length)
 
         # Initialize suffix with random tokens
-        suffix_tokens = torch.randint(
-            1, self.tokenizer.vocab_size, (self.suffix_length,)
-        )
+        suffix_tokens = torch.randint(1, self.tokenizer.vocab_size, (self.suffix_length,))
 
         # Full sequence: prompt + suffix (truncated/padded to max_length)
         full_seq = prompt_tokens.clone()
@@ -279,9 +277,7 @@ class GCGAttack:
 
                 # Score each candidate token by its alignment with -gradient
                 # (we want to minimize loss, so move against the gradient)
-                candidates = torch.randint(
-                    1, self.tokenizer.vocab_size, (self.num_candidates,)
-                )
+                candidates = torch.randint(1, self.tokenizer.vocab_size, (self.num_candidates,))
                 best_token = suffix_tokens[pos_offset]
                 best_score = float("inf")
 
@@ -378,8 +374,10 @@ class AutoDANAttack:
             candidate = base_tokens.clone()
             # Apply random mutations
             for pos in range(max_length):
-                if random.random() < self.mutation_rate * 3:  # Higher initial mutation
-                    candidate[pos] = random.randint(1, self.tokenizer.vocab_size - 1)
+                if random.random() < self.mutation_rate * 3:  # noqa: S311
+                    candidate[pos] = random.randint(  # noqa: S311
+                        1, self.tokenizer.vocab_size - 1
+                    )
             population.append(candidate)
 
         best_candidate = base_tokens.clone()
@@ -410,24 +408,28 @@ class AutoDANAttack:
 
             # Crossover
             for i in range(0, len(new_population) - 1, 2):
-                if random.random() < self.crossover_rate:
-                    crossover_point = random.randint(1, max_length - 1)
-                    child1 = torch.cat([
-                        new_population[i][:crossover_point],
-                        new_population[i + 1][crossover_point:],
-                    ])
-                    child2 = torch.cat([
-                        new_population[i + 1][:crossover_point],
-                        new_population[i][crossover_point:],
-                    ])
+                if random.random() < self.crossover_rate:  # noqa: S311
+                    crossover_point = random.randint(1, max_length - 1)  # noqa: S311
+                    child1 = torch.cat(
+                        [
+                            new_population[i][:crossover_point],
+                            new_population[i + 1][crossover_point:],
+                        ]
+                    )
+                    child2 = torch.cat(
+                        [
+                            new_population[i + 1][:crossover_point],
+                            new_population[i][crossover_point:],
+                        ]
+                    )
                     new_population[i] = child1
                     new_population[i + 1] = child2
 
             # Mutation
             for i in range(len(new_population)):
                 for pos in range(max_length):
-                    if random.random() < self.mutation_rate:
-                        new_population[i][pos] = random.randint(
+                    if random.random() < self.mutation_rate:  # noqa: S311
+                        new_population[i][pos] = random.randint(  # noqa: S311
                             1, self.tokenizer.vocab_size - 1
                         )
 
@@ -730,9 +732,7 @@ def universal_suffix(
                         with torch.no_grad():
                             logits = model(full_seq.unsqueeze(0))
                             # Lower CE loss toward target = better
-                            score = nn.functional.cross_entropy(
-                                logits, target
-                            ).item()
+                            score = nn.functional.cross_entropy(logits, target).item()
                         total_score += score
 
                 if total_score < best_total_score:

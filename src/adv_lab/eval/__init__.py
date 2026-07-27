@@ -1,4 +1,4 @@
-"""Evaluation: the CI-gateable robustness benchmark harness, transferability analysis, certified defense evaluation, and CI signing."""
+"""Robustness evaluation, certified defense checks, and CI report signing."""
 
 from adv_lab.eval.certified import (
     IBPBounds,

@@ -119,9 +119,7 @@ class TimedAttack:
             if elapsed >= self.time_budget:
                 break
 
-            x_adv = self.attack_step_fn(
-                model, x_adv, x_orig, labels, epsilon=epsilon, **kwargs
-            )
+            x_adv = self.attack_step_fn(model, x_adv, x_orig, labels, epsilon=epsilon, **kwargs)
             self.steps_executed = step + 1
 
             # Track best adversarial by loss
@@ -222,9 +220,7 @@ class QueryBudgetManager:
         entry = heapq.heappop(self._queue)
         return entry.direction
 
-    def add_random_directions(
-        self, reference: Tensor, n: int = 20, scale: float = 0.01
-    ) -> None:
+    def add_random_directions(self, reference: Tensor, n: int = 20, scale: float = 0.01) -> None:
         """Generate random perturbation directions and add to queue.
 
         Args:
@@ -307,9 +303,7 @@ class QueryBudgetManager:
                 x_adv = candidate
                 self.update_best(x_adv, new_loss)
                 # Add nearby directions (exploit neighborhood)
-                self.add_random_directions(
-                    x_adv, n=self.batch_size, scale=epsilon * 0.2
-                )
+                self.add_random_directions(x_adv, n=self.batch_size, scale=epsilon * 0.2)
             else:
                 # Add direction back with lower priority
                 reduced_priority = max(0.0, new_loss - self.best_loss)

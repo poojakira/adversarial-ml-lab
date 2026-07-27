@@ -89,3 +89,19 @@ Key remappings:
 - T1070.002 → T1685.006 (Clear Linux/Mac Logs)
 - T1534 → T1684.001 (Social Engineering: Impersonation)
 - T1566.003 → T1684.002 (Social Engineering: Email Spoofing)
+<!-- engineering-update-2026-07-27 -->
+## Engineering Update - 2026-07-27
+
+Scope: Adversarial ML attacks and defenses.
+
+Current hardening pass:
+- Build system: Makefile targets added or verified for install, lint, format, test, build, security, and verify.
+- Dashboard: Static 3D dashboard: dashboard/index.html. Serve with make dashboard.
+- ATT&CK mapping: repos that map detections now use the shared v19 mapping builder where applicable.
+- Validation: Validated: Ruff checks for src/adv_lab, attack_mapping, and tests; static dashboard JS syntax/static checks passed.
+
+Known limits:
+- Linux and GitHub Actions post-push results must be checked after this push.
+- Security scans are build targets; dependency advisories can change after this local snapshot.
+- No production-readiness or benchmark-certification claim is made from local checks alone.
+<!-- /engineering-update-2026-07-27 -->
