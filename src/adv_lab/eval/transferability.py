@@ -223,18 +223,10 @@ class TransferabilityAnalyzer:
             self._arch_factories = architectures
         else:
             self._arch_factories = {
-                "ShallowCNN": lambda: _ShallowCNN(
-                    num_classes=num_classes, input_size=input_size
-                ),
-                "WideCNN": lambda: _WideCNN(
-                    num_classes=num_classes, input_size=input_size
-                ),
-                "DeepCNN": lambda: _DeepCNN(
-                    num_classes=num_classes, input_size=input_size
-                ),
-                "MLP": lambda: _MLPModel(
-                    num_classes=num_classes, input_size=input_size
-                ),
+                "ShallowCNN": lambda: _ShallowCNN(num_classes=num_classes, input_size=input_size),
+                "WideCNN": lambda: _WideCNN(num_classes=num_classes, input_size=input_size),
+                "DeepCNN": lambda: _DeepCNN(num_classes=num_classes, input_size=input_size),
+                "MLP": lambda: _MLPModel(num_classes=num_classes, input_size=input_size),
             }
 
         self.models: dict[str, nn.Module] = {}
@@ -262,8 +254,7 @@ class TransferabilityAnalyzer:
         accuracies: dict[str, float] = {}
         for name, factory in self._arch_factories.items():
             model = factory()
-            _train_model(model, train_x, train_y, epochs=epochs, lr=lr,
-                         batch_size=batch_size)
+            _train_model(model, train_x, train_y, epochs=epochs, lr=lr, batch_size=batch_size)
             model.eval()
             self.models[name] = model
             # Compute training accuracy
@@ -314,9 +305,7 @@ class TransferabilityAnalyzer:
             attack_kwargs = {}
 
         report = TransferabilityReport(source_attack_name=attack_name)
-        per_target_rates: dict[str, list[float]] = {
-            name: [] for name in self.models
-        }
+        per_target_rates: dict[str, list[float]] = {name: [] for name in self.models}
 
         # Track ensemble: for each example, whether ALL targets are fooled
         # across all source models
@@ -378,9 +367,7 @@ class TransferabilityAnalyzer:
                 per_target_rates[target_name].append(transfer_rate)
 
                 # Update ensemble tracking
-                all_targets_fooled = all_targets_fooled & (
-                    target_preds != y_success
-                )
+                all_targets_fooled = all_targets_fooled & (target_preds != y_success)
 
             ensemble_numerator += int(all_targets_fooled.sum().item())
             ensemble_denominator += n_source_success
@@ -394,9 +381,7 @@ class TransferabilityAnalyzer:
 
         # Compute ensemble transfer rate
         if ensemble_denominator > 0:
-            report.ensemble_transfer_rate = (
-                ensemble_numerator / ensemble_denominator
-            )
+            report.ensemble_transfer_rate = ensemble_numerator / ensemble_denominator
         else:
             report.ensemble_transfer_rate = 0.0
 

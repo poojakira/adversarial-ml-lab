@@ -104,9 +104,7 @@ def load_cifar10(
     return x_test, y_test
 
 
-def iter_batches(
-    x: Tensor, y: Tensor, batch_size: int
-) -> Iterable[tuple[Tensor, Tensor]]:
+def iter_batches(x: Tensor, y: Tensor, batch_size: int) -> Iterable[tuple[Tensor, Tensor]]:
     """Yield ``(images, labels)`` mini-batches from in-memory tensors.
 
     Kept deliberately small and dependency-free so the benchmark harness can

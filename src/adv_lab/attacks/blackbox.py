@@ -183,8 +183,7 @@ def square_attack(
 
             # Random sign perturbation within the patch
             patch_val = (
-                2.0 * torch.randint(0, 2, (n_channels, patch_h, patch_w)).float()
-                - 1.0
+                2.0 * torch.randint(0, 2, (n_channels, patch_h, patch_w)).float() - 1.0
             ) * epsilon
             x_new[idx, :, top : top + patch_h, left : left + patch_w] = torch.clamp(
                 images[idx, :, top : top + patch_h, left : left + patch_w] + patch_val,
@@ -274,9 +273,7 @@ def hop_skip_jump(
                 break
         if not found:
             # If no adversarial found, add large perturbation
-            x_adv[idx] = torch.clamp(
-                images[idx] + 0.5 * torch.randn_like(images[idx]), 0.0, 1.0
-            )
+            x_adv[idx] = torch.clamp(images[idx] + 0.5 * torch.randn_like(images[idx]), 0.0, 1.0)
 
     # Iterative refinement
     for idx in range(batch_size):
@@ -308,9 +305,7 @@ def hop_skip_jump(
                 break
 
             # Step 2: Gradient direction estimation at the boundary
-            n_evals = min(
-                num_gradient_estimates, query_budget - queries_used[idx].item()
-            )
+            n_evals = min(num_gradient_estimates, query_budget - queries_used[idx].item())
             if n_evals <= 0:
                 x_adv[idx] = x_boundary[0]
                 break

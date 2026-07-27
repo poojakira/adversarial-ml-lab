@@ -176,7 +176,11 @@ class _AnomalyDetector:
                 event = AnomalyEvent(
                     anomaly_type=AnomalyType.SEQUENTIAL_SIMILARITY,
                     query_index=record.query_index,
-                    severity=min(1.0, (cos_sim - self.similarity_threshold) / (1.0 - self.similarity_threshold + 1e-10)),
+                    severity=min(
+                        1.0,
+                        (cos_sim - self.similarity_threshold)
+                        / (1.0 - self.similarity_threshold + 1e-10),
+                    ),
                     detail=(
                         f"Cosine similarity {cos_sim:.6f} with previous query "
                         f"exceeds threshold {self.similarity_threshold}"
@@ -187,7 +191,9 @@ class _AnomalyDetector:
         # Distribution shift: input norms deviate from baseline
         if self._baseline_mean_norm is not None and len(self._recent_norms) >= 20:
             current_mean = torch.tensor(list(self._recent_norms)).mean().item()
-            z_score = abs(current_mean - self._baseline_mean_norm) / (self._baseline_std_norm + 1e-10)
+            z_score = abs(current_mean - self._baseline_mean_norm) / (
+                self._baseline_std_norm + 1e-10
+            )
             if z_score > 3.0:
                 event = AnomalyEvent(
                     anomaly_type=AnomalyType.DISTRIBUTION_SHIFT,
@@ -349,7 +355,7 @@ class APISimulator:
         """
         # Confidence rounding
         if self.confidence_rounding > 0:
-            factor = 10.0 ** self.confidence_rounding
+            factor = 10.0**self.confidence_rounding
             probs = torch.round(probs * factor) / factor
 
         # Top-K filtering

@@ -184,9 +184,7 @@ def gradient_inversion(
         loss = nn.functional.cross_entropy(logits, dummy_label)
 
         # Compute gradients of dummy input wrt model parameters
-        dummy_grads = torch.autograd.grad(
-            loss, list(model.parameters()), create_graph=True
-        )
+        dummy_grads = torch.autograd.grad(loss, list(model.parameters()), create_graph=True)
 
         # Gradient matching loss: minimize cosine distance between observed and
         # reconstructed gradients
@@ -195,9 +193,7 @@ def gradient_inversion(
             dg_flat = dg.reshape(-1)
             tg_flat = tg.reshape(-1).detach()
             # Cosine similarity -> we minimize 1 - cos_sim
-            cos_sim = nn.functional.cosine_similarity(
-                dg_flat.unsqueeze(0), tg_flat.unsqueeze(0)
-            )
+            cos_sim = nn.functional.cosine_similarity(dg_flat.unsqueeze(0), tg_flat.unsqueeze(0))
             grad_loss = grad_loss + (1.0 - cos_sim)
 
         # Total variation regularization for smoothness
@@ -357,9 +353,7 @@ def _train_shadow_model(
     return shadow_model
 
 
-def _compute_membership_features(
-    model: nn.Module, samples: Tensor, labels: Tensor
-) -> Tensor:
+def _compute_membership_features(model: nn.Module, samples: Tensor, labels: Tensor) -> Tensor:
     """Compute per-sample features used for membership inference.
 
     Features: max logit, entropy of softmax, loss value, confidence margin.
@@ -376,9 +370,7 @@ def _compute_membership_features(
         entropy = -(probs * (probs + 1e-10).log()).sum(dim=1)
 
         # Feature 3: loss on true label
-        loss_per_sample = nn.functional.cross_entropy(
-            logits, labels, reduction="none"
-        )
+        loss_per_sample = nn.functional.cross_entropy(logits, labels, reduction="none")
 
         # Feature 4: margin between top-2 predictions
         top2 = probs.topk(min(2, probs.shape[1]), dim=1).values
@@ -462,9 +454,7 @@ def membership_inference_shadow(
     )
 
     # Extract membership features from shadow model on its train/test data
-    shadow_member_feats = _compute_membership_features(
-        shadow_model, shadow_x_train, shadow_y_train
-    )
+    shadow_member_feats = _compute_membership_features(shadow_model, shadow_x_train, shadow_y_train)
     shadow_non_member_feats = _compute_membership_features(
         shadow_model, shadow_x_test, shadow_y_test
     )
@@ -498,9 +488,7 @@ def membership_inference_shadow(
 
     # TPR at 1% FPR: fraction of high-score samples above the 99th percentile
     fpr_threshold_idx = max(1, int(0.01 * n))
-    tpr_at_low_fpr = float(
-        (scores >= sorted_scores[fpr_threshold_idx]).float().mean().item()
-    )
+    tpr_at_low_fpr = float((scores >= sorted_scores[fpr_threshold_idx]).float().mean().item())
 
     return MembershipResult(
         scores=scores.detach(),
@@ -558,24 +546,18 @@ def membership_inference_likelihood(
     # Compute target model loss per sample
     with torch.no_grad():
         target_logits = model(samples) / temperature
-        target_loss = nn.functional.cross_entropy(
-            target_logits, labels, reduction="none"
-        )
+        target_loss = nn.functional.cross_entropy(target_logits, labels, reduction="none")
 
     # Compute reference model loss (or uniform baseline)
     if reference_model is not None:
         _require_eval_mode(reference_model)
         with torch.no_grad():
             ref_logits = reference_model(samples) / temperature
-            ref_loss = nn.functional.cross_entropy(
-                ref_logits, labels, reduction="none"
-            )
+            ref_loss = nn.functional.cross_entropy(ref_logits, labels, reduction="none")
     else:
         # Uniform baseline: loss = -log(1/num_classes) = log(num_classes)
         num_classes = model(samples[:1]).shape[1] if n_samples > 0 else 10
-        ref_loss = torch.full(
-            (n_samples,), math.log(num_classes), dtype=torch.float32
-        )
+        ref_loss = torch.full((n_samples,), math.log(num_classes), dtype=torch.float32)
 
     # Likelihood ratio score: higher means more likely to be a member
     # Members have lower target loss relative to reference
@@ -598,9 +580,7 @@ def membership_inference_likelihood(
 
     # TPR at 1% FPR
     fpr_idx = max(1, int(0.01 * n))
-    tpr_at_low_fpr = float(
-        (normalized_scores >= sorted_scores[fpr_idx]).float().mean().item()
-    )
+    tpr_at_low_fpr = float((normalized_scores >= sorted_scores[fpr_idx]).float().mean().item())
 
     return MembershipResult(
         scores=normalized_scores.detach(),

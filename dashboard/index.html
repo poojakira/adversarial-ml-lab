@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adversarial ML Lab - Robustness Operations Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101415;
+      --panel: #171d1f;
+      --panel-2: #1e2628;
+      --ink: #edf5f1;
+      --muted: #9bb0aa;
+      --line: #33413f;
+      --green: #4fd18b;
+      --amber: #e3b34f;
+      --red: #ee6d62;
+      --blue: #6ca7ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    .shell {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 28px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: 1.45rem;
+      font-weight: 760;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      max-width: 780px;
+      line-height: 1.45;
+      font-size: 0.94rem;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .metric, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+    }
+
+    .metric {
+      padding: 12px;
+      min-height: 86px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      line-height: 1.25;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+
+    .metric em {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-style: normal;
+      line-height: 1.3;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      font-size: 0.95rem;
+      font-weight: 730;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.42;
+      margin-bottom: 10px;
+    }
+
+    .scene-wrap {
+      position: relative;
+      height: 430px;
+      border: 1px solid var(--line);
+      background: #0d1112;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #riskScene, #riskFallback {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #riskFallback { display: none; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 5px;
+      vertical-align: -1px;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .chartbox {
+      min-height: 310px;
+      position: relative;
+    }
+
+    canvas { max-width: 100%; }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .table th, .table td {
+      text-align: left;
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 650;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--ink);
+      font-size: 0.76rem;
+      white-space: nowrap;
+    }
+
+    .warn { color: var(--amber); }
+    .bad { color: var(--red); }
+    .good { color: var(--green); }
+    .fallback-note {
+      display: none;
+      margin-top: 8px;
+      color: var(--amber);
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 980px) {
+      header, .grid, .charts { grid-template-columns: 1fr; }
+      .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .scene-wrap { height: 360px; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 20px, 1480px); padding-top: 14px; }
+      .status-strip { grid-template-columns: 1fr; }
+      .metric strong { font-size: 1.28rem; }
+      .scene-wrap { height: 300px; }
+      .table { font-size: 0.76rem; }
+      .table th, .table td { padding: 8px 5px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>Adversarial ML Lab - Attack and Defense Surface</h1>
+        <p class="subtitle">Operational view for attack families, robust accuracy, certified defenses, query pressure, and MITRE ATT&CK v19 mappings from the repository benchmark claims.</p>
+      </div>
+      <span class="pill">Static local dashboard</span>
+    </header>
+
+    <section class="status-strip" aria-label="Key robustness indicators">
+      <div class="metric"><span>Clean CIFAR-10 accuracy</span><strong>72.3%</strong><em>Baseline CNN claim</em></div>
+      <div class="metric"><span>PGD eps=8/255 robust accuracy</span><strong class="bad">23.1%</strong><em>20-step robustness gate</em></div>
+      <div class="metric"><span>C&amp;W L2 attack success</span><strong class="bad">94.7%</strong><em>High exploitation pressure</em></div>
+      <div class="metric"><span>Certified smoothing accuracy</span><strong class="warn">41.2%</strong><em>sigma=0.25 defense signal</em></div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>3D Robustness Risk Surface</h2>
+        <p>Rows are attack modes; columns are operational controls. Higher red columns indicate larger residual risk after the named control.</p>
+        <div class="scene-wrap" id="sceneHost">
+          <canvas id="riskFallback"></canvas>
+        </div>
+        <div class="legend">
+          <span><i style="background:#4fd18b"></i>Lower residual risk</span>
+          <span><i style="background:#e3b34f"></i>Needs tuning</span>
+          <span><i style="background:#ee6d62"></i>High bypass pressure</span>
+        </div>
+        <div class="fallback-note" id="fallbackNote">Fallback renderer active: CDN or WebGL unavailable.</div>
+      </article>
+
+      <article class="panel">
+        <h2>Immediate Engineering Queue</h2>
+        <table class="table">
+          <thead><tr><th>Priority</th><th>Surface</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill bad">P0</span></td><td>C&amp;W L2</td><td>Track confidence collapse, add adversarial training replay, verify test sample size.</td></tr>
+            <tr><td><span class="pill bad">P0</span></td><td>PGD eps=8/255</td><td>Gate releases on robust accuracy delta, not clean accuracy alone.</td></tr>
+            <tr><td><span class="pill warn">P1</span></td><td>Black-box NES</td><td>Budget query throttles against 1,240 queries/image pressure.</td></tr>
+            <tr><td><span class="pill warn">P1</span></td><td>Transfer</td><td>Run ensemble diversity checks before model promotion.</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section class="charts">
+      <article class="panel chartbox">
+        <h2>Benchmark Outcomes</h2>
+        <canvas id="benchmarkChart" height="230"></canvas>
+        <div id="benchmarkFallback"></div>
+      </article>
+      <article class="panel chartbox">
+        <h2>ATT&amp;CK v19 Finding Mix</h2>
+        <canvas id="attackChart" height="230"></canvas>
+        <div id="attackFallback"></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const attackRows = ["FGSM", "PGD", "C&W", "Transfer", "Black-box", "Physical", "Patch", "Universal"];
+    const controlCols = ["Adv train", "Detector", "Smoothing", "Query guard", "Ensemble"];
+    const riskGrid = [
+      [40, 46, 35, 28, 42],
+      [77, 64, 58, 36, 55],
+      [95, 82, 73, 44, 71],
+      [67, 57, 52, 48, 63],
+      [72, 66, 61, 81, 68],
+      [61, 70, 58, 36, 64],
+      [58, 69, 62, 40, 59],
+      [70, 64, 59, 51, 68]
+    ];
+
+    function riskColor(value) {
+      if (value >= 75) return 0xee6d62;
+      if (value >= 55) return 0xe3b34f;
+      return 0x4fd18b;
+    }
+
+    function hasWebGL() {
+      try {
+        const canvas = document.createElement("canvas");
+        return !!(window.WebGLRenderingContext && (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")));
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function drawFallbackSurface() {
+      const canvas = document.getElementById("riskFallback");
+      const host = document.getElementById("sceneHost");
+      const note = document.getElementById("fallbackNote");
+      canvas.style.display = "block";
+      note.style.display = "block";
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = host.clientWidth * dpr;
+      canvas.height = host.clientHeight * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, host.clientWidth, host.clientHeight);
+      ctx.fillStyle = "#0d1112";
+      ctx.fillRect(0, 0, host.clientWidth, host.clientHeight);
+      const cellW = Math.max(22, (host.clientWidth - 120) / controlCols.length);
+      const cellH = Math.max(22, (host.clientHeight - 92) / attackRows.length);
+      attackRows.forEach((row, y) => {
+        ctx.fillStyle = "#9bb0aa";
+        ctx.font = "12px system-ui";
+        ctx.fillText(row, 10, 58 + y * cellH);
+        controlCols.forEach((col, x) => {
+          const value = riskGrid[y][x];
+          ctx.fillStyle = value >= 75 ? "#ee6d62" : value >= 55 ? "#e3b34f" : "#4fd18b";
+          ctx.globalAlpha = 0.35 + value / 160;
+          ctx.fillRect(86 + x * cellW, 42 + y * cellH, cellW - 8, cellH - 8);
+          ctx.globalAlpha = 1;
+        });
+      });
+      controlCols.forEach((col, x) => {
+        ctx.save();
+        ctx.translate(96 + x * cellW, 24);
+        ctx.rotate(-0.35);
+        ctx.fillStyle = "#9bb0aa";
+        ctx.fillText(col, 0, 0);
+        ctx.restore();
+      });
+    }
+
+    function renderRiskScene() {
+      const host = document.getElementById("sceneHost");
+      if (!window.THREE || !hasWebGL()) {
+        drawFallbackSurface();
+        return;
+      }
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0d1112);
+      const camera = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 1000);
+      camera.position.set(6.8, 7.2, 9.2);
+      camera.lookAt(0.5, 0, 0.2);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(host.clientWidth, host.clientHeight);
+      host.appendChild(renderer.domElement);
+
+      scene.add(new THREE.HemisphereLight(0xd8fff0, 0x15201d, 1.8));
+      const key = new THREE.DirectionalLight(0xffffff, 1.7);
+      key.position.set(5, 9, 6);
+      scene.add(key);
+
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(controlCols.length + 0.7, 0.08, attackRows.length + 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x1b2425, roughness: 0.7 })
+      );
+      base.position.set(0, -0.08, 0);
+      scene.add(base);
+
+      riskGrid.forEach((row, z) => {
+        row.forEach((value, x) => {
+          const height = Math.max(0.12, value / 32);
+          const bar = new THREE.Mesh(
+            new THREE.BoxGeometry(0.62, height, 0.62),
+            new THREE.MeshStandardMaterial({ color: riskColor(value), roughness: 0.48, metalness: 0.08 })
+          );
+          bar.position.set(x - 2, height / 2, z - 3.5);
+          scene.add(bar);
+        });
+      });
+
+      const grid = new THREE.GridHelper(9, 9, 0x40514d, 0x263230);
+      grid.position.y = 0.01;
+      scene.add(grid);
+
+      renderer.render(scene, camera);
+      window.addEventListener("resize", () => {
+        camera.aspect = host.clientWidth / host.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(host.clientWidth, host.clientHeight);
+        renderer.render(scene, camera);
+      });
+    }
+
+    function tableFallback(targetId, labels, values, suffix) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = "<table class='table'><tbody>" + labels.map((label, i) =>
+        "<tr><td>" + label + "</td><td>" + values[i] + suffix + "</td></tr>"
+      ).join("") + "</tbody></table>";
+    }
+
+    function renderCharts() {
+      const labels = ["Clean acc", "PGD robust", "C&W success", "Smoothing cert", "Transfer ASR"];
+      const values = [72.3, 23.1, 94.7, 41.2, 67.3];
+      const mixLabels = ["T1685", "T1036", "T1027", "T1689", "T1682", "T1190"];
+      const mixValues = [5, 2, 2, 2, 1, 2];
+
+      if (!window.Chart) {
+        tableFallback("benchmarkFallback", labels, values, "%");
+        tableFallback("attackFallback", mixLabels, mixValues, "");
+        return;
+      }
+
+      Chart.defaults.color = "#c8d6d1";
+      Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+      new Chart(document.getElementById("benchmarkChart"), {
+        type: "bar",
+        data: { labels, datasets: [{ label: "Percent", data: values, backgroundColor: ["#6ca7ff", "#ee6d62", "#ee6d62", "#e3b34f", "#e3b34f"], borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { color: "#2a3634" } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+      });
+      new Chart(document.getElementById("attackChart"), {
+        type: "doughnut",
+        data: { labels: mixLabels, datasets: [{ data: mixValues, backgroundColor: ["#ee6d62", "#e3b34f", "#6ca7ff", "#4fd18b", "#b58cff", "#8dd3c7"], borderColor: "#171d1f" }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+      });
+    }
+
+    renderRiskScene();
+    renderCharts();
+  </script>
+</body>
+</html>

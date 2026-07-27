@@ -602,7 +602,7 @@ def chain_attack(
     )
 
     # Final success assessment
-    state.target_achieved = (preds_c == target_classes)
+    state.target_achieved = preds_c == target_classes
     state.metadata["target_classes"] = target_classes.tolist()
     state.metadata["attack_success_rate"] = (preds_c != labels).float().mean().item()
     state.metadata["target_hit_rate"] = (preds_c == target_classes).float().mean().item()

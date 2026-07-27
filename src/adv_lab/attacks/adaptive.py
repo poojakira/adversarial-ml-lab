@@ -92,10 +92,8 @@ class GradientMaskingDetector:
             return False
 
         # Check the last plateau_window losses for flatness
-        recent = self.losses[-self.plateau_window:]
-        max_change = max(
-            abs(recent[i] - recent[i - 1]) for i in range(1, len(recent))
-        )
+        recent = self.losses[-self.plateau_window :]
+        max_change = max(abs(recent[i] - recent[i - 1]) for i in range(1, len(recent)))
         if max_change < self.tolerance:
             self.detected = True
             self.detection_step = step
@@ -452,7 +450,5 @@ def adaptive_attack(
     )
     with torch.no_grad():
         final_loss = nn.functional.cross_entropy(model(x_adv), labels).item()
-    attack_log.log_event(
-        "completed", strategy="random_search_momentum", final_loss=final_loss
-    )
+    attack_log.log_event("completed", strategy="random_search_momentum", final_loss=final_loss)
     return x_adv.detach(), attack_log

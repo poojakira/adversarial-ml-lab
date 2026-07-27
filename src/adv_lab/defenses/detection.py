@@ -226,9 +226,7 @@ class NeuralCleanse:
         pattern = torch.rand(1, c, h, w, device=device, requires_grad=True)
 
         optimizer = torch.optim.Adam([mask_raw, pattern], lr=self.lr)
-        target = torch.full(
-            (clean_images.shape[0],), target_class, dtype=torch.long, device=device
-        )
+        target = torch.full((clean_images.shape[0],), target_class, dtype=torch.long, device=device)
 
         for _ in range(self.steps):
             optimizer.zero_grad()
@@ -345,9 +343,7 @@ def bypass_strip(
         padding = kernel_size // 2
         # Simple average pooling as smoothing
         noise_flat = noise.view(-1, 1, images.shape[2], images.shape[3])
-        smoothed = nn.functional.avg_pool2d(
-            noise_flat, kernel_size, stride=1, padding=padding
-        )
+        smoothed = nn.functional.avg_pool2d(noise_flat, kernel_size, stride=1, padding=padding)
         noise = smoothed.view_as(images)
 
     # Apply noise only outside the trigger region to avoid degrading the trigger

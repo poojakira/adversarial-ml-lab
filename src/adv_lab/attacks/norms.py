@@ -42,7 +42,7 @@ def _epsilon_search_schedule(
     grow geometrically. The attack can iterate over these to find the minimal
     budget that achieves misclassification.
     """
-    return [base_eps * (growth_factor ** i) for i in range(num_levels)]
+    return [base_eps * (growth_factor**i) for i in range(num_levels)]
 
 
 # --------------------------------------------------------------------------- #
@@ -398,7 +398,7 @@ def _project_wasserstein(
     yy = torch.arange(h, device=delta.device, dtype=delta.dtype) - cy
     xx = torch.arange(w, device=delta.device, dtype=delta.dtype) - cx
     grid_y, grid_x = torch.meshgrid(yy, xx, indexing="ij")
-    dist_from_center = torch.sqrt(grid_y ** 2 + grid_x ** 2) + 1.0
+    dist_from_center = torch.sqrt(grid_y**2 + grid_x**2) + 1.0
     dist_from_center = dist_from_center / dist_from_center.max()
 
     # Weight: (N, C, H, W) * distance_weights
@@ -480,9 +480,7 @@ def semantic_attack(
         theta_tx = torch.zeros(batch_size, device=images.device, requires_grad=True)
         theta_ty = torch.zeros(batch_size, device=images.device, requires_grad=True)
         theta_hue = torch.zeros(batch_size, device=images.device, requires_grad=True)
-        theta_contrast = torch.zeros(
-            batch_size, device=images.device, requires_grad=True
-        )
+        theta_contrast = torch.zeros(batch_size, device=images.device, requires_grad=True)
 
         optimizer = torch.optim.Adam(
             [theta_rot, theta_tx, theta_ty, theta_hue, theta_contrast], lr=lr
@@ -541,9 +539,7 @@ def semantic_attack(
     return best_adv.detach()
 
 
-def _apply_affine_transform(
-    images: Tensor, rotation_deg: Tensor, tx: Tensor, ty: Tensor
-) -> Tensor:
+def _apply_affine_transform(images: Tensor, rotation_deg: Tensor, tx: Tensor, ty: Tensor) -> Tensor:
     """Apply differentiable affine (rotation + translation) to a batch.
 
     Uses bilinear grid sampling for differentiability.

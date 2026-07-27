@@ -101,9 +101,7 @@ def cw_l2_attack(
         logits = model(x_adv)
         if num_classes_onehot is None:
             num_classes_onehot = logits.shape[1]
-        one_hot = nn.functional.one_hot(labels, num_classes=num_classes_onehot).to(
-            logits.dtype
-        )
+        one_hot = nn.functional.one_hot(labels, num_classes=num_classes_onehot).to(logits.dtype)
 
         # Z(x)_t : logit of the true class.
         real = (one_hot * logits).sum(dim=1)
