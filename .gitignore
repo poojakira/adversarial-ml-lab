@@ -21,3 +21,10 @@ results/
 # Downloaded datasets and model checkpoints (fetched on demand by RobustBench)
 data/
 models/
+venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+.coverage
+test_env/
+*.egg-info
