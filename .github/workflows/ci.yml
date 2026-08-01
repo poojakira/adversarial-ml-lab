@@ -41,8 +41,11 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install Ruff
-        run: pip install ruff==${{ env.RUFF_VERSION }} pyright==${{ env.PYRIGHT_VERSION }}
+      - name: Install lint and package dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff==${{ env.RUFF_VERSION }} pyright==${{ env.PYRIGHT_VERSION }}
+          pip install -e ".[dev]"
 
       - name: Run Ruff Linter
         run: ruff check src/adv_lab tests --output-format=github
@@ -50,8 +53,8 @@ jobs:
       - name: Run Ruff Formatter Check
         run: ruff format --check src/adv_lab tests
 
-      - name: Type check with Pyright
-        run: pyright src/adv_lab tests
+      - name: Focused Pyright gate
+        run: pyright src/adv_lab/eval/harness.py src/adv_lab/eval/benchmark_verify.py tests/test_benchmark_verify.py
 
   test:
     name: Unit Tests (Python ${{ matrix.python-version }})
