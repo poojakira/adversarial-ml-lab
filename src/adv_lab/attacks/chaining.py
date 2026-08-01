@@ -389,7 +389,7 @@ def chain_attack(
 ) -> tuple[Tensor, ChainState]:
     """Apply the canonical three-phase perturbation chain.
 
-    Implements a production-grade multi-step attack campaign:
+    Implements a multi-step lab attack campaign:
 
     **Phase A -- Confidence Softening:**
     Maximizes prediction entropy to systematically degrade model confidence
