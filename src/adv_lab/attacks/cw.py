@@ -119,3 +119,24 @@ def cw_l2_attack(
 
     x_adv = _from_tanh_space(w).detach()
     return torch.clamp(x_adv, 0.0, 1.0)
+
+
+def generate(
+    model: nn.Module,
+    images: Tensor,
+    labels: Tensor,
+    confidence: float = 0.0,
+    steps: int = 1000,
+    learning_rate: float = 0.01,
+    c: float = 1e-4,
+) -> Tensor:
+    """Backward-compatible C&W L2 entry point used by older callers."""
+    return cw_l2_attack(
+        model,
+        images,
+        labels,
+        c=c,
+        kappa=confidence,
+        steps=steps,
+        lr=learning_rate,
+    )

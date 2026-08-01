@@ -71,6 +71,16 @@ def fgsm_attack(
     return x_adv.detach()
 
 
+def generate(
+    model: nn.Module,
+    images: Tensor,
+    labels: Tensor,
+    epsilon: float = 0.03,
+) -> Tensor:
+    """Backward-compatible FGSM entry point used by older callers."""
+    return fgsm_attack(model, images, labels, epsilon=epsilon)
+
+
 def batch_fgsm(
     model: nn.Module,
     dataloader,
