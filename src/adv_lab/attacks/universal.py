@@ -305,7 +305,7 @@ def evaluate_fooling_rate(
     changes when the UAP is applied. Only samples that are correctly classified
     on clean input are counted (you cannot "fool" an already-wrong prediction).
 
-    Target: >= 80% fooling rate for a production-grade UAP.
+    Target: high fooling rate in the configured lab harness; validate separately before operational use.
 
     Args:
         model: Classifier in eval() mode.

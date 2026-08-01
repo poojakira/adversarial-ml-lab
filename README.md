@@ -66,19 +66,14 @@ Every finding object includes:
 
 **New v19 additions in bold:** T1685 (Disable or Modify Tools) replaces T1562/T1562.001 across all evasion/robustness detections. T1682 (Query Public AI Services) for black-box AI querying. T1689 (Downgrade Attack) for certified defense bypass and model bypass.
 
-### Measurable Claims
+### Evidence Status
 
-| Metric | Value | Evidence |
-|--------|-------|----------|
-| **Clean CIFAR-10 accuracy (CNN)** | 72.3% | `tests/test_accuracy.py` on 10k test images |
-| **PGD ε=8/255 robust accuracy** | 23.1% | `tests/test_pgd_robust.py` 20 steps |
-| **C&W L2 attack success rate** | 94.7% | `tests/test_cw_attack.py` 1000 samples |
-| **Randomized Smoothing certified acc** | 41.2% | `tests/test_certified.py` σ=0.25 |
-| **Transfer attack (ResNet→VGG)** | 67.3% | `tests/test_transfer.py` |
-| **Black-box query efficiency** | 1,240 queries/img | `tests/test_blackbox.py` NES |
-| **Test coverage** | 82% | `pytest --cov --cov-fail-under=80` |
-| **ATT&CK v19 techniques mapped** | 8 unique | 8 finding types → 8 techniques (T1685, T1682, T1689) |
-
+| Claim Area | Current Evidence |
+|------------|------------------|
+| Attack implementations | Unit tests in `tests/test_attacks.py` exercise implemented attack paths. |
+| ATT&CK v19 mapping | Mapping tests and reporter code are present in this repository. |
+| Benchmark metrics | No public CIFAR-10, C&W, transfer, black-box, or certified-accuracy benchmark artifact is committed in this repo. Do not cite numeric robustness results from this README alone. |
+| Production readiness | Not claimed. This is a research/prototype lab unless validated in a deployment-specific benchmark. |
 ### Migration from v18
 
 See [MIGRATION_GUIDE.md](../attack-v19-core/MIGRATION_GUIDE.md) in attack-v19-core for full migration steps.
@@ -89,19 +84,3 @@ Key remappings:
 - T1070.002 → T1685.006 (Clear Linux/Mac Logs)
 - T1534 → T1684.001 (Social Engineering: Impersonation)
 - T1566.003 → T1684.002 (Social Engineering: Email Spoofing)
-<!-- engineering-update-2026-07-27 -->
-## Engineering Update - 2026-07-27
-
-Scope: Adversarial ML attacks and defenses.
-
-Current hardening pass:
-- Build system: Makefile targets added or verified for install, lint, format, test, build, security, and verify.
-- Dashboard: Static 3D dashboard: dashboard/index.html. Serve with make dashboard.
-- ATT&CK mapping: repos that map detections now use the shared v19 mapping builder where applicable.
-- Validation: Validated: Ruff checks for src/adv_lab, attack_mapping, and tests; static dashboard JS syntax/static checks passed.
-
-Known limits:
-- Linux and GitHub Actions post-push results must be checked after this push.
-- Security scans are build targets; dependency advisories can change after this local snapshot.
-- No production-readiness or benchmark-certification claim is made from local checks alone.
-<!-- /engineering-update-2026-07-27 -->
