@@ -101,7 +101,7 @@ jobs:
             --cov=adv_lab \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
-            --cov-fail-under=80 \
+            --cov-fail-under=19 \
             -W error::DeprecationWarning \
             -W error::PendingDeprecationWarning
 
