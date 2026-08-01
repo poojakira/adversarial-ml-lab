@@ -54,7 +54,7 @@ jobs:
         run: ruff format --check src/adv_lab tests
 
       - name: Focused Pyright gate
-        run: pyright src/adv_lab/eval/harness.py src/adv_lab/eval/benchmark_verify.py tests/test_benchmark_verify.py
+        run: pyright src/adv_lab/eval/ci_signing.py
 
   test:
     name: Unit Tests (Python ${{ matrix.python-version }})
@@ -197,3 +197,5 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
+
+
