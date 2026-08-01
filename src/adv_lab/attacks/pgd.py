@@ -75,6 +75,27 @@ def pgd_attack(
     return x_adv.detach()
 
 
+def generate(
+    model: nn.Module,
+    images: Tensor,
+    labels: Tensor,
+    epsilon: float = 0.03,
+    alpha: float = 0.007,
+    steps: int = 40,
+    random_start: bool = True,
+) -> Tensor:
+    """Backward-compatible PGD entry point used by older callers."""
+    return pgd_attack(
+        model,
+        images,
+        labels,
+        epsilon=epsilon,
+        alpha=alpha,
+        steps=steps,
+        random_start=random_start,
+    )
+
+
 def pgd_linf(
     model: nn.Module,
     images: Tensor,

@@ -2,16 +2,23 @@ import json
 import sys
 
 try:
-    with open('pip-audit.json') as f:
-        data = json.load(f)
-except:
-    data = []
+    with open("pip-audit.json", encoding="utf-8") as f:
+        payload = json.load(f)
+except (OSError, json.JSONDecodeError):
+    payload = []
 
-vulns = [v for v in data if v.get('vulns')]
+if isinstance(payload, dict):
+    records = payload.get("dependencies", [])
+elif isinstance(payload, list):
+    records = payload
+else:
+    records = []
+
+vulns = [record for record in records if isinstance(record, dict) and record.get("vulns")]
 if vulns:
-    print(f'FAIL: {len(vulns)} packages with known vulnerabilities')
-    for v in vulns:
-        for vuln in v['vulns']:
-            print(f'  {v["name"]}=={v["version"]}: {vuln["id"]}')
+    print(f"FAIL: {len(vulns)} packages with known vulnerabilities")
+    for record in vulns:
+        for vuln in record.get("vulns", []):
+            print(f"  {record.get('name')}=={record.get('version')}: {vuln.get('id')}")
     sys.exit(1)
-print('PASS: No known vulnerabilities in dependencies')
+print("PASS: No known vulnerabilities in dependencies")

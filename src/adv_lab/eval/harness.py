@@ -55,6 +55,68 @@ class BenchmarkResult:
         self.passed = self.robust_accuracy_pgd > PGD_GATE_THRESHOLD
 
 
+@dataclass
+class EvaluationMetrics:
+    """Accuracy summary for compatibility with the older gate API."""
+
+    clean_accuracy: float
+    fgsm_accuracy: float
+    pgd_accuracy: float
+
+
+@dataclass
+class RobustnessGate:
+    """Threshold gate for clean, FGSM, and PGD accuracy."""
+
+    clean_threshold: float = 0.0
+    fgsm_threshold: float = 0.0
+    pgd_threshold: float = PGD_GATE_THRESHOLD
+
+    def check(self, metrics: EvaluationMetrics) -> bool:
+        return (
+            metrics.clean_accuracy >= self.clean_threshold
+            and metrics.fgsm_accuracy >= self.fgsm_threshold
+            and metrics.pgd_accuracy >= self.pgd_threshold
+        )
+
+
+def evaluate_robustness(
+    model: nn.Module,
+    dataloader: Iterable[tuple[Tensor, Tensor]],
+    attack: str = "clean",
+    eps: float = 0.03,
+    steps: int = 40,
+) -> float:
+    """Evaluate accuracy under a single attack without changing model mode."""
+    if model.training:
+        raise RuntimeError("model must be in eval() mode before evaluation")
+
+    correct = 0
+    total = 0
+    for images, labels in dataloader:
+        if attack == "clean":
+            attacked = images
+        elif attack == "fgsm":
+            attacked = fgsm_attack(model, images, labels, epsilon=eps)
+        elif attack == "pgd":
+            attacked = pgd_attack(
+                model,
+                images,
+                labels,
+                epsilon=eps,
+                alpha=eps / 4.0,
+                steps=steps,
+            )
+        else:
+            raise ValueError(f"unsupported attack: {attack}")
+
+        with torch.no_grad():
+            pred = model(attacked).argmax(dim=1)
+        correct += int((pred == labels).sum().item())
+        total += int(labels.numel())
+    return correct / total if total else 0.0
+
+
 def _take_samples(
     dataloader: Iterable[tuple[Tensor, Tensor]], n_samples: int
 ) -> tuple[Tensor, Tensor]:
