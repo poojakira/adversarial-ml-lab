@@ -1,6 +1,6 @@
 """API behavior simulation for adversarial attacks on deployed ML services.
 
-Production-grade simulation of ML-as-a-Service API constraints and behaviors
+Research simulation of ML-as-a-Service API constraints and behaviors
 for realistic adversarial attack evaluation. Models the full request lifecycle
 including rate limiting, query budgeting, response transformation, and
 server-side anomaly detection that deployed systems use to detect adversarial

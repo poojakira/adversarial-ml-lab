@@ -1,6 +1,6 @@
 """Inference-time data manipulation attacks.
 
-Production-grade attacks that operate at inference time to manipulate model
+Inference-time attack implementations that operate at inference time to manipulate model
 predictions through gradient-based watermark flipping, upstream preprocessing
 poisoning, and soft-label (confidence score) exploitation.
 

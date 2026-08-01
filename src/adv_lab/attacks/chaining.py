@@ -1,6 +1,6 @@
 """Perturbation chaining: multi-step adversarial campaigns.
 
-Production-grade implementation of sequential perturbation chaining where
+Research implementation of sequential perturbation chaining where
 multiple attack phases are composed into a campaign that achieves objectives
 no single attack step can accomplish alone. Models real-world multi-stage
 attack scenarios against deployed ML systems.
@@ -368,7 +368,7 @@ class PerturbationChain:
 
 
 # ---------------------------------------------------------------------------
-# chain_attack: Production-grade A->B->C chain
+# chain_attack: Sequential A->B->C chain
 # ---------------------------------------------------------------------------
 
 
