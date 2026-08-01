@@ -305,7 +305,8 @@ def evaluate_fooling_rate(
     changes when the UAP is applied. Only samples that are correctly classified
     on clean input are counted (you cannot "fool" an already-wrong prediction).
 
-    Target: high fooling rate in the configured lab harness; validate separately before operational use.
+    Target: high fooling rate in the configured lab harness; validate separately.
+    Validate before operational use.
 
     Args:
         model: Classifier in eval() mode.
