@@ -18,6 +18,7 @@ dependencies = [
 dev = [
     "pytest>=8.2",
 ]
+attack = ["attack-v19-core>=19.1,<20"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
