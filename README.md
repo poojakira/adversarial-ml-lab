@@ -1,86 +1,158 @@
 # adversarial-ml-lab
 
-[![CI](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml)
-[![Python >=3.10](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A PyTorch library for testing how well image classifiers hold up against adversarial attacks. It implements the standard attack ladder (FGSM → PGD → C&W L2), adversarial training as a defense, randomized smoothing for certified robustness, and a CI-gateable benchmark harness.
 
-## MITRE ATT&CK v19 Coverage
+This is a research/prototype tool — not production-validated.
 
-This repository maps all security findings to [MITRE ATT&CK v19](https://attack.mitre.org/).
+## What's in the box
 
-| Domain     | Tactics | Techniques | Sub-Techniques |
-|------------|--------:|----------:|---------------:|
-| Enterprise |      15 |       222 |            475 |
-| Mobile     |      12 |      (see ATT&CK) | (see ATT&CK) |
-| ICS        |      12 |      (see ATT&CK) | (see ATT&CK) |
+**Attacks** (white-box, gradient-based):
 
-**v19 Breaking Changes (2026-07):**
-- **TA0005 renamed**: "Defense Evasion" → "Stealth"
-- **TA0112 added**: "Defense Impairment" (new tactic, split from old TA0005)
-- **17 techniques revoked** (auto-remapped via V19_REVOCATION_MAP)
-- **48 new techniques** added (see CHANGELOG.md)
+- **FGSM** — single-step signed gradient (Goodfellow et al., 2015). Weak baseline; useful for detecting gradient masking.
+- **PGD L-inf and L2** — multi-step projected gradient descent (Madry et al., 2018). The honest standard for white-box evaluation.
+- **C&W L2** — optimization-based attack using tanh change-of-variables (Carlini & Wagner, 2017). Finds smaller perturbations than PGD; slowest but strongest.
 
-### Export ATT&CK Navigator Layer
+Additional attack modules exist for black-box, ensemble, universal perturbations, model stealing, membership inference, LLM attacks, and physical-world attacks. These are more experimental.
+
+**Defenses:**
+
+- **Adversarial training** — PGD-7 inner maximization during training (Madry et al., 2018). Hardens the model at the cost of clean accuracy.
+- **Randomized smoothing** — Monte Carlo certification of L2 robustness radii (Cohen et al., 2019). Provides provable guarantees, not just empirical ones.
+
+**Evaluation:**
+
+- **Benchmark harness** — runs the full attack ladder on your model and produces a JSON report. CI gate passes if PGD robust accuracy > 30%.
+- **Certified defense evaluation** — randomized smoothing, interval bound propagation, Lipschitz network evaluation.
+- **Transferability evaluation** — measures how attacks transfer between models.
+- **ATT&CK v19 mapping** — maps findings to MITRE ATT&CK technique IDs (optional, requires `attack-v19-core`).
+
+## Honest status
+
+| What | Status |
+|------|--------|
+| Core attacks (FGSM, PGD, C&W) | Implemented and unit-tested |
+| Adversarial training | Implemented |
+| Randomized smoothing | Implemented |
+| Benchmark harness + CI gate | Implemented |
+| Published benchmark numbers | **None committed to this repo**. No CIFAR-10 accuracy artifacts exist here. Don't cite numbers from this README. |
+| Production readiness | Not claimed |
+
+## Install
+
+Requires Python ≥ 3.10 and PyTorch ≥ 2.0.
 
 ```bash
-python -m attack_mapping.reporter --output navigator_layer.json
+# Clone
+git clone https://github.com/poojakira/adversarial-ml-lab
+cd adversarial-ml-lab
+
+# Install in development mode
+make install
+
+# Or manually:
+pip install -e .
+pip install -e ".[dev]"      # adds pytest
+pip install -e ".[attack]"   # adds attack-v19-core for ATT&CK mapping
 ```
 
-Open in [ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/) to visualize coverage. Layers generated with Navigator v4.9 format (attack: "19").
+## Run
 
-### Finding Schema
+### Run tests
 
-Every finding object includes:
-```json
-{
-  "attack_mappings": [
-    {
-      "tactic_id":         "TA0005",
-      "tactic_name":       "Stealth",
-      "technique_id":      "T1685",
-      "technique_name":    "Disable or Modify Tools",
-      "subtechnique_id":   "T1685.001",
-      "subtechnique_name": "Disable or Modify Tools: Disable or Modify Windows Event Log",
-      "domain":            "enterprise",
-      "confidence":        0.85,
-      "data_sources":      ["..."],
-      "platforms":         ["..."],
-      "url":               "https://attack.mitre.org/techniques/T1685/001/"
-    }
-  ]
-}
+```bash
+make test
 ```
 
-### Adversarial ML Lab Specific Mappings (v19)
+Tests exercise the three core attacks and the evaluation harness against a small dummy CNN.
 
-| Finding Type | Techniques (v19) |
-|--------------|------------------|
-| **adversarial_evasion_success** | **T1685**, T1036.005 |
-| adversarial_patch_detected | T1036, T1027 |
-| **model_bypass_via_perturbation** | **T1685**, T1027, **T1689** |
-| **transfer_attack_success** | **T1685**, T1190 |
-| **black_box_query_attack** | T1595, T1190, **T1682** |
-| **adversarial_robustness_failure** | **T1685**, T1499 |
-| **certified_defense_bypass** | **T1685**, **T1689** |
-| physical_adversarial_attack | T1200, T1036 |
+### Run the benchmark harness (CLI)
 
-**New v19 additions in bold:** T1685 (Disable or Modify Tools) replaces T1562/T1562.001 across all evasion/robustness detections. T1682 (Query Public AI Services) for black-box AI querying. T1689 (Downgrade Attack) for certified defense bypass and model bypass.
+```bash
+python -m adv_lab.eval.cli --epsilon 0.3 --pgd-threshold 0.30
+```
 
-### Evidence Status
+This evaluates a dummy model by default. To evaluate your own model, pass `--model-path path/to/state_dict.pt`.
 
-| Claim Area | Current Evidence |
-|------------|------------------|
-| Attack implementations | Unit tests in `tests/test_attacks.py` exercise implemented attack paths. |
-| ATT&CK v19 mapping | Mapping tests and reporter code are present in this repository. |
-| Benchmark metrics | No public CIFAR-10, C&W, transfer, black-box, or certified-accuracy benchmark artifact is committed in this repo. Do not cite numeric robustness results from this README alone. |
-| Production readiness | Not claimed. This is a research/prototype lab unless validated in a deployment-specific benchmark. |
-### Migration from v18
+Outputs a JSON report with clean accuracy, FGSM/PGD/C&W robust accuracy, and a pass/fail flag.
 
-See the [attack-v19-core migration guide](https://github.com/poojakira/attack-v19-core/blob/main/MIGRATION_GUIDE.md) for full migration steps.
+### Lint and format
 
-Key remappings:
-- T1562, T1562.001, T1089, T1054 → T1685 (Disable or Modify Tools)
-- T1070.001 → T1685.005 (Clear Windows Event Logs)
-- T1070.002 → T1685.006 (Clear Linux/Mac Logs)
-- T1534 → T1684.001 (Social Engineering: Impersonation)
-- T1566.003 → T1684.002 (Social Engineering: Email Spoofing)
+```bash
+make lint     # ruff check
+make format   # ruff format
+```
+
+### Full local verification (lint + test + build + security scan)
+
+```bash
+make verify
+```
+
+### Static dashboard
+
+```bash
+make dashboard
+# Opens at http://localhost:8080
+```
+
+## Use in your own code
+
+```python
+import torch
+from adv_lab.attacks.fgsm import fgsm_attack
+from adv_lab.attacks.pgd import pgd_attack
+from adv_lab.attacks.cw import cw_l2_attack
+
+model.eval()
+
+# FGSM — fast sanity check
+adv = fgsm_attack(model, images, labels, epsilon=0.03)
+
+# PGD L-inf — the standard honest evaluation
+adv = pgd_attack(model, images, labels, epsilon=0.03, steps=40)
+
+# C&W L2 — slow but finds minimal perturbations
+adv = cw_l2_attack(model, images, labels, steps=1000)
+```
+
+For adversarial training:
+
+```python
+from adv_lab.defenses.adversarial_training import AdversarialTrainer
+
+trainer = AdversarialTrainer(model, optimizer, epsilon=0.03)
+for epoch in range(num_epochs):
+    stats = trainer.train_epoch(train_loader)
+    print(f"Epoch {epoch}: loss={stats['loss']:.3f}, robust_acc={stats['robust_acc']:.3f}")
+```
+
+## Project layout
+
+```
+src/adv_lab/
+├── attacks/          # FGSM, PGD, C&W, plus experimental attacks
+├── defenses/         # Adversarial training, detection
+├── eval/             # Benchmark harness, certified defense eval, CLI
+├── api/              # (placeholder)
+├── scanner/          # (placeholder)
+├── ci/               # CI utilities
+attack_mapping/       # MITRE ATT&CK v19 mapping (optional)
+tests/                # Unit and integration tests
+dashboard/            # Static HTML dashboard
+docker/               # Container definitions
+helm/                 # Kubernetes deployment charts
+```
+
+## Dependencies
+
+Core: `torch>=2.0`, `numpy>=1.24`. That's it for the attack/defense code.
+
+Optional: `attack-v19-core>=19.1` for MITRE ATT&CK mapping features.
+
+## CI
+
+GitHub Actions runs: ruff lint → pytest → build → bandit SAST → pip-audit. See `.github/workflows/ci.yml`.
+
+## License
+
+MIT
