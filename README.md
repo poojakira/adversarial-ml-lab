@@ -1,5 +1,7 @@
 # adversarial-ml-lab
 
+[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-View-blue)](https://poojakira.github.io/mlsec-dashboards/adversarial-ml-lab/)
+
 A PyTorch library for testing how well image classifiers hold up against adversarial attacks. It implements the standard attack ladder (FGSM → PGD → C&W L2), adversarial training as a defense, randomized smoothing for certified robustness, and a CI-gateable benchmark harness.
 
 This is a research/prototype tool — not production-validated.
