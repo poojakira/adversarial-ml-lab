@@ -101,7 +101,7 @@ jobs:
             --cov=adv_lab \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
-            --cov-fail-under=19 \
+            --cov-fail-under=60 \
             -W error::DeprecationWarning \
             -W error::PendingDeprecationWarning
 
@@ -197,5 +197,6 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
+
 
 
