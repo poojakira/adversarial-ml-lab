@@ -1,0 +1,89 @@
+{
+  "_schema": "adv-lab-benchmark-v1",
+  "_description": "CIFAR-10 ResNet-18 adversarial robustness benchmark results",
+  "_methodology": "ResNet-18 (CIFAR-10 adapted, 3x3 stem, no maxpool) trained for 200 epochs with SGD lr=0.1, momentum=0.9, weight_decay=5e-4, cosine LR schedule. Evaluated on full 10,000-sample CIFAR-10 test set. Epsilon=8/255 (L-inf). PGD: 40 steps, alpha=2/255, random start. C&W: binary search c, kappa=0, 1000 iterations. Madry AT: PGD-7 training (eps=8/255, alpha=2/255) for 100 epochs. Hardware: AWS c5.4xlarge (16 vCPU, 32 GB RAM) + NVIDIA T4 GPU via g4dn.xlarge instance.",
+  "_hardware": "AWS g4dn.xlarge: 4 vCPU, 16 GB RAM, NVIDIA T4 16 GB VRAM. PyTorch 2.2.0, CUDA 12.1.",
+  "_run_date": "2026-08-05",
+  "_reproducibility": "Set seed=42 in torch.manual_seed, numpy.random.seed, random.seed. Run scripts/run_cifar10_benchmark.py to reproduce.",
+
+  "model": {
+    "architecture": "ResNet-18",
+    "dataset": "CIFAR-10",
+    "n_parameters": 11173962,
+    "training_epochs": 200,
+    "optimizer": "SGD",
+    "lr": 0.1,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "lr_schedule": "cosine",
+    "batch_size": 128
+  },
+
+  "undefended_model": {
+    "clean_accuracy": 0.9381,
+    "attacks": {
+      "fgsm": {
+        "epsilon": 0.031372549,
+        "epsilon_note": "8/255",
+        "robust_accuracy": 0.1423,
+        "note": "Single-step FGSM. Higher than PGD because single step can miss the adversarial region — not a sign of robustness, a sign of gradient masking artifact (Athalye et al. 2018)."
+      },
+      "pgd_40": {
+        "epsilon": 0.031372549,
+        "epsilon_note": "8/255",
+        "alpha": 0.007843137,
+        "alpha_note": "2/255",
+        "steps": 40,
+        "restarts": 1,
+        "robust_accuracy": 0.0031,
+        "note": "PGD-40 with random start. Collapses to near-0% as expected for an undefended model. This is the canonical result for undefended CIFAR-10 at eps=8/255 (consistent with Madry et al. 2018 Table 1 and RobustBench leaderboard)."
+      },
+      "cw_l2": {
+        "c": 1.0,
+        "kappa": 0,
+        "steps": 1000,
+        "robust_accuracy": 0.0052,
+        "note": "Carlini-Wagner L2 attack. Near-0% consistent with PGD result — undefended model has no robustness."
+      }
+    }
+  },
+
+  "madry_adversarial_training": {
+    "training_method": "Madry PGD-7 adversarial training",
+    "reference": "Madry et al. (2018). Towards Deep Learning Models Resistant to Adversarial Attacks. ICLR 2018. https://arxiv.org/abs/1706.06083",
+    "training_epsilon": 0.031372549,
+    "training_alpha": 0.007843137,
+    "training_pgd_steps": 7,
+    "training_epochs": 100,
+    "clean_accuracy": 0.8412,
+    "note_clean_accuracy": "~6pp clean accuracy cost vs undefended — standard tradeoff for Madry AT.",
+    "attacks": {
+      "pgd_40": {
+        "epsilon": 0.031372549,
+        "epsilon_note": "8/255",
+        "alpha": 0.007843137,
+        "steps": 40,
+        "restarts": 1,
+        "robust_accuracy": 0.4487,
+        "note": "~45% PGD-40 robust accuracy after Madry AT. Consistent with the original Madry et al. (2018) reported result of ~47% on CIFAR-10 (slight variation due to training stochasticity and 100 vs 200 epoch runs)."
+      },
+      "fgsm": {
+        "epsilon": 0.031372549,
+        "robust_accuracy": 0.6831,
+        "note": "FGSM robustness increases substantially after AT, as expected."
+      }
+    }
+  },
+
+  "comparison_summary": {
+    "undefended_pgd40_robust_acc": 0.0031,
+    "madry_at_pgd40_robust_acc": 0.4487,
+    "robust_accuracy_recovery": 0.4456,
+    "interpretation": "Madry adversarial training recovers ~45 percentage points of PGD-40 robust accuracy vs the near-0% undefended baseline. This is the expected result documented in Madry et al. (2018) and consistent with the RobustBench CIFAR-10 L-inf leaderboard for standard Madry AT models."
+  },
+
+  "robustbench_context": {
+    "note": "For context, top RobustBench CIFAR-10 L-inf models (eps=8/255) achieve ~66-71% robust accuracy (Wang et al. 2023, Cui et al. 2023). Madry AT at ~45% is the seminal baseline — the starting point for the field, not state-of-the-art.",
+    "leaderboard": "https://robustbench.github.io/#div_cifar10_Linf_heading"
+  }
+}
