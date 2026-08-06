@@ -30,6 +30,7 @@ It is the strongest attack in this lab -- it typically finds smaller
 perturbations than PGD for the same success, which is exactly why it is the
 gold standard for catching gradient masking.
 """
+# MITRE ATLAS: AML.T0043 - Craft Adversarial Data | AML.T0015 - Evade ML Model
 
 from __future__ import annotations
 

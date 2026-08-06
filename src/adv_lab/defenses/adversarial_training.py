@@ -13,6 +13,7 @@ PGD approximates the inner max far better, and ~7 steps is the community's
 accepted cost/robustness sweet spot for training (evaluation later uses many
 more steps). See the README for the full argument.
 """
+# MITRE ATLAS: AML.T0054 - Backdoor ML Model (defense against) | AML.T0043 - defense
 
 from __future__ import annotations
 

@@ -12,6 +12,7 @@ a baseline and a sanity check: if a "defended" model looks robust to PGD but
 not FGSM, or reports suspiciously high FGSM robustness, that is a classic
 gradient-masking smell (Athalye et al., 2018).
 """
+# MITRE ATLAS: AML.T0043 - Craft Adversarial Data | AML.T0015 - Evade ML Model
 
 from __future__ import annotations
 
