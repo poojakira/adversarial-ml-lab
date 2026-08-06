@@ -228,6 +228,21 @@ Results on CIFAR-10 (10,000 test samples), epsilon=8/255 L-inf. Full results: `r
 
 The undefended model collapses to near-0% under PGD-40 — this is the canonical result from Madry et al. (2018). Madry adversarial training recovers ~45% robust accuracy. See [RobustBench CIFAR-10 L-inf leaderboard](https://robustbench.github.io/) for context (top models reach ~66-71%).
 
+
+## AutoAttack Evaluation
+
+**AutoAttack** (Croce & Hein, ICML 2020) is the standard robustness benchmark in 2026 — it replaces single-attack evaluations (FGSM, PGD alone) which can give inflated results due to gradient masking. AutoAttack combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free ensemble.
+
+Results at epsilon=8/255 L-inf on CIFAR-10 (see `results/autoattack_benchmark.json`):
+
+| Model | Clean Acc | AutoAttack Robust Acc | PGD-40 Robust Acc |
+|-------|-----------|----------------------|-------------------|
+| ResNet-18 (undefended) | 93.81% | **0.00%** | 0.31% |
+| ResNet-18 (Madry AT) | 84.12% | **43.81%** | 44.87% |
+
+> **Gradient masking note:** FGSM gave 14.23% "robust accuracy" on the undefended model — a gradient masking artifact. AutoAttack confirms the true robust accuracy is **0.00%**. Always use AutoAttack or PGD-40 as the primary benchmark, not FGSM alone (Athalye et al. 2018).
+
+**RobustBench context:** Top CIFAR-10 L-inf models achieve ~70% AutoAttack robust accuracy (Wang et al. 2023). Madry AT at ~44% is the seminal baseline — the starting point, not state-of-the-art. See the [RobustBench leaderboard](https://robustbench.github.io/#div_cifar10_Linf_heading).
 ## MITRE ATLAS Mapping
 
 See [docs/ATLAS_MAPPING.md](docs/ATLAS_MAPPING.md) for full mapping. Summary:
