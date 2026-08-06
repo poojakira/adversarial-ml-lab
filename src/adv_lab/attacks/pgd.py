@@ -12,6 +12,7 @@ the multi-norm / union-robustness gap that remains open in 2025-2026. Shipping
 both lets the benchmark harness expose that gap instead of hiding it behind a
 single norm.
 """
+# MITRE ATLAS: AML.T0043 - Craft Adversarial Data | AML.T0015 - Evade ML Model
 
 from __future__ import annotations
 

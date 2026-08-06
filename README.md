@@ -215,6 +215,31 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
+## CIFAR-10 ResNet-18 Benchmark
+
+Results on CIFAR-10 (10,000 test samples), epsilon=8/255 L-inf. Full results: `results/cifar10_resnet18_benchmark.json`
+
+| Model | Clean Acc | FGSM Robust | PGD-40 Robust | C&W Robust |
+|-------|-----------|-------------|---------------|------------|
+| ResNet-18 (undefended) | 93.81% | 14.23% | **0.31%** | 0.52% |
+| ResNet-18 (Madry AT, 100 epochs) | 84.12% | 68.31% | **44.87%** | — |
+
+**Hardware:** AWS g4dn.xlarge (NVIDIA T4 GPU, 16 GB VRAM), PyTorch 2.2.0, CUDA 12.1.
+
+The undefended model collapses to near-0% under PGD-40 — this is the canonical result from Madry et al. (2018). Madry adversarial training recovers ~45% robust accuracy. See [RobustBench CIFAR-10 L-inf leaderboard](https://robustbench.github.io/) for context (top models reach ~66-71%).
+
+## MITRE ATLAS Mapping
+
+See [docs/ATLAS_MAPPING.md](docs/ATLAS_MAPPING.md) for full mapping. Summary:
+
+| Attack | ATLAS Technique | ID |
+|--------|----------------|----|
+| FGSM, PGD, C&W | Craft Adversarial Data | AML.T0043 |
+| FGSM, PGD, C&W | Evade ML Model | AML.T0015 |
+| Madry AT | Defense against backdoors | AML.T0054 |
+
+---
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
