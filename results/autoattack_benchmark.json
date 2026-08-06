@@ -1,0 +1,43 @@
+{
+  "_schema": "adv-lab-benchmark-v1",
+  "_description": "AutoAttack evaluation on CIFAR-10 ResNet-18. AutoAttack is the standard ensemble robustness benchmark as of 2020+ (Croce & Hein, ICML 2020). It combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free, reliable benchmark that avoids gradient masking artifacts.",
+  "_reference": "Croce, F. & Hein, M. (2020). Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks. ICML 2020. https://arxiv.org/abs/2003.01690",
+  "_hardware": "AWS g4dn.xlarge: NVIDIA T4 16GB VRAM, PyTorch 2.2.0, autoattack==0.1.1",
+  "_run_date": "2026-08-05",
+  "_epsilon": "8/255 (L-inf norm)",
+  "_dataset": "CIFAR-10 test set, 10,000 samples",
+
+  "undefended_resnet18": {
+    "clean_accuracy": 0.9381,
+    "autoattack_robust_accuracy": 0.0000,
+    "autoattack_components": {
+      "apgd_ce": 0.0021,
+      "apgd_dlr": 0.0008,
+      "fab": 0.0004,
+      "square": 0.0000
+    },
+    "note": "AutoAttack reports 0.00% robust accuracy on the undefended model at eps=8/255. This is the standard expected result — undefended CIFAR-10 models have no meaningful robustness. FGSM appeared to give ~14% 'robust accuracy' on this model, which is a gradient masking artifact (Athalye et al. 2018). AutoAttack eliminates this artifact."
+  },
+
+  "madry_at_resnet18": {
+    "clean_accuracy": 0.8412,
+    "autoattack_robust_accuracy": 0.4381,
+    "autoattack_components": {
+      "apgd_ce": 0.4512,
+      "apgd_dlr": 0.4421,
+      "fab": 0.4412,
+      "square": 0.4381
+    },
+    "note": "Madry AT achieves 43.81% AutoAttack robust accuracy. Slightly lower than PGD-40 evaluation (44.87%) because AutoAttack is a stronger, multi-component attack. This is consistent with published Madry AT results on RobustBench."
+  },
+
+  "robustbench_context": {
+    "this_model_autoattack_robust_acc": 0.4381,
+    "robustbench_top_model_2024": "Wang2023Better: 70.69% (AutoAttack eps=8/255)",
+    "robustbench_madry_baseline": "~44-47% (standard Madry AT reproductions)",
+    "our_placement": "Consistent with standard Madry AT baseline. Top models are ~27pp above this baseline.",
+    "leaderboard_url": "https://robustbench.github.io/#div_cifar10_Linf_heading"
+  },
+
+  "gradient_masking_note": "FGSM robust accuracy (14.23%) > PGD-40 (0.31%) on the undefended model is a classic gradient masking signal (Athalye et al. 2018). AutoAttack confirms the true robust accuracy is 0.00%. Always use AutoAttack or PGD-40 as primary benchmark, not FGSM alone."
+}
