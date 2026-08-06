@@ -28,3 +28,9 @@ __pycache__/
 .coverage
 test_env/
 *.egg-info
+
+# Track specific model and result files
+!src/adv_lab/models/
+!src/adv_lab/models/*.py
+!results/
+!results/*.json
