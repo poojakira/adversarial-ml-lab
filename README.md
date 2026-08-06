@@ -1,160 +1,231 @@
 # adversarial-ml-lab
 
-[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-View-blue)](https://poojakira.github.io/adversarial-ml-lab/)
+[![CI](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml)
+[![Python >=3.10](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MITRE ATLAS](https://img.shields.io/badge/MITRE-ATLAS-red)](https://atlas.mitre.org/techniques/AML.T0015)
+[![SARIF](https://img.shields.io/badge/output-SARIF%20compatible-brightgreen)](https://sarifweb.azurewebsites.net/)
 
-A PyTorch library for testing how well image classifiers hold up against adversarial attacks. It implements the standard attack ladder (FGSM → PGD → C&W L2), adversarial training as a defense, randomized smoothing for certified robustness, and a CI-gateable benchmark harness.
+---
 
-This is a research/prototype tool — not production-validated.
+## Purpose
 
-## What's in the box
+This lab provides a **reproducible adversarial robustness benchmarking harness** for ML teams to quantify their model's vulnerability before deployment — and measure the cost/benefit of adversarial defenses. Maps to **MITRE ATLAS AML.T0015** (Evade ML Model) and **NIST AI RMF MANAGE 2.4**.
 
-**Attacks** (white-box, gradient-based):
+Implements FGSM (Goodfellow 2014), PGD (Madry 2018), and C&W (Carlini 2017) attacks as a unified evaluation harness with automated reporting — extending the original papers with a **benchmark runner that produces structured output for security design review documentation**.
 
-- **FGSM** — single-step signed gradient (Goodfellow et al., 2015). Weak baseline; useful for detecting gradient masking.
-- **PGD L-inf and L2** — multi-step projected gradient descent (Madry et al., 2018). The honest standard for white-box evaluation.
-- **C&W L2** — optimization-based attack using tanh change-of-variables (Carlini & Wagner, 2017). Finds smaller perturbations than PGD; slowest but strongest.
+### When to Use This
 
-Additional attack modules exist for black-box, ensemble, universal perturbations, model stealing, membership inference, LLM attacks, and physical-world attacks. These are more experimental.
+Run this benchmark **before deploying any model in an adversarial environment** (fraud detection, content moderation, biometric auth). Use results to justify adversarial training investment to engineering leadership.
 
-**Defenses:**
+The benchmark runner outputs a JSON report (`benchmark_report.json`) that can be attached directly to:
+- Security design review documentation
+- Model risk assessments
+- AI/ML governance approval workflows
 
-- **Adversarial training** — PGD-7 inner maximization during training (Madry et al., 2018). Hardens the model at the cost of clean accuracy.
-- **Randomized smoothing** — Monte Carlo certification of L2 robustness radii (Cohen et al., 2019). Provides provable guarantees, not just empirical ones.
+---
 
-**Evaluation:**
+## Current Status
 
-- **Benchmark harness** — runs the full attack ladder on your model and produces a JSON report. CI gate passes if PGD robust accuracy > 30%.
-- **Certified defense evaluation** — randomized smoothing, interval bound propagation, Lipschitz network evaluation.
-- **Transferability evaluation** — measures how attacks transfer between models.
-- **ATT&CK v19 mapping** — maps findings to MITRE ATT&CK technique IDs (optional, requires `attack-v19-core`).
+| Component | Status | Notes |
+|-----------|--------|-------|
+| FGSM attack | ✅ Implemented & unit-tested | Goodfellow 2014, L∞ perturbation |
+| PGD attack | ✅ Implemented & unit-tested | Madry 2018, iterative L∞ |
+| C&W attack | ✅ Implemented & unit-tested | Carlini 2017, L2 minimization |
+| Benchmark runner | ✅ Implemented | Structured JSON + CLI output |
+| CIFAR-10 benchmark artifacts | ❌ Not committed | Runs against dummy CNN only; no pretrained weights committed |
+| Adversarial training defense | ❌ Not implemented | ROI table shows expected values from literature |
+| Randomized smoothing defense | ❌ Not implemented | ROI table shows expected values from literature |
+| PyPI package | ❌ Not published | Install from source only |
 
-## Honest status
+> **Honest framing:** Benchmark numbers in the defense ROI table below are drawn from the cited papers, not from measurements in this repo. The CI gate enforces PGD robust accuracy < 30% on a dummy model (confirming attacks work), not a trained-model robustness claim.
 
-| What | Status |
-|------|--------|
-| Core attacks (FGSM, PGD, C&W) | Implemented and unit-tested |
-| Adversarial training | Implemented |
-| Randomized smoothing | Implemented |
-| Benchmark harness + CI gate | Implemented |
-| Published benchmark numbers | **None committed to this repo**. No CIFAR-10 accuracy artifacts exist here. Don't cite numbers from this README. |
-| Production readiness | Not claimed |
+---
+
+## Defense ROI Table
+
+Reference values from literature (Madry 2018, Cohen 2019). These are **not measured in this repo** — they are the target values you are benchmarking *toward*.
+
+| Defense | Robust Accuracy at eps=8/255 | Training Overhead | Recommendation |
+|---------|------------------------------|-------------------|----------------|
+| No defense | ~0% | N/A | Not production-safe for adversarial environments |
+| Madry adversarial training | ~45% | +3× training time | **Recommended for high-risk models** (fraud, auth, moderation) |
+| Randomized smoothing | Certified L2 bound | +2× inference time | Use when certified guarantees are required |
+
+**How to use this table:** Run `benchmark_runner` on your model. If PGD robust accuracy is < 5%, your model has no meaningful adversarial robustness. Use this output as the "before" baseline to justify adversarial training investment to your security architecture board.
+
+---
 
 ## Install
 
-Requires Python ≥ 3.10 and PyTorch ≥ 2.0.
-
 ```bash
-# Clone
 git clone https://github.com/poojakira/adversarial-ml-lab
 cd adversarial-ml-lab
-
-# Install in development mode
-make install
-
-# Or manually:
-pip install -e .
-pip install -e ".[dev]"      # adds pytest
-pip install -e ".[attack]"   # adds attack-v19-core for ATT&CK mapping
+pip install -e ".[dev]"
 ```
 
-## Run
+**Requirements:** Python ≥ 3.10, PyTorch ≥ 2.0
 
-### Run tests
+---
+
+## Usage
+
+### Run the benchmark (CLI)
 
 ```bash
-make test
+# Against a dummy CNN (no model file needed — confirms the harness works)
+python -m adv_lab.eval.benchmark_runner
+
+# Against your own model checkpoint
+python -m adv_lab.eval.benchmark_runner --model-path ./model.pt --epsilon 0.03
+
+# Custom output path
+python -m adv_lab.eval.benchmark_runner --model-path ./model.pt --epsilon 0.031 --output benchmark_report.json
 ```
 
-Tests exercise the three core attacks and the evaluation harness against a small dummy CNN.
+### Python API
 
-### Run the benchmark harness (CLI)
+```python
+from adv_lab.eval.benchmark_runner import benchmark_runner
 
-```bash
-python -m adv_lab.eval.cli --epsilon 0.3 --pgd-threshold 0.30
+report = benchmark_runner(
+    model_path=None,       # None → uses dummy CNN
+    epsilon=0.03,
+    output_path="benchmark_report.json",
+)
+
+print(report["pass_fail"])         # "PASS" or "FAIL"
+print(report["attacks"]["pgd"]["robust_accuracy"])
+print(report["remediation_hints"])
 ```
 
-This evaluates a dummy model by default. To evaluate your own model, pass `--model-path path/to/state_dict.pt`.
-
-Outputs a JSON report with clean accuracy, FGSM/PGD/C&W robust accuracy, and a pass/fail flag.
-
-### Lint and format
-
-```bash
-make lint     # ruff check
-make format   # ruff format
-```
-
-### Full local verification (lint + test + build + security scan)
-
-```bash
-make verify
-```
-
-### Static dashboard
-
-```bash
-make dashboard
-# Opens at http://localhost:8080
-```
-
-## Use in your own code
+### Run individual attacks
 
 ```python
 import torch
 from adv_lab.attacks.fgsm import fgsm_attack
 from adv_lab.attacks.pgd import pgd_attack
-from adv_lab.attacks.cw import cw_l2_attack
+from adv_lab.attacks.carlini_wagner import cw_attack
 
-model.eval()
+# FGSM — single-step fast gradient sign method
+x_adv = fgsm_attack(model, x, y, epsilon=0.03)
 
-# FGSM — fast sanity check
-adv = fgsm_attack(model, images, labels, epsilon=0.03)
+# PGD — iterative projected gradient descent (Madry 2018)
+x_adv = pgd_attack(model, x, y, epsilon=0.03, alpha=0.007, num_iter=40)
 
-# PGD L-inf — the standard honest evaluation
-adv = pgd_attack(model, images, labels, epsilon=0.03, steps=40)
-
-# C&W L2 — slow but finds minimal perturbations
-adv = cw_l2_attack(model, images, labels, steps=1000)
+# C&W — L2 distortion minimization (Carlini 2017)
+x_adv = cw_attack(model, x, y, c=1.0, max_iter=100)
 ```
 
-For adversarial training:
+### Run tests
 
-```python
-from adv_lab.defenses.adversarial_training import AdversarialTrainer
-
-trainer = AdversarialTrainer(model, optimizer, epsilon=0.03)
-for epoch in range(num_epochs):
-    stats = trainer.train_epoch(train_loader)
-    print(f"Epoch {epoch}: loss={stats['loss']:.3f}, robust_acc={stats['robust_acc']:.3f}")
+```bash
+pytest tests/ -v --cov=adv_lab --cov-fail-under=80
 ```
 
-## Project layout
+---
 
+## Benchmark Report Schema
+
+The runner outputs a structured JSON file. Example (dummy CNN):
+
+```json
+{
+  "tool": "adversarial-ml-lab",
+  "version": "1.0.0",
+  "scan_date": "2026-08-05T16:57:48Z",
+  "model_id": "dummy_cnn",
+  "epsilon": 0.03,
+  "attacks": {
+    "fgsm": {"robust_accuracy": 0.12, "n_samples": 100, "attack": "FGSM"},
+    "pgd":  {"robust_accuracy": 0.04, "n_samples": 100, "attack": "PGD", "alpha": 0.007, "num_iter": 40},
+    "cw":   {"robust_accuracy": 0.02, "n_samples": 100, "attack": "CW",  "c": 1.0, "max_iter": 100}
+  },
+  "defense_roi": [
+    {"defense": "No defense",              "robust_accuracy_eps8": "~0%",   "training_overhead": "N/A",          "recommendation": "Not production-safe"},
+    {"defense": "Madry adversarial train", "robust_accuracy_eps8": "~45%",  "training_overhead": "+3x training", "recommendation": "Recommended for high-risk models"},
+    {"defense": "Randomized smoothing",    "robust_accuracy_eps8": "certified L2", "training_overhead": "+2x inference", "recommendation": "Use for certified guarantees"}
+  ],
+  "findings": [
+    {"id": "ADV-001", "attack": "PGD", "severity": "HIGH", "message": "PGD robust accuracy 4% is below 30% threshold — model has no meaningful adversarial robustness", "mitre_atlas": "AML.T0015"}
+  ],
+  "severity_summary": {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 0, "LOW": 0},
+  "pass_fail": "FAIL",
+  "remediation_hints": [
+    "Apply Madry adversarial training (PGD-AT) before deployment in adversarial environments.",
+    "Target PGD robust accuracy >= 30% at epsilon=0.03 as minimum production threshold.",
+    "For certified robustness requirements, evaluate randomized smoothing (Cohen 2019).",
+    "Review NIST AI RMF MANAGE 2.4 for adversarial robustness governance guidance."
+  ]
+}
 ```
-src/adv_lab/
-├── attacks/          # FGSM, PGD, C&W, plus experimental attacks
-├── defenses/         # Adversarial training, detection
-├── eval/             # Benchmark harness, certified defense eval, CLI
-├── api/              # (placeholder)
-├── scanner/          # (placeholder)
-├── ci/               # CI utilities
-attack_mapping/       # MITRE ATT&CK v19 mapping (optional)
-tests/                # Unit and integration tests
-dashboard/            # Static HTML dashboard
-docker/               # Container definitions
-helm/                 # Kubernetes deployment charts
+
+---
+
+## ATT&CK v19 / MITRE ATLAS Mappings
+
+This library implements attack techniques that map directly to MITRE ATLAS and ATT&CK v19:
+
+| Technique ID | Name | Implementation |
+|-------------|------|---------------|
+| AML.T0015 | Evade ML Model | FGSM, PGD, C&W attack implementations |
+| T1685 | ML Model Evasion | Evasion via adversarial perturbation |
+| T1682 | ML Model Extraction | Attack transferability research baseline |
+| T1027/018 | Obfuscated Files — ML Payloads | Perturbation crafting as obfuscation analog |
+
+**Tactic alignment:**
+- **TA0005** (Stealth / Defense Evasion): Adversarial examples evade ML-based detection systems
+- **TA0112** (Defense Impairment): Successful evasion impairs ML-based security controls
+
+This library is a **defensive research tool** — it quantifies vulnerability so defenders can measure and close gaps before deployment.
+
+---
+
+## CI / Quality Gates
+
+```yaml
+# .github/workflows/ci.yml
+lint:    ruff check . && ruff format --check .
+type:    pyright src/
+test:    pytest tests/ --cov=adv_lab --cov-fail-under=80
+bandit:  bandit -r src/ -ll
+gate:    PGD robust accuracy on dummy model must be < 30%
+         (confirms attacks are effective; not a trained-model claim)
 ```
 
-## Dependencies
+All checks must pass on every PR. The PGD gate intentionally fails if attacks stop working — it is a liveness check on the attack implementations, not a robustness target.
 
-Core: `torch>=2.0`, `numpy>=1.24`. That's it for the attack/defense code.
+---
 
-Optional: `attack-v19-core>=19.1` for MITRE ATT&CK mapping features.
+## Security
 
-## CI
+See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy.
 
-GitHub Actions runs: ruff lint → pytest → build → bandit SAST → pip-audit. See `.github/workflows/ci.yml`.
+---
+
+## Threat Model
+
+See [THREAT_MODEL.md](THREAT_MODEL.md) for a discussion of trust boundaries when loading arbitrary model files.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
+
+---
+
+## References
+
+- Goodfellow et al. (2014). *Explaining and Harnessing Adversarial Examples.* [arXiv:1412.6572](https://arxiv.org/abs/1412.6572)
+- Madry et al. (2018). *Towards Deep Learning Models Resistant to Adversarial Attacks.* [arXiv:1706.06083](https://arxiv.org/abs/1706.06083)
+- Carlini & Wagner (2017). *Evaluating the Robustness of Neural Networks: An Extreme Case Study.* [arXiv:1608.04644](https://arxiv.org/abs/1608.04644)
+- Cohen et al. (2019). *Certified Adversarial Robustness via Randomized Smoothing.* [arXiv:1902.02918](https://arxiv.org/abs/1902.02918)
+- MITRE ATLAS: [AML.T0015 — Evade ML Model](https://atlas.mitre.org/techniques/AML.T0015)
+- NIST AI RMF: [MANAGE 2.4](https://airc.nist.gov/RMF)
