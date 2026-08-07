@@ -1,3 +1,6 @@
+> ⚠️ **EDUCATIONAL IMPLEMENTATION — For production adversarial robustness testing, use [IBM ART](https://github.com/Trusted-AI/adversarial-robustness-toolbox) or [Foolbox](https://github.com/bethgelab/foolbox). This implements FGSM/PGD/C&W for learning purposes. CIFAR-10 benchmark results are from published literature, not independently measured.**
+
+---
 # adversarial-ml-lab
 
 [![CI](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml)
