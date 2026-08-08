@@ -24,7 +24,6 @@ the RobustBench CIFAR-10 L∞ leaderboard (eps=8/255).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterator
 
 import torch
 import torch.nn as nn
