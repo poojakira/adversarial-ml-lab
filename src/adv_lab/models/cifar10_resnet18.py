@@ -20,6 +20,7 @@ Reference results on this model (epsilon=8/255, PGD-40 steps, alpha=2/255):
 These results are consistent with the published Madry et al. (2018) paper and
 the RobustBench CIFAR-10 L∞ leaderboard (eps=8/255).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -29,8 +30,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-
 # ── ResNet building blocks ─────────────────────────────────────────────────────
+
 
 class _BasicBlock(nn.Module):
     expansion = 1
@@ -80,7 +81,7 @@ class ResNet18CIFAR10(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
 
-        self.layer1 = self._make_layer(64,  2, stride=1)
+        self.layer1 = self._make_layer(64, 2, stride=1)
         self.layer2 = self._make_layer(128, 2, stride=2)
         self.layer3 = self._make_layer(256, 2, stride=2)
         self.layer4 = self._make_layer(512, 2, stride=2)
@@ -117,6 +118,7 @@ class ResNet18CIFAR10(nn.Module):
 
 # ── CIFAR-10 data loader ───────────────────────────────────────────────────────
 
+
 def get_cifar10_loaders(
     data_dir: str | Path = "./data",
     batch_size: int = 128,
@@ -143,24 +145,27 @@ def get_cifar10_loaders(
         import torchvision.transforms as transforms
     except ImportError as exc:
         raise ImportError(
-            "torchvision is required for CIFAR-10 loading. "
-            "Install with: pip install torchvision"
+            "torchvision is required for CIFAR-10 loading. " "Install with: pip install torchvision"
         ) from exc
 
     # Standard CIFAR-10 normalisation (mean/std computed over training set)
     CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
-    CIFAR10_STD  = (0.2023, 0.1994, 0.2010)
+    CIFAR10_STD = (0.2023, 0.1994, 0.2010)
 
-    train_transform = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
-    ])
-    test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
-    ])
+    train_transform = transforms.Compose(
+        [
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
+        ]
+    )
+    test_transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
+        ]
+    )
 
     train_set = torchvision.datasets.CIFAR10(
         root=str(data_dir), train=True, download=True, transform=train_transform
