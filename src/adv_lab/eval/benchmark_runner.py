@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -33,6 +32,7 @@ PGD_ROBUST_ACC_GATE = 0.30  # CI fails if PGD robust accuracy < 30%
 
 
 # ── Minimal dummy CNN for default benchmarking ───────────────────────────────
+
 
 class _DummyCNN(nn.Module):
     """Minimal CNN used when no model path is provided."""
@@ -90,6 +90,7 @@ def _make_test_batch(
 
 # ── Attack implementations ────────────────────────────────────────────────────
 
+
 def _fgsm(
     model: nn.Module,
     images: torch.Tensor,
@@ -127,7 +128,7 @@ def _pgd(
     More steps = stronger attack = more honest robustness estimate.
     """
     if step_size is None:
-        step_size = epsilon / (steps ** 0.5)
+        step_size = epsilon / (steps**0.5)
 
     adv = images.clone().detach()
     orig = images.clone().detach()
@@ -158,6 +159,7 @@ def _robust_accuracy(
 
 
 # ── Report construction ───────────────────────────────────────────────────────
+
 
 def _severity_from_robust_acc(robust_acc: float) -> str:
     """Map PGD robust accuracy to a severity level for the CI gate."""
@@ -231,27 +233,31 @@ def benchmark_runner(
     findings: list[dict[str, Any]] = []
 
     if pgd_robust_acc < PGD_ROBUST_ACC_GATE:
-        findings.append({
-            "severity": pgd_severity,
-            "attack": "pgd",
-            "atlas_technique": "AML.T0015",
-            "message": (
-                f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {PGD_ROBUST_ACC_GATE:.0%} "
-                f"CI gate threshold. This model is not safe for adversarial environments."
-            ),
-        })
+        findings.append(
+            {
+                "severity": pgd_severity,
+                "attack": "pgd",
+                "atlas_technique": "AML.T0015",
+                "message": (
+                    f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {PGD_ROBUST_ACC_GATE:.0%} "
+                    f"CI gate threshold. This model is not safe for adversarial environments."
+                ),
+            }
+        )
 
     if fgsm_robust_acc > pgd_robust_acc + 0.20:
-        findings.append({
-            "severity": "MEDIUM",
-            "attack": "gradient_masking_indicator",
-            "atlas_technique": "AML.T0015",
-            "message": (
-                f"FGSM robust acc ({fgsm_robust_acc:.1%}) significantly exceeds "
-                f"PGD robust acc ({pgd_robust_acc:.1%}). "
-                "This is a gradient masking indicator — apparent FGSM robustness is likely false."
-            ),
-        })
+        findings.append(
+            {
+                "severity": "MEDIUM",
+                "attack": "gradient_masking_indicator",
+                "atlas_technique": "AML.T0015",
+                "message": (
+                    f"FGSM robust acc ({fgsm_robust_acc:.1%}) significantly exceeds "
+                    f"PGD robust acc ({pgd_robust_acc:.1%}). "
+                    "This is a gradient masking indicator — apparent FGSM robustness is likely false."
+                ),
+            }
+        )
 
     severity_summary = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
     for f in findings:

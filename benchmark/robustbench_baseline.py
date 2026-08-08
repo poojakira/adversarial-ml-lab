@@ -19,7 +19,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -48,7 +47,6 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from adv_lab.attacks.fgsm import fgsm_attack  # noqa: E402
 from adv_lab.attacks.pgd import pgd_attack  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -104,9 +102,11 @@ class ResNet18CIFAR10Adapter(nn.Module):
 # ---------------------------------------------------------------------------
 def load_cifar10_batch(num_images: int = NUM_IMAGES) -> tuple[torch.Tensor, torch.Tensor]:
     """Load the first `num_images` from CIFAR-10 test set as normalized tensors."""
-    transform = transforms.Compose([
-        transforms.ToTensor(),  # Converts to [0, 1] float tensor
-    ])
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),  # Converts to [0, 1] float tensor
+        ]
+    )
 
     # Download CIFAR-10 to a cache directory within the repo
     cache_dir = REPO_ROOT / ".data"
@@ -267,23 +267,31 @@ def main() -> None:
     # Clean evaluation
     print("\n[3/4] Evaluating clean accuracy...")
     clean_results = evaluate_clean(model, images, labels)
-    print(f"       Clean accuracy: {clean_results['correct']}/{clean_results['total']}"
-          f" = {clean_results['accuracy']:.1%}")
+    print(
+        f"       Clean accuracy: {clean_results['correct']}/{clean_results['total']}"
+        f" = {clean_results['accuracy']:.1%}"
+    )
     print("       (Low accuracy expected: ImageNet model on CIFAR-10 classes)")
 
     # Attack evaluations
     print("\n[4/4] Running adversarial attacks...")
     print(f"\n  FGSM (eps={EPS*255:.0f}/255)...")
     fgsm_results = evaluate_fgsm(model, images, labels, epsilon=EPS)
-    print(f"       Fooled: {fgsm_results['fooled']}/{fgsm_results['clean_correct']}"
-          f" = {fgsm_results['success_rate']:.1%} success rate")
+    print(
+        f"       Fooled: {fgsm_results['fooled']}/{fgsm_results['clean_correct']}"
+        f" = {fgsm_results['success_rate']:.1%} success rate"
+    )
     print(f"       Adversarial accuracy: {fgsm_results['adversarial_accuracy']:.1%}")
     print(f"       Time: {fgsm_results['elapsed_seconds']:.3f}s")
 
-    print(f"\n  PGD-20 (eps={EPS*255:.0f}/255, alpha={PGD_ALPHA*255:.0f}/255, steps={PGD_STEPS})...")
+    print(
+        f"\n  PGD-20 (eps={EPS*255:.0f}/255, alpha={PGD_ALPHA*255:.0f}/255, steps={PGD_STEPS})..."
+    )
     pgd_results = evaluate_pgd(model, images, labels, epsilon=EPS, alpha=PGD_ALPHA, steps=PGD_STEPS)
-    print(f"       Fooled: {pgd_results['fooled']}/{pgd_results['clean_correct']}"
-          f" = {pgd_results['success_rate']:.1%} success rate")
+    print(
+        f"       Fooled: {pgd_results['fooled']}/{pgd_results['clean_correct']}"
+        f" = {pgd_results['success_rate']:.1%} success rate"
+    )
     print(f"       Adversarial accuracy: {pgd_results['adversarial_accuracy']:.1%}")
     print(f"       Time: {pgd_results['elapsed_seconds']:.3f}s")
 
