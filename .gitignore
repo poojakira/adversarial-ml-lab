@@ -20,6 +20,7 @@ results/
 
 # Downloaded datasets and model checkpoints (fetched on demand by RobustBench)
 data/
+.data/
 models/
 venv/
 .pytest_cache/
