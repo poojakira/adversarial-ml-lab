@@ -270,8 +270,8 @@ def benchmark_runner(
     remediation_hints: list[str] = []
     if pgd_robust_acc < PGD_ROBUST_ACC_GATE:
         remediation_hints.append(
-            "Apply Madry adversarial training (PGD-7, eps=%.3f) — "
-            "expected to improve robust accuracy to ~40-50%%." % epsilon
+            f"Apply Madry adversarial training (PGD-7, eps={epsilon:.3f}) — "
+            "expected to improve robust accuracy to ~40-50%."
         )
         remediation_hints.append(
             "Consider randomized smoothing for certified robustness guarantees."
