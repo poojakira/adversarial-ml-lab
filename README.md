@@ -59,15 +59,65 @@ Reference values from literature (Madry 2018, Cohen 2019). These are **not measu
 
 ---
 
-## Install
+## Installation
+
+### Prerequisites
+- Python 3.10 or newer
+- pip (comes with Python)
+- PyTorch 2.0 or newer (CPU or CUDA — installed automatically)
+- numpy (installed automatically)
+
+### Install from source
+
+```powershell
+# Windows PowerShell
+git clone https://github.com/poojakira/adversarial-ml-lab.git
+cd adversarial-ml-lab
+py -m pip install -e ".[dev]"
+```
 
 ```bash
-git clone https://github.com/poojakira/adversarial-ml-lab
+# Linux / Mac
+git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
 pip install -e ".[dev]"
 ```
 
-**Requirements:** Python ≥ 3.10, PyTorch ≥ 2.0
+### Verify installation
+
+```powershell
+# Windows PowerShell
+py -c "from adv_lab.attacks.fgsm import fgsm_attack; from adv_lab.attacks.pgd import pgd_attack; print('OK')"
+```
+
+```bash
+# Linux / Mac
+python -c "from adv_lab.attacks.fgsm import fgsm_attack; from adv_lab.attacks.pgd import pgd_attack; print('OK')"
+```
+
+### Run tests
+
+```powershell
+# Windows PowerShell
+py -m pytest tests/ -v --cov=adv_lab --cov-fail-under=80
+# Expected: all tests passed, coverage >= 80%
+```
+
+```bash
+# Linux / Mac
+pytest tests/ -v --cov=adv_lab --cov-fail-under=80
+# Expected: all tests passed, coverage >= 80%
+```
+
+### Common issues
+
+| Problem | Fix |
+|---------|-----|
+| `py` not recognized (Windows) | Use `python` instead, or install Python from python.org and ensure it's on PATH |
+| PyTorch install fails / takes forever | Install PyTorch separately first: `py -m pip install torch --index-url https://download.pytorch.org/whl/cpu` (CPU-only, faster) |
+| CUDA out of memory | The benchmark runner defaults to CPU. For GPU, ensure CUDA 12.1+ is installed and use `pip install torch --index-url https://download.pytorch.org/whl/cu121` |
+| Permission denied on install | Use a virtual environment: `py -m venv .venv && .venv\Scripts\activate` |
+| `ModuleNotFoundError: No module named 'adv_lab'` | Ensure you ran `pip install -e .` from the repo root directory |
 
 ---
 
