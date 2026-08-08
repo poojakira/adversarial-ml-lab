@@ -239,7 +239,7 @@ def benchmark_runner(
                 "attack": "pgd",
                 "atlas_technique": "AML.T0015",
                 "message": (
-                    f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {PGD_ROBUST_ACC_GATE:.0%} "
+                    f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {PGD_ROBUST_ACC_GATE:.0%} "  # noqa: E501
                     f"CI gate threshold. This model is not safe for adversarial environments."
                 ),
             }
@@ -254,7 +254,7 @@ def benchmark_runner(
                 "message": (
                     f"FGSM robust acc ({fgsm_robust_acc:.1%}) significantly exceeds "
                     f"PGD robust acc ({pgd_robust_acc:.1%}). "
-                    "This is a gradient masking indicator — apparent FGSM robustness is likely false."
+                    "This is a gradient masking indicator — apparent FGSM robustness is likely false."  # noqa: E501
                 ),
             }
         )
@@ -290,7 +290,7 @@ def benchmark_runner(
             "defense": "madry_pgd7_adversarial_training",
             "robust_accuracy_eps8_255_literature": 0.45,
             "training_overhead": "+3x training time",
-            "recommendation": "Recommended for high-risk deployments (fraud detection, biometric auth)",
+            "recommendation": "Recommended for high-risk deployments (fraud detection, biometric auth)",  # noqa: E501
             "note": "Literature estimate (Madry et al. 2018); run on your model to verify",
         },
         {
