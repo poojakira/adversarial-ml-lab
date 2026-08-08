@@ -30,5 +30,7 @@ addopts = "-ra"
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "B", "UP", "S"]
 ignore = ["S101", "N802", "N803", "N806"]
