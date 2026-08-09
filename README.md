@@ -10,9 +10,9 @@
 
 ## Purpose
 
-This lab provides a **reproducible adversarial robustness benchmarking harness** for ML teams to quantify their model's vulnerability before deployment — and measure the cost/benefit of adversarial defenses. Maps to **MITRE ATLAS AML.T0015** (Evade ML Model) and **NIST AI RMF MANAGE 2.4**.
+This lab is a reproducible adversarial robustness benchmarking harness for ML teams to quantify their model's vulnerability before deployment and measure the cost/benefit of adversarial defenses. Maps to **MITRE ATLAS AML.T0015** (Evade ML Model) and **NIST AI RMF MANAGE 2.4**.
 
-Implements FGSM (Goodfellow 2014), PGD (Madry 2018), and C&W (Carlini 2017) attacks as a unified evaluation harness with automated reporting — extending the original papers with a **benchmark runner that produces structured output for security design review documentation**.
+I built this to implement FGSM (Goodfellow 2014), PGD (Madry 2018), and C&W (Carlini 2017) attacks as a unified evaluation harness with automated reporting. It extends the original papers with a **benchmark runner that produces structured output for security design review documentation**.
 
 ### When to Use This
 
@@ -44,7 +44,7 @@ The benchmark runner outputs a JSON report (`benchmark_report.json`) that can be
 
 ## Defense ROI Table
 
-Reference values from literature (Madry 2018, Cohen 2019). These are **not measured in this repo** — they are the target values you are benchmarking *toward*.
+Reference values from literature (Madry 2018, Cohen 2019). These are **not measured in this repo**. They are the target values you are benchmarking *toward*.
 
 | Defense | Robust Accuracy at eps=8/255 | Training Overhead | Recommendation |
 |---------|------------------------------|-------------------|----------------|
@@ -61,7 +61,7 @@ Reference values from literature (Madry 2018, Cohen 2019). These are **not measu
 ### Prerequisites
 - Python 3.10 or newer
 - pip (comes with Python)
-- PyTorch 2.0 or newer (CPU or CUDA — installed automatically)
+- PyTorch 2.0 or newer (CPU or CUDA, installed automatically)
 - numpy (installed automatically)
 
 ### Install from source
@@ -221,13 +221,13 @@ This library implements attack techniques that map directly to MITRE ATLAS and A
 | AML.T0015 | Evade ML Model | FGSM, PGD, C&W attack implementations |
 | T1685 | ML Model Evasion | Evasion via adversarial perturbation |
 | T1682 | ML Model Extraction | Attack transferability research baseline |
-| T1027/018 | Obfuscated Files — ML Payloads | Perturbation crafting as obfuscation analog |
+| T1027/018 | Obfuscated Files, ML Payloads | Perturbation crafting as obfuscation analog |
 
 **Tactic alignment:**
 - **TA0005** (Stealth / Defense Evasion): Adversarial examples evade ML-based detection systems
 - **TA0112** (Defense Impairment): Successful evasion impairs ML-based security controls
 
-This library is a **defensive research tool** — it quantifies vulnerability so defenders can measure and close gaps before deployment.
+This library is a **defensive research tool**. It quantifies vulnerability so defenders can measure and close gaps before deployment.
 
 ---
 
@@ -243,7 +243,7 @@ gate:    PGD robust accuracy on dummy model must be < 30%
          (confirms attacks are effective; not a trained-model claim)
 ```
 
-All checks must pass on every PR. The PGD gate intentionally fails if attacks stop working — it is a liveness check on the attack implementations, not a robustness target.
+All checks must pass on every PR. The PGD gate intentionally fails if attacks stop working. It's a liveness check on the attack implementations, not a robustness target.
 
 ---
 
@@ -276,12 +276,12 @@ Results on CIFAR-10 (10,000 test samples), epsilon=8/255 L-inf. Full results: `r
 
 **Hardware:** AWS g4dn.xlarge (NVIDIA T4 GPU, 16 GB VRAM), PyTorch 2.2.0, CUDA 12.1.
 
-The undefended model collapses to near-0% under PGD-40 — this is the canonical result from Madry et al. (2018). Madry adversarial training recovers ~45% robust accuracy. See [RobustBench CIFAR-10 L-inf leaderboard](https://robustbench.github.io/) for context (top models reach ~66-71%).
+The undefended model collapses to near-0% under PGD-40. This is the canonical result from Madry et al. (2018). Madry adversarial training recovers ~45% robust accuracy. See [RobustBench CIFAR-10 L-inf leaderboard](https://robustbench.github.io/) for context (top models reach ~66-71%).
 
 
 ## AutoAttack Evaluation
 
-**AutoAttack** (Croce & Hein, ICML 2020) is the standard robustness benchmark in 2026 — it replaces single-attack evaluations (FGSM, PGD alone) which can give inflated results due to gradient masking. AutoAttack combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free ensemble.
+**AutoAttack** (Croce & Hein, ICML 2020) is the standard robustness benchmark in 2026. It replaces single-attack evaluations (FGSM, PGD alone) which can give inflated results due to gradient masking. AutoAttack combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free ensemble.
 
 Results at epsilon=8/255 L-inf on CIFAR-10 (see `results/autoattack_benchmark.json`):
 
@@ -290,9 +290,9 @@ Results at epsilon=8/255 L-inf on CIFAR-10 (see `results/autoattack_benchmark.js
 | ResNet-18 (undefended) | 93.81% | **0.00%** | 0.31% |
 | ResNet-18 (Madry AT) | 84.12% | **43.81%** | 44.87% |
 
-> **Gradient masking note:** FGSM gave 14.23% "robust accuracy" on the undefended model — a gradient masking artifact. AutoAttack confirms the true robust accuracy is **0.00%**. Always use AutoAttack or PGD-40 as the primary benchmark, not FGSM alone (Athalye et al. 2018).
+> **Gradient masking note:** FGSM gave 14.23% "robust accuracy" on the undefended model, a gradient masking artifact. AutoAttack confirms the true robust accuracy is **0.00%**. Always use AutoAttack or PGD-40 as the primary benchmark, not FGSM alone (Athalye et al. 2018).
 
-**RobustBench context:** Top CIFAR-10 L-inf models achieve ~70% AutoAttack robust accuracy (Wang et al. 2023). Madry AT at ~44% is the seminal baseline — the starting point, not state-of-the-art. See the [RobustBench leaderboard](https://robustbench.github.io/#div_cifar10_Linf_heading).
+**RobustBench context:** Top CIFAR-10 L-inf models achieve ~70% AutoAttack robust accuracy (Wang et al. 2023). Madry AT at ~44% is the seminal baseline, the starting point, not state-of-the-art. See the [RobustBench leaderboard](https://robustbench.github.io/#div_cifar10_Linf_heading).
 ## MITRE ATLAS Mapping
 
 See [docs/ATLAS_MAPPING.md](docs/ATLAS_MAPPING.md) for full mapping. Summary:
