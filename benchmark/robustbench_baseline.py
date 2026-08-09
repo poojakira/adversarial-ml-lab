@@ -51,7 +51,7 @@ from adv_lab.attacks.pgd import pgd_attack  # noqa: E402
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-NUM_IMAGES = 100  # First N images from CIFAR-10 test set
+NUM_IMAGES = 20  # First N images from CIFAR-10 test set (small for fast CI runs)
 EPS = 8 / 255  # Standard L-inf perturbation budget (RobustBench standard)
 PGD_ALPHA = 2 / 255  # PGD step size (standard: eps/4)
 PGD_STEPS = 20  # PGD iterations (PGD-20 is the standard benchmark)
@@ -245,7 +245,7 @@ def main() -> None:
     print("=" * 70)
     print("REAL Adversarial Robustness Benchmark")
     print("Model: torchvision.resnet18 (pretrained=True, ImageNet weights)")
-    print("Data:  CIFAR-10 test set (first 100 images)")
+    print("Data:  CIFAR-10 test set (first 20 images)")
     print(f"Device: {DEVICE}")
     print(f"L-inf budget: eps={EPS:.5f} ({EPS*255:.0f}/255)")
     print("=" * 70)
@@ -322,11 +322,16 @@ def main() -> None:
         },
         "methodology_notes": [
             "All measurements are REAL — run on real pretrained weights with real data.",
-            "No synthetic/projected numbers. Every value comes from actual forward/backward passes.",
-            "ImageNet-pretrained model evaluated on CIFAR-10 via input upsampling + logit grouping.",
-            "Clean accuracy is expected to be low due to domain mismatch (ImageNet vs CIFAR-10).",
-            "Attack success rates measure the fraction of correctly-classified images that are fooled.",
-            "PGD-20 is strictly stronger than FGSM; if FGSM > PGD success, suspect gradient masking.",
+            "No synthetic/projected numbers. Every value comes from actual "
+            "forward/backward passes.",
+            "ImageNet-pretrained model evaluated on CIFAR-10 via input "
+            "upsampling + logit grouping.",
+            "Clean accuracy is expected to be low due to domain mismatch "
+            "(ImageNet vs CIFAR-10).",
+            "Attack success rates measure the fraction of correctly-classified "
+            "images that are fooled.",
+            "PGD-20 is strictly stronger than FGSM; if FGSM > PGD success, "
+            "suspect gradient masking.",
         ],
         "attack_implementations": {
             "fgsm": "adv_lab.attacks.fgsm.fgsm_attack",
@@ -339,7 +344,7 @@ def main() -> None:
 
     # Write results
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = RESULTS_DIR / "resnet18_cifar10_robustbench.json"
+    output_path = RESULTS_DIR / "robustbench_real.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
 

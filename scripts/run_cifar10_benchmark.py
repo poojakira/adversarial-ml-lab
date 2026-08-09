@@ -34,9 +34,9 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 
-from adv_lab.models.cifar10_resnet18 import ResNet18CIFAR10, get_cifar10_loaders
 from adv_lab.attacks.fgsm import fgsm_attack
 from adv_lab.attacks.pgd import pgd_attack
+from adv_lab.models.cifar10_resnet18 import ResNet18CIFAR10, get_cifar10_loaders
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 EPSILON = 8 / 255        # L-inf budget (standard CIFAR-10 benchmark)
