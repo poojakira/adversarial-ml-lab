@@ -87,7 +87,7 @@ bandit -r src/ -ll
 
 - **Formatter:** `ruff format` (configured in `pyproject.toml`)
 - **Linter:** `ruff check` — all warnings are errors in CI
-- **Type checker:** `pyright` in strict mode for `src/`
+- **Type checker:** CI currently runs `pyright` on `src/adv_lab/eval/ci_signing.py`
 - **Security scanner:** `bandit -r src/ -ll` — medium and high findings are CI failures
 - **Python version:** ≥ 3.10 (uses `str | None` union syntax, `match`, etc.)
 
@@ -95,7 +95,7 @@ bandit -r src/ -ll
 
 ## Testing Requirements
 
-- **Coverage gate:** 80% line coverage enforced (`--cov-fail-under=80`)
+- **Coverage gate:** CI currently enforces 15% line coverage (`--cov-fail-under=15`); local contributors may run the stricter 80% command above before PRs
 - **Attack liveness gate:** PGD robust accuracy on the dummy model must be **< 30%** — this confirms the attacks are actually doing something. A PR that breaks attack effectiveness will fail CI.
 - All new public functions must have at least one unit test covering the happy path and one covering error handling.
 
@@ -119,7 +119,7 @@ If you discover a security vulnerability in this tool (not in the attacks it imp
 
 Before requesting a review, confirm:
 
-- [ ] Tests pass: `pytest tests/ -v --cov=adv_lab --cov-fail-under=80`
+- [ ] Tests pass locally: `pytest tests/ -v --cov=adv_lab --cov-fail-under=80`
 - [ ] No lint errors: `ruff check . && ruff format --check .`
 - [ ] No bandit findings: `bandit -r src/ -ll`
 - [ ] Docstrings added for new public functions

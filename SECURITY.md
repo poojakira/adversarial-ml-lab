@@ -64,7 +64,7 @@ The benchmark report (`benchmark_report.json`) contains model evaluation metadat
 
 ### 4. Dependency supply chain
 
-All dependencies are pinned in `pyproject.toml`. The CI pipeline runs `bandit -r src/ -ll` on every PR. Dependency updates are gated on passing tests and bandit scans.
+Runtime dependencies are declared with lower bounds in `pyproject.toml`; this repo does not commit a lockfile. The CI pipeline runs `bandit -r src/ -ll` on every PR. Dependency updates are gated on passing tests and bandit scans.
 
 ---
 
@@ -74,7 +74,7 @@ The following are **in scope** for vulnerability reports:
 
 - Arbitrary code execution via crafted model files or benchmark inputs
 - Path traversal in `--model-path` or `--output` arguments
-- Dependency vulnerabilities (pinned versions in `pyproject.toml`)
+- Dependency vulnerabilities in declared runtime or development dependencies
 - Any finding that allows an attacker to exfiltrate data or escalate privileges when running this tool
 
 The following are **out of scope**:

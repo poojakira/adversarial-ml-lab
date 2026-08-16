@@ -97,13 +97,13 @@ python -c "from adv_lab.attacks.fgsm import fgsm_attack; from adv_lab.attacks.pg
 ```powershell
 # Windows PowerShell
 py -m pytest tests/ -v --cov=adv_lab --cov-fail-under=80
-# Expected: all tests passed, coverage >= 80%
+# Expected locally for this command: all tests passed, coverage >= 80%
 ```
 
 ```bash
 # Linux / Mac
 pytest tests/ -v --cov=adv_lab --cov-fail-under=80
-# Expected: all tests passed, coverage >= 80%
+# Expected locally for this command: all tests passed, coverage >= 80%
 ```
 
 ### Common issues
@@ -236,8 +236,8 @@ This library is a **defensive research tool**. It quantifies vulnerability so de
 ```yaml
 # .github/workflows/ci.yml
 lint:    ruff check . && ruff format --check .
-type:    pyright src/
-test:    pytest tests/ --cov=adv_lab --cov-fail-under=80
+type:    pyright src/adv_lab/eval/ci_signing.py
+test:    pytest tests/ --cov=adv_lab --cov-fail-under=15
 bandit:  bandit -r src/ -ll
 gate:    PGD robust accuracy on dummy model must be < 30%
          (confirms attacks are effective; not a trained-model claim)
