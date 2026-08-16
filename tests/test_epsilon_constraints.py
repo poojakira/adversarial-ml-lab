@@ -97,10 +97,10 @@ class TestPGDLinfConstraints:
         adv = pgd_attack(model, images, labels, epsilon=epsilon, steps=10)
         # L-inf ball has L2 radius <= epsilon * sqrt(total_dims)
         # The L2 norm of the delta should be <= epsilon * sqrt(C*H*W)
-        delta = (adv - images)
+        delta = adv - images
         l2_norm = delta.view(delta.size(0), -1).norm(dim=1)
         n_dims = delta.shape[1] * delta.shape[2] * delta.shape[3]
-        l2_upper = epsilon * (n_dims ** 0.5)
+        l2_upper = epsilon * (n_dims**0.5)
         assert (l2_norm <= l2_upper + 1e-4).all(), (
             "PGD L-inf delta L2 norm exceeds theoretical maximum — "
             "perturbation may not be in the L-inf ball."
@@ -171,9 +171,9 @@ class TestFGSMConstraints:
         images, labels = batch
         adv = fgsm_attack(model, images, labels, epsilon=epsilon)
         max_delta = (adv - images).abs().max().item()
-        assert max_delta <= epsilon + 1e-5, (
-            f"FGSM L-inf violated: max_delta={max_delta:.6f} > epsilon={epsilon}"
-        )
+        assert (
+            max_delta <= epsilon + 1e-5
+        ), f"FGSM L-inf violated: max_delta={max_delta:.6f} > epsilon={epsilon}"
 
     def test_fgsm_output_in_valid_range(self, model, batch):
         images, labels = batch
@@ -214,8 +214,9 @@ class TestGradientMaskingSanity:
         epsilon = 0.1
 
         fgsm_adv = fgsm_attack(model, images, labels, epsilon=epsilon)
-        pgd_adv = pgd_attack(model, images, labels, epsilon=epsilon,
-                             alpha=0.01, steps=20, random_start=False)
+        pgd_adv = pgd_attack(
+            model, images, labels, epsilon=epsilon, alpha=0.01, steps=20, random_start=False
+        )
 
         with torch.no_grad():
             fgsm_loss = nn.functional.cross_entropy(model(fgsm_adv), labels).item()
