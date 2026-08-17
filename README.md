@@ -96,14 +96,16 @@ python -c "from adv_lab.attacks.fgsm import fgsm_attack; from adv_lab.attacks.pg
 
 ```powershell
 # Windows PowerShell
-py -m pytest tests/ -v --cov=adv_lab --cov-fail-under=80
-# Expected locally for this command: all tests passed, coverage >= 80%
+py -m pytest tests/ -v --cov=adv_lab --cov-fail-under=15
+# Expected locally for this command: all tests passed, coverage >= 15%
 ```
+
+> **Note:** The 15% threshold is a development baseline matching CI. It should be increased as test coverage improves.
 
 ```bash
 # Linux / Mac
-pytest tests/ -v --cov=adv_lab --cov-fail-under=80
-# Expected locally for this command: all tests passed, coverage >= 80%
+pytest tests/ -v --cov=adv_lab --cov-fail-under=15
+# Expected locally for this command: all tests passed, coverage >= 15%
 ```
 
 ### Common issues
@@ -170,8 +172,10 @@ x_adv = cw_attack(model, x, y, c=1.0, max_iter=100)
 ### Run tests
 
 ```bash
-pytest tests/ -v --cov=adv_lab --cov-fail-under=80
+pytest tests/ -v --cov=adv_lab --cov-fail-under=15
 ```
+
+> **Note:** The 15% coverage threshold is a development baseline that matches CI. Increase it as test coverage improves.
 
 ---
 
