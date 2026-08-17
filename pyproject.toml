@@ -17,6 +17,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
 ]
 attack = ["attack-v19-core>=19.1,<20"]
 
