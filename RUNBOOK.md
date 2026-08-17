@@ -74,20 +74,20 @@ make install-core
 **Windows (PowerShell):**
 ```powershell
 # Run FGSM attack example
-.\.venv\Scripts\python.exe -m adversarial_ml_lab.attacks.fgsm --epsilon 0.03
+.\.venv\Scripts\python.exe -m adv_lab.attacks.fgsm --epsilon 0.03
 
 # Run PGD attack example
-.\.venv\Scripts\python.exe -m adversarial_ml_lab.attacks.pgd --steps 40
+.\.venv\Scripts\python.exe -m adv_lab.attacks.pgd --steps 40
 
 # Run adversarial training defense
-.\.venv\Scripts\python.exe -m adversarial_ml_lab.defenses.adversarial_training
+.\.venv\Scripts\python.exe -m adv_lab.defenses.adversarial_training
 ```
 
 **Linux/macOS:**
 ```bash
-python -m adversarial_ml_lab.attacks.fgsm --epsilon 0.03
-python -m adversarial_ml_lab.attacks.pgd --steps 40
-python -m adversarial_ml_lab.defenses.adversarial_training
+python -m adv_lab.attacks.fgsm --epsilon 0.03
+python -m adv_lab.attacks.pgd --steps 40
+python -m adv_lab.defenses.adversarial_training
 ```
 
 **Or use Makefile:**
@@ -100,7 +100,7 @@ make dashboard # Serve dashboard at localhost:8080
 
 ## Step 5: Expected Output
 
-FGSM attack output:
+FGSM attack (example output):
 ```
 [FGSM] Epsilon: 0.03
 [FGSM] Clean accuracy: 0.92
@@ -108,7 +108,7 @@ FGSM attack output:
 [FGSM] Attack success rate: 0.63
 ```
 
-PGD attack output:
+PGD attack (example output):
 ```
 [PGD] Steps: 40, Epsilon: 0.03
 [PGD] Clean accuracy: 0.92
@@ -116,7 +116,7 @@ PGD attack output:
 [PGD] Attack success rate: 0.77
 ```
 
-> **Note:** Exact numbers depend on model and dataset. These are approximate.
+> **Note:** Exact numbers depend on model and dataset. These are approximate example values.
 
 ---
 
@@ -133,8 +133,15 @@ pytest tests/ -v
 ```
 
 **With coverage:**
+
+**Windows (PowerShell):**
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests/ --cov=src --cov-report=term-missing
+```
+
+**Linux/macOS:**
+```bash
+pytest tests/ --cov=src --cov-report=term-missing
 ```
 
 **Full verification (lint + test + build + security):**
@@ -177,9 +184,14 @@ Or view hosted: https://poojakira.github.io/mlsec-dashboards/adversarial-ml-lab/
 
 ### `make test` Fails with "No module named attack_v19_core"
 
-**Fix:** Install the sibling dependency:
+**Fix (Windows PowerShell):**
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e ..\attack-v19-core
+```
+
+**Fix (Linux/macOS):**
+```bash
+pip install -e ../attack-v19-core
 ```
 
 ---
@@ -187,6 +199,8 @@ Or view hosted: https://poojakira.github.io/mlsec-dashboards/adversarial-ml-lab/
 ### ImportError: No module named 'torch'
 
 PyTorch is a dependency. Install it:
+
+**Windows (PowerShell):**
 ```powershell
 .\.venv\Scripts\python.exe -m pip install torch torchvision
 ```
@@ -194,6 +208,16 @@ PyTorch is a dependency. Install it:
 For CPU-only (smaller download):
 ```powershell
 .\.venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
+**Linux/macOS:**
+```bash
+pip install torch torchvision
+```
+
+For CPU-only (smaller download):
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ---
@@ -209,9 +233,16 @@ For CPU-only (smaller download):
 ### CUDA Out of Memory
 
 Attacks default to GPU if available. Force CPU:
+
+**Windows (PowerShell):**
 ```powershell
 $env:CUDA_VISIBLE_DEVICES = ""
-.\.venv\Scripts\python.exe -m adversarial_ml_lab.attacks.fgsm --device cpu
+.\.venv\Scripts\python.exe -m adv_lab.attacks.fgsm --device cpu
+```
+
+**Linux/macOS:**
+```bash
+CUDA_VISIBLE_DEVICES="" python -m adv_lab.attacks.fgsm --device cpu
 ```
 
 ---
