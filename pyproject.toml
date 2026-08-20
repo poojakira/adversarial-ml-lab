@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adversarial-ml-lab"
-version = "0.1.0"
+version = "1.0.0"
 description = "Adversarial ML robustness evaluation and certified defense testing"
 readme = "README.md"
 requires-python = ">=3.10"

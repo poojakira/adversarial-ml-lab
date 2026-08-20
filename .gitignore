@@ -35,3 +35,5 @@ test_env/
 !src/adv_lab/models/*.py
 !results/
 !results/*.json
+
+.venv-test/
