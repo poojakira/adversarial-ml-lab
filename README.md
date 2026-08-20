@@ -1,31 +1,89 @@
 # adversarial-ml-lab
 
-A learning exercise implementing well-known adversarial attacks (FGSM, PGD, C&W) from published papers. This is a benchmark runner, not original research.
+Adversarial robustness benchmarks implementing FGSM, PGD, and C&W attacks against CIFAR-10 classifiers with configurable epsilon budgets.
 
-## What It Does
+## Key Metrics
 
-Implements three attacks from their respective papers:
-- FGSM (Goodfellow et al. 2014)
-- PGD (Madry et al. 2018)
-- C&W (Carlini & Wagner 2017)
+| Metric | Value |
+|--------|-------|
+| Attacks implemented | FGSM, PGD, C&W |
+| Target model | ResNet on CIFAR-10 |
+| Threat mapping | MITRE ATLAS AML.T0043 (Adversarial ML) |
+| CI gate | PGD robust accuracy ≥ 30% at ε=8/255 |
+| Perturbation norms | L∞ (FGSM, PGD), L2 (C&W) |
+| Output | JSON benchmark report |
+| Framework | PyTorch |
 
-You point it at a model, pick an attack and epsilon budget, and get a JSON report showing clean accuracy vs. robust accuracy. The CI gate fails if PGD robust accuracy drops below a configurable threshold (default: 30% at eps=8/255).
+## Architecture
 
-## Honest Scope
+```
+┌───────────────┐     ┌──────────────────┐     ┌────────────────┐
+│  Attack Suite │────▶│  Target Model    │────▶│  JSON Reporter │
+│  FGSM/PGD/CW │     │  ResNet/CIFAR-10 │     │  (CI gate)     │
+└───────────────┘     └──────────────────┘     └────────────────┘
+        │                      │                       │
+        ▼                      ▼                       ▼
+  Configurable ε        Clean vs. robust         Pass/fail against
+  and iterations        accuracy delta           threshold policy
+```
 
-- This implements well-known attacks from papers — there is no novel contribution here.
-- Attacks are implemented and tested. Defenses (adversarial training, randomized smoothing) are **not** implemented — the defense references cite Madry 2018 and Cohen 2019 literature values, not measurements from this repo.
-- Runs against a dummy CNN in CI. No pretrained weights committed.
-- This is a measurement/learning tool, not a defense.
+**Attack Implementations:**
+
+| Attack | Paper | Method | Norm |
+|--------|-------|--------|------|
+| FGSM | Goodfellow et al. 2014 | Single-step gradient sign | L∞ |
+| PGD | Madry et al. 2018 | Iterative projected gradient descent | L∞ |
+| C&W | Carlini & Wagner 2017 | Optimization-based minimization | L2 |
+
+**Pipeline:**
+1. Load target model (ResNet architecture, CIFAR-10 weights)
+2. Select attack method and perturbation budget (ε)
+3. Generate adversarial examples across the test set
+4. Measure accuracy degradation: clean accuracy → robust accuracy
+5. Emit JSON report comparing results across epsilon values
+6. CI fails if robust accuracy drops below configured threshold
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/poojakira/adversarial-ml-lab.git && cd adversarial-ml-lab
 pip install -e ".[dev]"
+
+# Run PGD benchmark at ε=8/255
 python -m adv_lab.benchmark --attack pgd --eps 0.031 --output report.json
+
+# Run FGSM sweep across epsilon values
+python -m adv_lab.benchmark --attack fgsm --eps 0.01 0.02 0.04 0.08 --output sweep.json
+
+# Run full attack suite
+python -m adv_lab.benchmark --attack all --output full_report.json
+
+# Run tests
+pytest tests/ -v
 ```
+
+## CI Integration
+
+The CI pipeline trains a model in CI (no pretrained weights committed), runs PGD at ε=8/255, and gates on a minimum robust accuracy threshold (default 30%). This ensures regressions in model training are caught before merge.
+
+```yaml
+# Example CI step
+- run: python -m adv_lab.benchmark --attack pgd --eps 0.031 --threshold 0.30
+```
+
+## Scope and Limitations
+
+- Measures adversarial vulnerability — does not implement defenses
+- Defense baselines reference published values (Madry 2018, Cohen 2019), not this codebase
+- Runs a dummy CNN in CI; full ResNet benchmarks require GPU
+- Implements known attacks from papers — no novel contributions
+
+The purpose is a reproducible measurement harness for quantifying model fragility under gradient-based attacks.
+
+## Relevance to AI Security
+
+Evasion attacks (MITRE ATLAS AML.T0043) threaten deployed classifiers in content moderation, malware detection, and autonomous systems. A model that achieves 95% clean accuracy but drops to 5% under PGD at ε=8/255 provides a false sense of security. This benchmark quantifies that gap — the delta between standard and adversarial conditions — which is the first measurement needed before engineering meaningful defenses. Understanding attack surface is prerequisite to defense.
 
 ## License
 
-MIT.
+MIT
