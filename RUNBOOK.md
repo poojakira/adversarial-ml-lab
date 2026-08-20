@@ -23,42 +23,36 @@ pip install -e ".[dev,cpu]"
 
 ```bash
 # FGSM attack
-python -m advml.attacks.fgsm --model resnet18 --epsilon 0.03 --output results/fgsm/
+python -m adv_lab.attacks.fgsm --model resnet18 --epsilon 0.03 --output results/fgsm/
 
 # PGD attack
-python -m advml.attacks.pgd --model resnet18 --epsilon 0.03 --steps 20 --step-size 0.007 --output results/pgd/
+python -m adv_lab.attacks.pgd --model resnet18 --epsilon 0.03 --steps 20 --step-size 0.007 --output results/pgd/
 
 # C&W attack (L2 norm)
-python -m advml.attacks.cw --model resnet18 --confidence 0.01 --max-iter 1000 --output results/cw/
+python -m adv_lab.attacks.cw --model resnet18 --confidence 0.01 --max-iter 1000 --output results/cw/
 
 # All attacks at multiple epsilon values
-python -m advml.run_all --epsilons 0.01,0.03,0.05,0.1 --output results/sweep/
+python -m adv_lab.run_all --epsilons 0.01,0.03,0.05,0.1 --output results/sweep/
 ```
 
 ## Evaluate Robustness
 
 ```bash
 # Evaluate model accuracy under attack
-python -m advml.evaluate --model resnet18 --attack-dir results/fgsm/ --metrics accuracy,confidence
+python -m adv_lab.eval --model resnet18 --attack-dir results/fgsm/ --metrics accuracy,confidence
 
 # Compare multiple models
-python -m advml.evaluate --models resnet18,resnet50,vit_small --attack pgd --epsilon 0.03
-
-# Adversarial training evaluation
-python -m advml.evaluate --model results/adv_trained.pt --attack-dir results/pgd/
+python -m adv_lab.eval --models resnet18,resnet50 --attack pgd --epsilon 0.03
 ```
 
 ## Generate Reports
 
 ```bash
 # Generate full benchmark report (Markdown + plots)
-python -m advml.report --results-dir results/ --output report/
+python -m adv_lab.report --results-dir results/ --output report/
 
 # JSON summary for CI
-python -m advml.report --results-dir results/ --format json > benchmark.json
-
-# Specific comparison report
-python -m advml.report --results-dir results/sweep/ --plot-type epsilon-accuracy
+python -m adv_lab.report --results-dir results/ --format json > benchmark.json
 ```
 
 Reports include: accuracy-vs-epsilon curves, per-class robustness breakdown, perturbation visualizations.
