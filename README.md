@@ -49,14 +49,11 @@ Adversarial robustness benchmarks implementing FGSM, PGD, and C&W attacks agains
 git clone https://github.com/poojakira/adversarial-ml-lab.git && cd adversarial-ml-lab
 pip install -e ".[dev]"
 
-# Run PGD benchmark at ε=8/255
-python -m adv_lab.benchmark --attack pgd --eps 0.031 --output report.json
+# Run the FGSM/PGD benchmark harness (trains a model, then attacks it)
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 20 --output report.json
 
-# Run FGSM sweep across epsilon values
-python -m adv_lab.benchmark --attack fgsm --eps 0.01 0.02 0.04 0.08 --output sweep.json
-
-# Run full attack suite
-python -m adv_lab.benchmark --attack all --output full_report.json
+# Tune batch size for available memory
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 64 --output report.json
 
 # Run tests
 pytest tests/ -v
@@ -64,11 +61,11 @@ pytest tests/ -v
 
 ## CI Integration
 
-The CI pipeline trains a model in CI (no pretrained weights committed), runs PGD at ε=8/255, and gates on a minimum robust accuracy threshold (default 30%). This ensures regressions in model training are caught before merge.
+The CI pipeline trains a model in CI (no pretrained weights committed), runs the attack harness, and validates the benchmark completes. This catches regressions in model training and attack code before merge.
 
 ```yaml
 # Example CI step
-- run: python -m adv_lab.benchmark --attack pgd --eps 0.031 --threshold 0.30
+- run: python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --output report.json
 ```
 
 ## Scope and Limitations

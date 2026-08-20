@@ -21,41 +21,25 @@ pip install -e ".[dev,cpu]"
 
 ## Run Attacks
 
-```bash
-# FGSM attack
-python -m adv_lab.attacks.fgsm --model resnet18 --epsilon 0.03 --output results/fgsm/
-
-# PGD attack
-python -m adv_lab.attacks.pgd --model resnet18 --epsilon 0.03 --steps 20 --step-size 0.007 --output results/pgd/
-
-# C&W attack (L2 norm)
-python -m adv_lab.attacks.cw --model resnet18 --confidence 0.01 --max-iter 1000 --output results/cw/
-
-# All attacks at multiple epsilon values
-python -m adv_lab.run_all --epsilons 0.01,0.03,0.05,0.1 --output results/sweep/
-```
-
-## Evaluate Robustness
+The benchmark harness trains a small CNN on CIFAR-10, then runs FGSM and PGD
+attacks against it. Everything is driven through one runnable module.
 
 ```bash
-# Evaluate model accuracy under attack
-python -m adv_lab.eval --model resnet18 --attack-dir results/fgsm/ --metrics accuracy,confidence
+# Run the benchmark at epsilon = 8/255 with 20 PGD steps
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 20 --output results/report.json
 
-# Compare multiple models
-python -m adv_lab.eval --models resnet18,resnet50 --attack pgd --epsilon 0.03
+# Reduce batch size if memory-constrained
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 64 --output results/report.json
+
+# Point at a saved model checkpoint instead of training from scratch
+python -m adv_lab.eval.benchmark_runner --model-path checkpoints/model.pt --epsilon 0.031 --output results/report.json
 ```
 
-## Generate Reports
+## Read the Report
 
-```bash
-# Generate full benchmark report (Markdown + plots)
-python -m adv_lab.report --results-dir results/ --output report/
-
-# JSON summary for CI
-python -m adv_lab.report --results-dir results/ --format json > benchmark.json
-```
-
-Reports include: accuracy-vs-epsilon curves, per-class robustness breakdown, perturbation visualizations.
+`results/report.json` contains clean accuracy, FGSM accuracy, and PGD accuracy at
+the requested epsilon, plus per-attack success rates. Lower post-attack accuracy
+means the model is more vulnerable.
 
 ## Run Tests
 
