@@ -17,8 +17,8 @@ This is a research and evaluation library. Security fixes are applied to the `ma
 
 Report security issues privately via one of:
 
-1. **GitHub private vulnerability reporting** — open a [Security Advisory](https://github.com/poojakira/adversarial-ml-lab/security/advisories/new) in this repo (preferred).
-2. **Email** — send details to the maintainer address listed in `pyproject.toml` with subject line `[SECURITY] adversarial-ml-lab`.
+1. **GitHub private vulnerability reporting**  --  open a [Security Advisory](https://github.com/poojakira/adversarial-ml-lab/security/advisories/new) in this repo (preferred).
+2. **Email**  --  send details to the maintainer address listed in `pyproject.toml` with subject line `[SECURITY] adversarial-ml-lab`.
 
 ### What to include
 

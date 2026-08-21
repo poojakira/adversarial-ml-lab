@@ -70,16 +70,16 @@ The CI pipeline trains a model in CI (no pretrained weights committed), runs the
 
 ## Scope and Limitations
 
-- Measures adversarial vulnerability — does not implement defenses
+- Measures adversarial vulnerability  --  does not implement defenses
 - Defense baselines reference published values (Madry 2018, Cohen 2019), not this codebase
 - Runs a dummy CNN in CI; full ResNet benchmarks require GPU
-- Implements known attacks from papers — no novel contributions
+- Implements known attacks from papers  --  no novel contributions
 
 The purpose is a reproducible measurement harness for quantifying model fragility under gradient-based attacks.
 
 ## Relevance to AI Security
 
-Evasion attacks (MITRE ATLAS AML.T0043) threaten deployed classifiers in content moderation, malware detection, and autonomous systems. A model that achieves 95% clean accuracy but drops to 5% under PGD at ε=8/255 provides a false sense of security. This benchmark quantifies that gap — the delta between standard and adversarial conditions — which is the first measurement needed before engineering meaningful defenses. Understanding attack surface is prerequisite to defense.
+Evasion attacks (MITRE ATLAS AML.T0043) threaten deployed classifiers in content moderation, malware detection, and autonomous systems. A model that achieves 95% clean accuracy but drops to 5% under PGD at ε=8/255 provides a false sense of security. This benchmark quantifies that gap  --  the delta between standard and adversarial conditions  --  which is the first measurement needed before engineering meaningful defenses. Understanding attack surface is prerequisite to defense.
 
 ## License
 

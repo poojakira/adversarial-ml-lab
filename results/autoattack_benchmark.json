@@ -1,9 +1,9 @@
 {
   "_schema": "adv-lab-benchmark-v1",
-  "_status": "PROJECTED FROM PUBLISHED LITERATURE — NOT MEASURED IN THIS REPO",
+  "_status": "PROJECTED FROM PUBLISHED LITERATURE  --  NOT MEASURED IN THIS REPO",
   "_synthetic": true,
   "_synthetic_note": "These results are projected values consistent with published literature (Croce & Hein 2020). No pretrained model weights are committed to this repository. Values are NOT independently reproducible from committed artifacts alone.",
-  "_description": "AutoAttack evaluation on CIFAR-10 ResNet-18 — PROJECTED from literature, not measured in this repo. AutoAttack is the standard ensemble robustness benchmark as of 2020+ (Croce & Hein, ICML 2020). It combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free, reliable benchmark that avoids gradient masking artifacts.",
+  "_description": "AutoAttack evaluation on CIFAR-10 ResNet-18  --  PROJECTED from literature, not measured in this repo. AutoAttack is the standard ensemble robustness benchmark as of 2020+ (Croce & Hein, ICML 2020). It combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free, reliable benchmark that avoids gradient masking artifacts.",
   "_reference": "Croce, F. & Hein, M. (2020). Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks. ICML 2020. https://arxiv.org/abs/2003.01690",
   "_hardware": "AWS g4dn.xlarge: NVIDIA T4 16GB VRAM, PyTorch 2.2.0, autoattack==0.1.1",
   "_run_date": "2026-08-05",
@@ -19,7 +19,7 @@
       "fab": 0.0004,
       "square": 0.0000
     },
-    "note": "AutoAttack reports 0.00% robust accuracy on the undefended model at eps=8/255. This is the standard expected result — undefended CIFAR-10 models have no meaningful robustness. FGSM appeared to give ~14% 'robust accuracy' on this model, which is a gradient masking artifact (Athalye et al. 2018). AutoAttack eliminates this artifact."
+    "note": "AutoAttack reports 0.00% robust accuracy on the undefended model at eps=8/255. This is the standard expected result  --  undefended CIFAR-10 models have no meaningful robustness. FGSM appeared to give ~14% 'robust accuracy' on this model, which is a gradient masking artifact (Athalye et al. 2018). AutoAttack eliminates this artifact."
   },
 
   "madry_at_resnet18": {

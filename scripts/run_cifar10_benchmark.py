@@ -5,8 +5,8 @@ Expected results (epsilon=8/255, L-inf) match Madry et al. (2018) ICLR:
 
   Undefended ResNet-18:
     - Clean accuracy:       ~93.81%
-    - FGSM robust accuracy: ~14.23%  (single-step — gradient masking inflates this)
-    - PGD-40 robust accuracy: ~0.31%  (iterative — exposes true vulnerability)
+    - FGSM robust accuracy: ~14.23%  (single-step  --  gradient masking inflates this)
+    - PGD-40 robust accuracy: ~0.31%  (iterative  --  exposes true vulnerability)
 
   Madry AT ResNet-18 (100 epochs PGD-7 training):
     - Clean accuracy:       ~84.12%  (small clean accuracy cost)
@@ -164,7 +164,7 @@ def main() -> None:
         t0 = time.time()
         train_loss = train_one_epoch(model, train_loader, optimizer, device)
         elapsed = time.time() - t0
-        print(f"[benchmark] Epoch 1 done — loss={train_loss:.4f} ({elapsed:.1f}s)")
+        print(f"[benchmark] Epoch 1 done  --  loss={train_loss:.4f} ({elapsed:.1f}s)")
         training_info = {"trained": True, "epochs": 1, "final_train_loss": round(train_loss, 4)}
 
     # ── Evaluation ───────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ def main() -> None:
             "1-epoch demo run; model not fully trained. "
             "Full 200-epoch benchmark results in results/cifar10_resnet18_benchmark.json."
         ),
-        "reference": "Madry et al. (2018) ICLR — arXiv:1706.06083",
+        "reference": "Madry et al. (2018) ICLR  --  arXiv:1706.06083",
     }
 
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)

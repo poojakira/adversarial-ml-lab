@@ -1,6 +1,6 @@
 # Contributing to adversarial-ml-lab
 
-Thank you for your interest in contributing. This project is an **open research tool** — contributions that improve attack implementations, add new attacks, strengthen the benchmark harness, or improve documentation are all welcome.
+Thank you for your interest in contributing. This project is an **open research tool**  --  contributions that improve attack implementations, add new attacks, strengthen the benchmark harness, or improve documentation are all welcome.
 
 ---
 
@@ -67,7 +67,7 @@ bandit -r src/ -ll
 
 ### Improving the benchmark runner
 
-- Keep `benchmark_runner()` self-contained (no imports from sibling modules that aren't in the package) — the inline attack functions exist so the runner can be used standalone.
+- Keep `benchmark_runner()` self-contained (no imports from sibling modules that aren't in the package)  --  the inline attack functions exist so the runner can be used standalone.
 - The JSON report schema is documented in `README.md`. Any schema changes require a version bump and schema migration notes in the PR description.
 
 ### Adding a benchmark dataset
@@ -79,16 +79,16 @@ bandit -r src/ -ll
 ### Documentation
 
 - READMEs, docstrings, and this file are always welcome improvements.
-- Keep the **Honest Status table** in README.md accurate — if a feature is not implemented or a benchmark is not measured in this repo, say so.
+- Keep the **Honest Status table** in README.md accurate  --  if a feature is not implemented or a benchmark is not measured in this repo, say so.
 
 ---
 
 ## Code Style
 
 - **Formatter:** `ruff format` (configured in `pyproject.toml`)
-- **Linter:** `ruff check` — all warnings are errors in CI
+- **Linter:** `ruff check`  --  all warnings are errors in CI
 - **Type checker:** CI currently runs `pyright` on `src/adv_lab/eval/ci_signing.py`
-- **Security scanner:** `bandit -r src/ -ll` — medium and high findings are CI failures
+- **Security scanner:** `bandit -r src/ -ll`  --  medium and high findings are CI failures
 - **Python version:** ≥ 3.10 (uses `str | None` union syntax, `match`, etc.)
 
 ---
@@ -96,14 +96,14 @@ bandit -r src/ -ll
 ## Testing Requirements
 
 - **Coverage gate:** CI currently enforces 15% line coverage (`--cov-fail-under=15`); local contributors may run the stricter 80% command above before PRs
-- **Attack liveness gate:** PGD robust accuracy on the dummy model must be **< 30%** — this confirms the attacks are actually doing something. A PR that breaks attack effectiveness will fail CI.
+- **Attack liveness gate:** PGD robust accuracy on the dummy model must be **< 30%**  --  this confirms the attacks are actually doing something. A PR that breaks attack effectiveness will fail CI.
 - All new public functions must have at least one unit test covering the happy path and one covering error handling.
 
 ---
 
 ## Security
 
-If you discover a security vulnerability in this tool (not in the attacks it implements — those are the point), please follow the process in [SECURITY.md](SECURITY.md). Do not open a public issue.
+If you discover a security vulnerability in this tool (not in the attacks it implements  --  those are the point), please follow the process in [SECURITY.md](SECURITY.md). Do not open a public issue.
 
 ---
 

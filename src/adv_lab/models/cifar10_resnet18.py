@@ -3,8 +3,8 @@ src/adv_lab/models/cifar10_resnet18.py
 ──────────────────────────────────────────────────────────────────────────────
 CIFAR-10 data loader and ResNet-18 model for adversarial robustness benchmarks.
 
-# MITRE ATLAS: AML.T0043 — Craft Adversarial Data (model used as attack target)
-# MITRE ATLAS: AML.T0015 — Evade ML Model (evaluation of evasion robustness)
+# MITRE ATLAS: AML.T0043  --  Craft Adversarial Data (model used as attack target)
+# MITRE ATLAS: AML.T0015  --  Evade ML Model (evaluation of evasion robustness)
 
 Standard ResNet-18 adapted for CIFAR-10 (32×32 images, 10 classes).
 The architecture follows He et al. (2016) with the first conv layer changed
@@ -13,7 +13,7 @@ from 7×7 stride-2 to 3×3 stride-1 (standard practice for small images).
 Reference results on this model (epsilon=8/255, PGD-40 steps, alpha=2/255):
   - Clean accuracy:            ~93% (undefended)
   - FGSM robust accuracy:      ~10-20% (single-step, gradient masking artifacts)
-  - PGD-40 robust accuracy:     ~0%  (undefended — collapses completely)
+  - PGD-40 robust accuracy:     ~0%  (undefended  --  collapses completely)
   - C&W robust accuracy:        ~0%  (undefended)
   - Madry AT PGD-40 robust:    ~45%  (after 100 epochs adversarial training)
 
@@ -137,7 +137,7 @@ def get_cifar10_loaders(
     Returns
     -------
     tuple
-        (train_loader, test_loader) — standard PyTorch DataLoader objects.
+        (train_loader, test_loader)  --  standard PyTorch DataLoader objects.
     """
     try:
         import torchvision

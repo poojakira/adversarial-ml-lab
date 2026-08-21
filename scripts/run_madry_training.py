@@ -1,5 +1,5 @@
 """
-Madry Adversarial Training — CIFAR-10 ResNet-18
+Madry Adversarial Training  --  CIFAR-10 ResNet-18
 ================================================
 Expected: ~45% PGD-40 robust accuracy after 100 epochs (Madry et al. 2018 ICLR)
 
@@ -149,7 +149,7 @@ def evaluate_clean(model: nn.Module, loader, device: torch.device) -> float:
 
 
 def evaluate_pgd40(model: nn.Module, loader, device: torch.device) -> float:
-    """PGD-40 robust accuracy (evaluation budget — stronger than training attack)."""
+    """PGD-40 robust accuracy (evaluation budget  --  stronger than training attack)."""
     model.eval()
     n_correct = 0
     n_total = 0
@@ -230,7 +230,7 @@ def main() -> None:
         weight_decay=5e-4,
         nesterov=True,
     )
-    # Cosine annealing — standard choice for Madry AT (avoids step-LR epochs)
+    # Cosine annealing  --  standard choice for Madry AT (avoids step-LR epochs)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=args.epochs
     )
@@ -309,7 +309,7 @@ def main() -> None:
         "batch_size":            args.batch_size,
         "training_time_minutes": round(total_time / 60, 1),
         "checkpoint":            str(checkpoint_path),
-        "reference":             "Madry et al. (2018) ICLR — arXiv:1706.06083",
+        "reference":             "Madry et al. (2018) ICLR  --  arXiv:1706.06083",
         "epoch_logs":            epoch_logs,
     }
 
@@ -321,7 +321,7 @@ def main() -> None:
 
     # ── Summary ──────────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("  Madry Adversarial Training — Final Results")
+    print("  Madry Adversarial Training  --  Final Results")
     print("=" * 60)
     print(f"  Epochs:                  {args.epochs}")
     print(f"  Clean accuracy:          {clean_acc * 100:6.2f}%")
@@ -334,7 +334,7 @@ def main() -> None:
     if pgd40_acc >= 0.40:
         print("  ✓ Result consistent with Madry et al. 2018 baseline.")
     else:
-        print("  ✗ Result below expected 40%+ — consider training longer.")
+        print("  ✗ Result below expected 40%+  --  consider training longer.")
 
 
 if __name__ == "__main__":

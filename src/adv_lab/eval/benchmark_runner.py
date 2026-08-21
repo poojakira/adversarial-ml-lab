@@ -8,8 +8,8 @@ Usage:
     python -m adv_lab.eval.benchmark_runner --epsilon 0.03
     python -m adv_lab.eval.benchmark_runner --model-path ./my_model.pt --output report.json
 
-MITRE ATLAS: AML.T0029 — Discover ML Model Ontology (benchmarking model robustness)
-NIST AI RMF: MANAGE 2.4 — Measure and manage AI risks
+MITRE ATLAS: AML.T0029  --  Discover ML Model Ontology (benchmarking model robustness)
+NIST AI RMF: MANAGE 2.4  --  Measure and manage AI risks
 """
 
 from __future__ import annotations
@@ -60,11 +60,11 @@ def _load_model(model_path: str | None) -> tuple[nn.Module, str]:
     if model_path is None:
         model = _DummyCNN()
         model_id = "dummy_cnn"
-        logger.info("No model path provided — benchmarking dummy CNN.")
+        logger.info("No model path provided  --  benchmarking dummy CNN.")
     else:
         if not Path(model_path).exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
-        # Load state dict only — never use pickle.load() on untrusted files.
+        # Load state dict only  --  never use pickle.load() on untrusted files.
         # weights_only=True prevents arbitrary code execution via pickle.
         state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
         model = _DummyCNN()
@@ -100,7 +100,7 @@ def _fgsm(
     """
     Fast Gradient Sign Method (Goodfellow et al., 2014).
 
-    MITRE ATLAS: AML.T0043 — Craft Adversarial Data
+    MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     Single-step attack: fast sanity check and gradient masking detector.
     If a model appears robust against FGSM but not PGD, it is likely using
     gradient masking (a false sense of security).
@@ -122,7 +122,7 @@ def _pgd(
     """
     Projected Gradient Descent (Madry et al., 2018).
 
-    MITRE ATLAS: AML.T0015 — Evade ML Model
+    MITRE ATLAS: AML.T0015  --  Evade ML Model
     The standard honest evaluation for white-box adversarial robustness.
     Use this number (not FGSM) when reporting robust accuracy in design reviews.
     More steps = stronger attack = more honest robustness estimate.
@@ -185,12 +185,12 @@ def benchmark_runner(
 
     Runs FGSM, PGD (L-inf), and a C&W proxy attack against the specified model.
     Exits with code 1 if any HIGH or CRITICAL severity finding is present
-    (i.e., PGD robust accuracy < 30%) — enabling use as a CI gate.
+    (i.e., PGD robust accuracy < 30%)  --  enabling use as a CI gate.
 
     MITRE ATLAS:
-        AML.T0029 — Discover ML Model Ontology
-        AML.T0043 — Craft Adversarial Data
-        AML.T0015 — Evade ML Model
+        AML.T0029  --  Discover ML Model Ontology
+        AML.T0043  --  Craft Adversarial Data
+        AML.T0015  --  Evade ML Model
 
     NIST AI RMF: MANAGE 2.4
 
@@ -211,12 +211,12 @@ def benchmark_runner(
     images, labels = _make_test_batch(batch_size=batch_size)
 
     logger.info("Running FGSM attack (epsilon=%.3f)...", epsilon)
-    # MITRE ATLAS: AML.T0043 — Craft Adversarial Data
+    # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     adv_fgsm = _fgsm(model, images, labels, epsilon=epsilon)
     fgsm_robust_acc = _robust_accuracy(model, adv_fgsm, labels)
 
     logger.info("Running PGD attack (epsilon=%.3f, steps=%d)...", epsilon, pgd_steps)
-    # MITRE ATLAS: AML.T0015 — Evade ML Model
+    # MITRE ATLAS: AML.T0015  --  Evade ML Model
     adv_pgd = _pgd(model, images, labels, epsilon=epsilon, steps=pgd_steps)
     pgd_robust_acc = _robust_accuracy(model, adv_pgd, labels)
 
@@ -224,7 +224,7 @@ def benchmark_runner(
     # Full C&W optimization (Carlini & Wagner 2017) is available via cw_l2_attack
     # but is slow for batch evaluation. PGD-100 is a practical proxy.
     logger.info("Running C&W proxy attack (PGD-100)...")
-    # MITRE ATLAS: AML.T0043 — Craft Adversarial Data
+    # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     adv_cw_proxy = _pgd(model, images, labels, epsilon=epsilon, steps=100)
     cw_robust_acc = _robust_accuracy(model, adv_cw_proxy, labels)
 
@@ -254,7 +254,7 @@ def benchmark_runner(
                 "message": (
                     f"FGSM robust acc ({fgsm_robust_acc:.1%}) significantly exceeds "
                     f"PGD robust acc ({pgd_robust_acc:.1%}). "
-                    "This is a gradient masking indicator — apparent FGSM robustness is likely false."  # noqa: E501
+                    "This is a gradient masking indicator  --  apparent FGSM robustness is likely false."  # noqa: E501
                 ),
             }
         )
@@ -270,7 +270,7 @@ def benchmark_runner(
     remediation_hints: list[str] = []
     if pgd_robust_acc < PGD_ROBUST_ACC_GATE:
         remediation_hints.append(
-            f"Apply Madry adversarial training (PGD-7, eps={epsilon:.3f}) — "
+            f"Apply Madry adversarial training (PGD-7, eps={epsilon:.3f})  --  "
             "expected to improve robust accuracy to ~40-50%."
         )
         remediation_hints.append(
@@ -344,7 +344,7 @@ def benchmark_runner(
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
-    logger.info("Report written to %s — result: %s", output_path, pass_fail)
+    logger.info("Report written to %s  --  result: %s", output_path, pass_fail)
     return report
 
 
@@ -355,7 +355,7 @@ def _main() -> None:
     )
 
     parser = argparse.ArgumentParser(
-        description="Adversarial robustness benchmark — one command, one JSON report.",
+        description="Adversarial robustness benchmark  --  one command, one JSON report.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

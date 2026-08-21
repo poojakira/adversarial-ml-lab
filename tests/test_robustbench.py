@@ -61,7 +61,7 @@ class TestFGSMProperties:
         # At least some pixels should differ
         assert not torch.allclose(
             adv_images, images
-        ), "FGSM did not modify the input — attack is broken"
+        ), "FGSM did not modify the input  --  attack is broken"
 
     def test_fgsm_linf_bound(self) -> None:
         """Perturbation must be within epsilon L-inf ball."""
@@ -128,7 +128,7 @@ class TestPGDProperties:
 
         assert not torch.allclose(
             adv_images, images
-        ), "PGD did not modify the input — attack is broken"
+        ), "PGD did not modify the input  --  attack is broken"
 
     def test_pgd_linf_bound(self) -> None:
         """Perturbation must be within epsilon L-inf ball."""
@@ -203,7 +203,7 @@ class TestPGDL2Properties:
 
         assert not torch.allclose(
             adv_images, images
-        ), "PGD-L2 did not modify the input — attack is broken"
+        ), "PGD-L2 did not modify the input  --  attack is broken"
 
     def test_pgd_l2_norm_bound(self) -> None:
         """Perturbation L2 norm must be within epsilon for each sample."""

@@ -368,7 +368,7 @@ def adaptive_attack(
         try:
             grad = torch.autograd.grad(loss, x_adv)[0]
         except RuntimeError:
-            # Gradient computation failed — this IS gradient masking
+            # Gradient computation failed  --  this IS gradient masking
             masking_detected = True
             attack_log.log_event(
                 "masking_detected",

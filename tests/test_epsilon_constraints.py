@@ -25,7 +25,7 @@ from adv_lab.attacks.pgd import pgd_attack, pgd_l2
 
 
 class SmallCNN(nn.Module):
-    """Minimal model for property testing — no ImageNet weights needed."""
+    """Minimal model for property testing  --  no ImageNet weights needed."""
 
     def __init__(self, num_classes: int = 10) -> None:
         super().__init__()
@@ -102,7 +102,7 @@ class TestPGDLinfConstraints:
         n_dims = delta.shape[1] * delta.shape[2] * delta.shape[3]
         l2_upper = epsilon * (n_dims**0.5)
         assert (l2_norm <= l2_upper + 1e-4).all(), (
-            "PGD L-inf delta L2 norm exceeds theoretical maximum — "
+            "PGD L-inf delta L2 norm exceeds theoretical maximum  --  "
             "perturbation may not be in the L-inf ball."
         )
 
@@ -186,7 +186,7 @@ class TestFGSMConstraints:
         images, labels = batch
         adv = fgsm_attack(model, images, labels, epsilon=0.1)
         delta = (adv - images).abs().sum().item()
-        assert delta > 0, "FGSM produced zero perturbation — gradient may be zero"
+        assert delta > 0, "FGSM produced zero perturbation  --  gradient may be zero"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -197,7 +197,7 @@ class TestFGSMConstraints:
 class TestGradientMaskingSanity:
     """Sanity checks for gradient masking.
 
-    A model that masks its gradients will make PGD *appear* weak — producing
+    A model that masks its gradients will make PGD *appear* weak  --  producing
     near-zero perturbations that don't fool the model, while actually evading
     a key evaluation. We cannot fully detect gradient masking without the model,
     but we can detect implementation bugs that simulate it.

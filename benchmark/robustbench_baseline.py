@@ -6,7 +6,7 @@ pretrained model (torchvision ResNet-18) on REAL data (CIFAR-10 test set).
 
 The ImageNet-pretrained ResNet-18 is not trained on CIFAR-10 classes, so clean
 accuracy will be low. The point is to demonstrate real attack execution against
-real model weights — not to claim state-of-the-art robustness numbers.
+real model weights  --  not to claim state-of-the-art robustness numbers.
 
 Requirements:
     pip install torch torchvision
@@ -67,7 +67,7 @@ class ResNet18CIFAR10Adapter(nn.Module):
 
     CIFAR-10 images are 32x32x3. ImageNet ResNet-18 expects 224x224x3.
     We upsample the input to 224x224 so the pretrained conv filters work.
-    We do NOT retrain or fine-tune — we use the raw ImageNet weights.
+    We do NOT retrain or fine-tune  --  we use the raw ImageNet weights.
 
     For label mapping: ImageNet has 1000 classes, CIFAR-10 has 10. We take
     the model's top-1 prediction from the 1000 ImageNet classes and map it
@@ -321,7 +321,7 @@ def main() -> None:
             "pgd_20": pgd_results,
         },
         "methodology_notes": [
-            "All measurements are REAL — run on real pretrained weights with real data.",
+            "All measurements are REAL  --  run on real pretrained weights with real data.",
             "No synthetic/projected numbers. Every value comes from actual "
             "forward/backward passes.",
             "ImageNet-pretrained model evaluated on CIFAR-10 via input "
