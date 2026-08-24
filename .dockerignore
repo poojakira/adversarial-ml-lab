@@ -1,0 +1,64 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*.egg-info
+.eggs
+build
+dist
+
+# Virtual environments
+.venv
+.venv-*
+venv
+env
+
+# Test and coverage
+.pytest_cache
+.coverage
+htmlcov
+.mypy_cache
+.ruff_cache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in container)
+docs/
+*.md
+LICENSE
+CHANGELOG.md
+
+# CI/CD configs (not needed in container)
+.github
+.pre-commit-config.yaml
+.secrets.baseline
+
+# Large data files (mount as volumes instead)
+data/
+.data/
+models/*.pt
+models/*.pth
+results/
+
+# Development files
+tests/
+scripts/
+benchmark/
+dashboard/
+helm/
+github-actions/
+Makefile
+
+# Lock files
+uv.lock

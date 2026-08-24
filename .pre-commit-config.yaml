@@ -17,15 +17,37 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-merge-conflict
-      - id: debug-logger
+      - id: debug-statements
       - id: mixed-line-ending
         args: ['--fix=lf']
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
     hooks:
-      - id: isort
-        args: ["--profile", "black"]
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: |
+          (?x)^(
+            .*\.lock|
+            .*\.json|
+            \.secrets\.baseline
+          )$
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+        additional_dependencies: ['bandit[toml]']
+        exclude: |
+          (?x)^(
+            tests/.*|
+            scripts/.*
+          )$
 
   - repo: local
     hooks:
