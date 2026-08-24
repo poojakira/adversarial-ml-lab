@@ -202,15 +202,15 @@ make verify     # Full check: lint + test + build + security
 Test coverage is approximately **45%** across core modules.
 
 **Tested modules:**
-- `src/adv_lab/attacks/fgsm.py` — FGSM attack generation (`test_attacks.py`)
-- `src/adv_lab/attacks/pgd.py` — PGD attack generation (`test_attacks.py`)
-- `src/adv_lab/attacks/cw.py` — C&W L2 attack generation (`test_attacks.py`)
-- `src/adv_lab/eval/harness.py` — Benchmark harness, CI gate, JSON export (`test_eval.py`)
-- `src/adv_lab/eval/benchmark_runner.py` — Benchmark runner, severity mapping (`test_eval.py`)
-- `src/adv_lab/defenses/adversarial_training.py` — AdversarialTrainer epoch & evaluation (`test_defenses.py`)
-- `src/adv_lab/defenses/detection.py` — STRIPDetector, NeuralCleanse, bypass methods (`test_defenses.py`)
-- `src/adv_lab/models/cifar10_resnet18.py` — ResNet-18 instantiation, forward pass, gradients (`test_models.py`)
-- `benchmark/robustbench_baseline.py` — RobustBench comparison (`test_robustbench.py`)
+- `src/adv_lab/attacks/fgsm.py`  -  FGSM attack generation (`test_attacks.py`)
+- `src/adv_lab/attacks/pgd.py`  -  PGD attack generation (`test_attacks.py`)
+- `src/adv_lab/attacks/cw.py`  -  C&W L2 attack generation (`test_attacks.py`)
+- `src/adv_lab/eval/harness.py`  -  Benchmark harness, CI gate, JSON export (`test_eval.py`)
+- `src/adv_lab/eval/benchmark_runner.py`  -  Benchmark runner, severity mapping (`test_eval.py`)
+- `src/adv_lab/defenses/adversarial_training.py`  -  AdversarialTrainer epoch & evaluation (`test_defenses.py`)
+- `src/adv_lab/defenses/detection.py`  -  STRIPDetector, NeuralCleanse, bypass methods (`test_defenses.py`)
+- `src/adv_lab/models/cifar10_resnet18.py`  -  ResNet-18 instantiation, forward pass, gradients (`test_models.py`)
+- `benchmark/robustbench_baseline.py`  -  RobustBench comparison (`test_robustbench.py`)
 - Epsilon constraint validation (`test_epsilon_constraints.py`)
 
 **Not yet tested (17 attack modules + eval utilities):**
