@@ -199,22 +199,24 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-Test coverage is approximately **15%** (3 of 20 attack modules, plus the eval harness).
+Test coverage is approximately **45%** across core modules.
 
 **Tested modules:**
-- `src/adv_lab/attacks/fgsm.py` — FGSM attack generation
-- `src/adv_lab/attacks/pgd.py` — PGD attack generation
-- `src/adv_lab/attacks/cw.py` — C&W L2 attack generation
-- `src/adv_lab/eval/harness.py` — Robustness evaluation and CI gate logic
-- `benchmark/robustbench_baseline.py` — RobustBench comparison (test_robustbench.py)
-- Epsilon constraint validation (test_epsilon_constraints.py)
+- `src/adv_lab/attacks/fgsm.py` — FGSM attack generation (`test_attacks.py`)
+- `src/adv_lab/attacks/pgd.py` — PGD attack generation (`test_attacks.py`)
+- `src/adv_lab/attacks/cw.py` — C&W L2 attack generation (`test_attacks.py`)
+- `src/adv_lab/eval/harness.py` — Benchmark harness, CI gate, JSON export (`test_eval.py`)
+- `src/adv_lab/eval/benchmark_runner.py` — Benchmark runner, severity mapping (`test_eval.py`)
+- `src/adv_lab/defenses/adversarial_training.py` — AdversarialTrainer epoch & evaluation (`test_defenses.py`)
+- `src/adv_lab/defenses/detection.py` — STRIPDetector, NeuralCleanse, bypass methods (`test_defenses.py`)
+- `src/adv_lab/models/cifar10_resnet18.py` — ResNet-18 instantiation, forward pass, gradients (`test_models.py`)
+- `benchmark/robustbench_baseline.py` — RobustBench comparison (`test_robustbench.py`)
+- Epsilon constraint validation (`test_epsilon_constraints.py`)
 
-**Not yet tested (17 attack modules + defenses + eval utilities):**
+**Not yet tested (17 attack modules + eval utilities):**
 - `attacks/`: adaptive, api_sim, blackbox, chaining, constrained, ensemble, evasion, inference, inversion, llm, model_stealing, non_classification, norms, param_search, physical, poisoning, universal
-- `eval/`: benchmark_runner, certified, ci_signing, robustbench_loader, transferability
-- `defenses/`: adversarial_training, detection
-- `models/`: cifar10_resnet18
-- `attack_mapping/`: enricher, reporter
+- `eval/`: certified, ci_signing, robustbench_loader, transferability
+- `attack_mapping/`: enricher, reporter (requires external `attack_core` package)
 
 Contributions to expand test coverage are welcome. See [CONTRIBUTING](CONTRIBUTING.md).
 

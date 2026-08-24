@@ -88,7 +88,10 @@ def _make_test_batch(
     return images, labels
 
 
-# ── Attack implementations ────────────────────────────────────────────────────
+# ── Attack imports (canonical implementations from adv_lab.attacks) ───────────
+
+from adv_lab.attacks.fgsm import fgsm_attack
+from adv_lab.attacks.pgd import pgd_attack
 
 
 def _fgsm(
@@ -97,18 +100,11 @@ def _fgsm(
     labels: torch.Tensor,
     epsilon: float,
 ) -> torch.Tensor:
-    """
-    Fast Gradient Sign Method (Goodfellow et al., 2014).
+    """FGSM via canonical implementation.
 
     MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
-    Single-step attack: fast sanity check and gradient masking detector.
-    If a model appears robust against FGSM but not PGD, it is likely using
-    gradient masking (a false sense of security).
     """
-    images = images.clone().requires_grad_(True)
-    loss = nn.CrossEntropyLoss()(model(images), labels)
-    loss.backward()
-    return torch.clamp(images + epsilon * images.grad.sign(), 0.0, 1.0).detach()
+    return fgsm_attack(model, images, labels, epsilon=epsilon)
 
 
 def _pgd(
@@ -119,31 +115,15 @@ def _pgd(
     steps: int = 40,
     step_size: float | None = None,
 ) -> torch.Tensor:
-    """
-    Projected Gradient Descent (Madry et al., 2018).
+    """PGD via canonical implementation.
 
     MITRE ATLAS: AML.T0015  --  Evade ML Model
-    The standard honest evaluation for white-box adversarial robustness.
-    Use this number (not FGSM) when reporting robust accuracy in design reviews.
-    More steps = stronger attack = more honest robustness estimate.
     """
     if step_size is None:
         step_size = epsilon / (steps**0.5)
-
-    adv = images.clone().detach()
-    orig = images.clone().detach()
-
-    for _ in range(steps):
-        adv.requires_grad_(True)
-        loss = nn.CrossEntropyLoss()(model(adv), labels)
-        loss.backward()
-        with torch.no_grad():
-            adv = adv + step_size * adv.grad.sign()
-            # Project back into epsilon-ball and [0,1]
-            adv = torch.clamp(adv, orig - epsilon, orig + epsilon)
-            adv = torch.clamp(adv, 0.0, 1.0)
-
-    return adv.detach()
+    return pgd_attack(
+        model, images, labels, epsilon=epsilon, alpha=step_size, steps=steps, random_start=False
+    )
 
 
 def _robust_accuracy(
