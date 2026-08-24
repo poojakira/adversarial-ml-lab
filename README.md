@@ -74,7 +74,7 @@ Questions this repo answers:
 | `dashboard/` | Static HTML dashboard for visualizing results |
 | `results/` | Output directory for benchmark JSON reports |
 | `.github/workflows/` | CI pipeline: train, attack, validate threshold |
-| `tests/` | pytest suite covering attacks, models, and evaluation logic |
+| `tests/` | pytest suite covering FGSM, PGD, C&W attacks, and eval harness |
 
 ## End-to-End Workflow
 
@@ -167,7 +167,7 @@ Without a gate, robustness metrics become informational noise. A hard threshold 
 ```bash
 git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
-pip install -e ".[dev]"
+pip install -e ".[dev]"      # Includes pytest, pytest-cov, ruff
 ```
 
 ### Using Make
@@ -189,17 +189,46 @@ make security              # Bandit + pip-audit
 make verify                # lint + test + build + security (full check)
 ```
 
+## Testing
+
+```bash
+pytest tests/ -v
+make test       # Includes install-core and data download prerequisites
+make verify     # Full check: lint + test + build + security
+```
+
+### Current Coverage
+
+Test coverage is approximately **15%** (3 of 20 attack modules, plus the eval harness).
+
+**Tested modules:**
+- `src/adv_lab/attacks/fgsm.py` — FGSM attack generation
+- `src/adv_lab/attacks/pgd.py` — PGD attack generation
+- `src/adv_lab/attacks/cw.py` — C&W L2 attack generation
+- `src/adv_lab/eval/harness.py` — Robustness evaluation and CI gate logic
+- `benchmark/robustbench_baseline.py` — RobustBench comparison (test_robustbench.py)
+- Epsilon constraint validation (test_epsilon_constraints.py)
+
+**Not yet tested (17 attack modules + defenses + eval utilities):**
+- `attacks/`: adaptive, api_sim, blackbox, chaining, constrained, ensemble, evasion, inference, inversion, llm, model_stealing, non_classification, norms, param_search, physical, poisoning, universal
+- `eval/`: benchmark_runner, certified, ci_signing, robustbench_loader, transferability
+- `defenses/`: adversarial_training, detection
+- `models/`: cifar10_resnet18
+- `attack_mapping/`: enricher, reporter
+
+Contributions to expand test coverage are welcome. See [CONTRIBUTING](CONTRIBUTING.md).
+
 ## Quick Start
 
 ```bash
 # Run the benchmark harness with default settings
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 20 --output report.json
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --output report.json
 
 # Run with a smaller batch size for limited memory
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 64 --output report.json
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 16 --output report.json
 
-# Run just FGSM at multiple epsilon values
-python -m adv_lab.eval.benchmark_runner --attack fgsm --epsilon 0.01 0.02 0.031 --output fgsm_sweep.json
+# Point at a saved model checkpoint
+python -m adv_lab.eval.benchmark_runner --model-path checkpoints/model.pt --epsilon 0.031 --output report.json
 
 # Adversarial training (Madry et al. method)
 python scripts/run_madry_training.py --epochs 100 --epsilon 0.031
@@ -302,7 +331,7 @@ These numbers are for a standard (non-adversarially-trained) ResNet. Adversarial
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Yes | pytest with coverage |
+| Test suite | Partial | ~15% coverage; only FGSM, PGD, C&W, and eval harness tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | uv.lock for reproducibility; pyproject.toml uses >= ranges |

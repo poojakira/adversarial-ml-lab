@@ -210,6 +210,11 @@ def benchmark_runner(
     model, model_id = _load_model(model_path)
     images, labels = _make_test_batch(batch_size=batch_size)
 
+    # Ensure model is in eval mode before running attacks.
+    # Attacks measured during training mode produce incorrect results because
+    # batch normalization and dropout behave differently.
+    model.eval()
+
     logger.info("Running FGSM attack (epsilon=%.3f)...", epsilon)
     # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     adv_fgsm = _fgsm(model, images, labels, epsilon=epsilon)
