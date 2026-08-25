@@ -22,7 +22,6 @@ from adv_lab.defenses.detection import (
     bypass_strip,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 

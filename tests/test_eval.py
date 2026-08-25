@@ -21,23 +21,20 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
+from adv_lab.eval.benchmark_runner import (
+    _severity_from_robust_acc,
+    benchmark_runner,
+)
 from adv_lab.eval.harness import (
     BenchmarkResult,
     DetailedBenchmark,
     EvaluationMetrics,
-    PGD_GATE_THRESHOLD,
     RobustnessGate,
     evaluate_robustness,
     export_json,
     run_benchmark,
     run_benchmark_batched,
 )
-from adv_lab.eval.benchmark_runner import (
-    PGD_ROBUST_ACC_GATE,
-    _severity_from_robust_acc,
-    benchmark_runner,
-)
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
