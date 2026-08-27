@@ -382,6 +382,13 @@ These numbers are for a standard (non-adversarially-trained) ResNet. Adversarial
 6. **Croce, F. & Hein, M. (2020).** Reliable evaluation of adversarial robustness with an ensemble of attacks (AutoAttack).
    ICML 2020. arXiv:2003.01690. https://arxiv.org/abs/2003.01690
 
+
+## Additional Documentation
+
+- [INCIDENT_RUNBOOK.md](INCIDENT_RUNBOOK.md) - incident response for robustness regressions and OOM
+- [enchmarks/robustness_regression.py](benchmarks/robustness_regression.py) - CI robustness gate
+- [	ests/test_integration_attack_defense.py](tests/test_integration_attack_defense.py) - full attack-defense cycle tests
+
 ## License and Author
 
 MIT License. See [LICENSE](LICENSE) for full text.
