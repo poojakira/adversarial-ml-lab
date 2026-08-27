@@ -42,10 +42,10 @@ This runbook covers common incident scenarios for the adversarial ML research la
 3. **Characterize the attack**:
    ```bash
    # Run across multiple models and defenses
-   python benchmarks/robustness_regression.py --attack <new_attack> --output attack_report.json
+   python scripts/run_cifar10_benchmark.py   # clean/FGSM/PGD accuracy on ResNet-18
 
    # Check transferability
-   python -m evaluation.transferability --attack <new_attack> --models resnet18,wrn28-10,densenet121
+   python -m adv_lab.eval.transferability --attack <new_attack> --models resnet18,wrn28-10,densenet121
    ```
 
 ### Mitigation Steps
@@ -80,7 +80,7 @@ This runbook covers common incident scenarios for the adversarial ML research la
 ### Severity: MEDIUM
 
 ### Symptoms
-- CI pipeline fails at the robustness regression gate (`benchmarks/robustness_regression.py`)
+- Benchmark shows a robustness drop (run `python scripts/run_cifar10_benchmark.py`)
 - Clean accuracy dropped below 70% threshold
 - Robust accuracy dropped below 25% threshold
 - Attack generation time exceeds 100ms for 100 samples
@@ -90,7 +90,7 @@ This runbook covers common incident scenarios for the adversarial ML research la
 1. **Identify the failing assertion**:
    ```bash
    # Run benchmark locally with detailed output
-   python benchmarks/robustness_regression.py --output regression_debug.json --device cpu
+   python scripts/run_cifar10_benchmark.py   # inspect clean vs adversarial accuracy
 
    # Review the JSON output
    cat regression_debug.json | python -m json.tool
@@ -111,7 +111,7 @@ This runbook covers common incident scenarios for the adversarial ML research la
    # Checkout the last passing commit
    git stash
    git checkout <last-passing-sha>
-   python benchmarks/robustness_regression.py --output baseline.json
+   python scripts/run_cifar10_benchmark.py   # clean/FGSM/PGD accuracy on ResNet-18
    git checkout -
 
    # Compare results
@@ -142,12 +142,12 @@ This runbook covers common incident scenarios for the adversarial ML research la
 
    # Or fix forward
    # ... make changes ...
-   python benchmarks/robustness_regression.py  # Verify fix locally
+   python scripts/run_cifar10_benchmark.py   # clean/FGSM/PGD accuracy on ResNet-18
    ```
 
 5. **If threshold needs updating** (intentional architecture change):
    - Document why the threshold changed in the PR description
-   - Update thresholds in `benchmarks/robustness_regression.py`
+   - Re-run `python scripts/run_cifar10_benchmark.py` and record new baselines
    - Get team approval before merging
 
 ### Resolution Criteria
@@ -229,7 +229,7 @@ This runbook covers common incident scenarios for the adversarial ML research la
    python train.py --config configs/model_config.yaml --output checkpoints/model_retrained.pt
 
    # Verify the retrained model
-   python benchmarks/robustness_regression.py --model-path checkpoints/model_retrained.pt
+   python scripts/run_cifar10_benchmark.py   # clean/FGSM/PGD accuracy on ResNet-18
    ```
 
 6. **If corruption was caused by training instability**:
