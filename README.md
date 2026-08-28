@@ -199,7 +199,7 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-Test coverage is approximately **45%** across core modules.
+Test coverage is approximately **29%** across core modules (73 tests). The CI gate floor is 15%.
 
 **Tested modules:**
 - `src/adv_lab/attacks/fgsm.py`  -  FGSM attack generation (`test_attacks.py`)
@@ -333,7 +333,7 @@ These numbers are for a standard (non-adversarially-trained) ResNet. Adversarial
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Partial | ~15% coverage; only FGSM, PGD, C&W, and eval harness tested |
+| Test suite | Partial | 15% is the CI gate floor; actual coverage ~29% (73 tests). FGSM, PGD, C&W, eval harness, defenses, and models tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | uv.lock for reproducibility; pyproject.toml uses >= ranges |

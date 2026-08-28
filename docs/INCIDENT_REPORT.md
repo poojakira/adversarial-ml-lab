@@ -21,7 +21,7 @@ GitHub repository did not yet exist. The net result was an empty directory and a
 loss of all uncommitted-to-remote work.
 
 All work was reconstructed from source content held in the session and
-re-verified (13/13 tests passing, benchmark reproduced bit-for-bit). No
+re-verified (73 tests passing, benchmark reproduced bit-for-bit). No
 production system, no remote branch, and no third-party data were affected.
 
 ---
@@ -42,7 +42,7 @@ production system, no remote branch, and no third-party data were affected.
 
 1. **~02:48**  --  Project scaffolded: `pyproject.toml`, `src/adv_lab/**`, `tests/**`
    written. Dependencies installed into `.venv` (Python 3.12.13, torch 2.13.0+cpu).
-2. **~02:52**  --  Full suite verified: **13/13 tests pass**; `adv-eval` CLI produces
+2. **~02:52**  --  Full suite verified: **73 tests pass**; `python -m adv_lab.eval.benchmark_runner` produces
    `results/report.json` (clean 0.920 / FGSM 0.508 / PGD 0.500 / C&W 0.034).
 3. **~02:55**  --  README/CHANGELOG/CI added; local git initialized; **8 commits**
    created in the intended sequence; working tree clean.
@@ -58,7 +58,7 @@ production system, no remote branch, and no third-party data were affected.
    directory failed with `bwrap ENOENT` / `No such file or directory`. A
    directory listing confirmed `/projects/sandbox/adversarial-ml-lab` was gone.
 7. **Recovery**  --  All 20 files were rewritten from known-good content; the venv
-   was recreated and dependencies reinstalled; tests re-run (**13/13 pass**);
+   was recreated and dependencies reinstalled; tests re-run (**73 tests pass**);
    benchmark reproduced **identically** (deterministic seed); the 8-commit
    history was recreated in the same sequence. Working tree clean.
 8. **Root-caused**  --  Confirmed the remote repo did not exist and the gateway
@@ -92,7 +92,7 @@ exist), the directory was left empty with no automatic rollback.
 
 - Rebuilt all source, tests, packaging, docs, and CI from source content.
 - Recreated `.venv` and reinstalled `torch`/`torchvision`/`numpy` (CPU wheels).
-- Re-ran `pytest` → **13 passed**; re-ran `adv-eval` → identical JSON report,
+- Re-ran `pytest` → **73 passed**; re-ran `python -m adv_lab.eval.benchmark_runner` → identical JSON report,
   confirming the rebuild is faithful (deterministic seeds).
 - Recreated the 8-commit history in the original order; verified clean tree.
 - Set `origin` to the gateway URL form accepted by the push tooling.

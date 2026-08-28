@@ -313,7 +313,7 @@ Where T includes rotation, scaling, brightness, perspective, and camera noise.
 | Backdoor | Backdoor ML Model | AML.T0054 | `attacks/poisoning.py` |
 | Physical patch | Craft Adversarial Data | AML.T0043 | `attacks/physical.py` |
 | Physical patch | Evade ML Model | AML.T0015 | `attacks/physical.py` |
-| Supply chain | Publish Poisoned Datasets | AML.T0019 | `scanner/provenance/` |
+| Supply chain | Publish Poisoned Datasets | AML.T0019 | Out of scope (see `attacks/poisoning.py` for training-time poisoning) |
 | Inference abuse | Discover ML Model Family | AML.T0007 | `attacks/inference.py` |
 
 ---

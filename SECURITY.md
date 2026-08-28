@@ -64,7 +64,7 @@ The benchmark report (`benchmark_report.json`) contains model evaluation metadat
 
 ### 4. Dependency supply chain
 
-Runtime dependencies are declared with lower bounds in `pyproject.toml`; this repo does not commit a lockfile. The CI pipeline runs `bandit -r src/ -ll` on every PR. Dependency updates are gated on passing tests and bandit scans.
+Runtime dependencies are declared with lower bounds in `pyproject.toml`, and `uv.lock` is committed for reproducible installs. The CI pipeline runs `bandit -r src/ -ll` on every PR. Dependency updates are gated on passing tests and bandit scans.
 
 ---
 
