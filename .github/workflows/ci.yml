@@ -163,6 +163,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [test]
+    # Heavy job: installs PyTorch and downloads CIFAR-10 + a RobustBench model.
+    # Run it only on the weekly schedule or manual dispatch so it never blocks
+    # or slows down per-push/PR CI (the fast lint/test/CodeQL/security gates do that).
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
