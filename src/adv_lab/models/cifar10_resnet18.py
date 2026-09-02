@@ -144,7 +144,7 @@ def get_cifar10_loaders(
         import torchvision.transforms as transforms
     except ImportError as exc:
         raise ImportError(
-            "torchvision is required for CIFAR-10 loading. " "Install with: pip install torchvision"
+            "torchvision is required for CIFAR-10 loading. Install with: pip install torchvision"
         ) from exc
 
     # Standard CIFAR-10 normalisation (mean/std computed over training set)

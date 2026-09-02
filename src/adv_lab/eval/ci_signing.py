@@ -221,13 +221,11 @@ def detect_replay(
             )
         elif curr is None and prev is not None:
             anomalies.append(
-                f"INPUT_REMOVED at index {idx}: present in previous run but "
-                f"missing in current run"
+                f"INPUT_REMOVED at index {idx}: present in previous run but missing in current run"
             )
         elif curr is not None and prev is None:
             anomalies.append(
-                f"INPUT_ADDED at index {idx}: not present in previous run but "
-                f"added in current run"
+                f"INPUT_ADDED at index {idx}: not present in previous run but added in current run"
             )
 
     return anomalies

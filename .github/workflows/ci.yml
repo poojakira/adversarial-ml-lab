@@ -176,7 +176,7 @@ jobs:
       - name: Install CPU-only PyTorch and dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install torch==2.0.1+cpu torchvision==0.15.2+cpu --index-url https://download.pytorch.org/whl/cpu
+          pip install torch==2.2.2+cpu torchvision==0.17.2+cpu --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev]"
 
       - name: Run RobustBench baseline benchmark
