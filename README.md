@@ -192,28 +192,42 @@ make verify                # lint + test + build + security (full check)
 ## Testing
 
 ```bash
-pytest tests/ -v
-make test       # Includes install-core and data download prerequisites
+pytest tests/ -q
+make test       # Also installs the optional attack-v19-core sibling + downloads its data
 make verify     # Full check: lint + test + build + security
 ```
 
 ### Current Coverage
 
-Test coverage is approximately **29%** across core modules (73 tests). The CI gate floor is 15%.
+**94 tests pass.** Line coverage is **~30% overall**, but that number is
+dominated by ~20 advanced/experimental attack modules that are intentionally
+lightly tested. The modules that matter for the core robustness story are
+covered well:
+
+| Module | Coverage |
+|--------|---------:|
+| `attacks/fgsm.py` (FGSM + shared input validation) | 71% |
+| `attacks/pgd.py` (PGD L-inf + L2) | 97% |
+| `attacks/cw.py` (C&W L2) | 98% |
+| `eval/benchmark_runner.py` (runner + error paths) | 85% |
+| `defenses/detection.py` | 99% |
+| `defenses/adversarial_training.py` | 100% |
+
+The CI gate floor is 15%.
 
 **Tested modules:**
-- `src/adv_lab/attacks/fgsm.py`  -  FGSM attack generation (`test_attacks.py`)
-- `src/adv_lab/attacks/pgd.py`  -  PGD attack generation (`test_attacks.py`)
-- `src/adv_lab/attacks/cw.py`  -  C&W L2 attack generation (`test_attacks.py`)
+- `src/adv_lab/attacks/fgsm.py`  -  FGSM + input validation (`test_attacks.py`, `test_input_validation.py`)
+- `src/adv_lab/attacks/pgd.py`  -  PGD L-inf/L2 + guards (`test_attacks.py`, `test_input_validation.py`)
+- `src/adv_lab/attacks/cw.py`  -  C&W L2 + guards (`test_attacks.py`, `test_input_validation.py`)
 - `src/adv_lab/eval/harness.py`  -  Benchmark harness, CI gate, JSON export (`test_eval.py`)
-- `src/adv_lab/eval/benchmark_runner.py`  -  Benchmark runner, severity mapping (`test_eval.py`)
+- `src/adv_lab/eval/benchmark_runner.py`  -  Benchmark runner, severity mapping, error paths (`test_eval.py`, `test_input_validation.py`)
 - `src/adv_lab/defenses/adversarial_training.py`  -  AdversarialTrainer epoch & evaluation (`test_defenses.py`)
 - `src/adv_lab/defenses/detection.py`  -  STRIPDetector, NeuralCleanse, bypass methods (`test_defenses.py`)
 - `src/adv_lab/models/cifar10_resnet18.py`  -  ResNet-18 instantiation, forward pass, gradients (`test_models.py`)
 - `benchmark/robustbench_baseline.py`  -  RobustBench comparison (`test_robustbench.py`)
 - Epsilon constraint validation (`test_epsilon_constraints.py`)
 
-**Not yet tested (17 attack modules + eval utilities):**
+**Lightly tested (advanced/experimental attack modules + eval utilities):**
 - `attacks/`: adaptive, api_sim, blackbox, chaining, constrained, ensemble, evasion, inference, inversion, llm, model_stealing, non_classification, norms, param_search, physical, poisoning, universal
 - `eval/`: certified, ci_signing, robustbench_loader, transferability
 - `attack_mapping/`: enricher, reporter (requires external `attack_core` package)
@@ -333,7 +347,7 @@ These numbers are for a standard (non-adversarially-trained) ResNet. Adversarial
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Partial | 15% is the CI gate floor; actual coverage ~29% (73 tests). FGSM, PGD, C&W, eval harness, defenses, and models tested |
+| Test suite | Partial | 15% is the CI gate floor; overall coverage ~30% (94 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (85%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | uv.lock for reproducibility; pyproject.toml uses >= ranges |

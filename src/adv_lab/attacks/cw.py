@@ -38,7 +38,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from adv_lab.attacks.fgsm import _require_eval_mode
+from adv_lab.attacks.fgsm import _require_eval_mode, _validate_attack_inputs
 
 _TANH_EPS = 1e-6  # keeps atanh() inputs strictly inside (-1, 1)
 
@@ -83,6 +83,15 @@ def cw_l2_attack(
         Detached adversarial images in ``[0, 1]``, same shape as input.
     """
     _require_eval_mode(model)
+    # C&W has no L-inf/L2 epsilon budget (it minimizes L2 directly), so we pass
+    # epsilon=0.0 purely to reuse the shared shape/dtype/range checks.
+    _validate_attack_inputs(images, labels, epsilon=0.0)
+    if steps < 1:
+        raise ValueError(f"steps must be >= 1, got {steps}")
+    if c < 0.0:
+        raise ValueError(f"c (loss trade-off constant) must be non-negative, got {c}")
+    if lr <= 0.0:
+        raise ValueError(f"lr (learning rate) must be positive, got {lr}")
 
     x_orig = images.clone().detach()
     labels = labels.clone().detach()

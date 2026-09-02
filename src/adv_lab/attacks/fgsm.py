@@ -36,6 +36,68 @@ def _require_eval_mode(model: nn.Module) -> None:
         )
 
 
+def _validate_attack_inputs(
+    images: Tensor,
+    labels: Tensor,
+    epsilon: float,
+) -> None:
+    """Validate the common (images, labels, epsilon) contract shared by all attacks.
+
+    Fails loud on the mistakes that otherwise surface as cryptic autograd or
+    broadcasting errors deep in the attack loop:
+
+      * images that are not a 4D ``(N, C, H, W)`` float tensor,
+      * a batch-size mismatch between images and labels,
+      * labels that are not 1D integer class indices,
+      * a negative or non-finite epsilon,
+      * inputs outside the ``[0, 1]`` image range the projections assume.
+
+    Raising here (rather than letting torch raise later) turns a garbage
+    robustness number into an obvious, actionable error.
+    """
+    if not isinstance(images, Tensor):
+        raise TypeError(f"images must be a torch.Tensor, got {type(images).__name__}")
+    if not isinstance(labels, Tensor):
+        raise TypeError(f"labels must be a torch.Tensor, got {type(labels).__name__}")
+
+    if images.dim() != 4:
+        raise ValueError(
+            f"images must be a 4D (N, C, H, W) tensor, got shape {tuple(images.shape)}"
+        )
+    if not torch.is_floating_point(images):
+        raise TypeError(
+            f"images must be a floating-point tensor in [0, 1], got dtype {images.dtype}"
+        )
+    if labels.dim() != 1:
+        raise ValueError(
+            f"labels must be a 1D tensor of class indices, got shape {tuple(labels.shape)}"
+        )
+    if images.shape[0] != labels.shape[0]:
+        raise ValueError(
+            f"batch size mismatch: images has {images.shape[0]} samples "
+            f"but labels has {labels.shape[0]}"
+        )
+    if images.shape[0] == 0:
+        raise ValueError("cannot attack an empty batch (0 samples)")
+
+    if epsilon < 0.0:
+        raise ValueError(f"epsilon must be non-negative, got {epsilon}")
+    # NaN/inf epsilon would silently poison every perturbation.
+    if epsilon != epsilon or epsilon == float("inf"):
+        raise ValueError(f"epsilon must be finite, got {epsilon}")
+
+    # The L-inf/L2 projections and the tanh change-of-variables all assume the
+    # clean image already lives in [0, 1]. A small tolerance absorbs float noise.
+    if images.numel() > 0:
+        lo = float(images.min())
+        hi = float(images.max())
+        if lo < -1e-4 or hi > 1.0 + 1e-4:
+            raise ValueError(
+                f"images must be in the [0, 1] range, got [{lo:.4f}, {hi:.4f}]. "
+                "Normalize/rescale to [0, 1] before attacking."
+            )
+
+
 def fgsm_attack(
     model: nn.Module,
     images: Tensor,
@@ -54,6 +116,7 @@ def fgsm_attack(
         Adversarial images, detached, clamped to ``[0, 1]``, same shape as input.
     """
     _require_eval_mode(model)
+    _validate_attack_inputs(images, labels, epsilon)
 
     if epsilon == 0.0:
         # No budget -> no perturbation. Return a detached clone so callers can

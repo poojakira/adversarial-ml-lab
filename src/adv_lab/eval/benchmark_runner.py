@@ -66,9 +66,21 @@ def _load_model(model_path: str | None) -> tuple[nn.Module, str]:
             raise FileNotFoundError(f"Model file not found: {model_path}")
         # Load state dict only  --  never use pickle.load() on untrusted files.
         # weights_only=True prevents arbitrary code execution via pickle.
-        state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
+        try:
+            state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
+        except Exception as exc:  # noqa: BLE001 - surface a clear, actionable message
+            raise ValueError(
+                f"failed to load checkpoint '{model_path}' as a weights-only state dict: {exc}. "
+                "The file must be a torch.save() of a plain state_dict (no pickled objects)."
+            ) from exc
         model = _DummyCNN()
-        model.load_state_dict(state_dict)
+        try:
+            model.load_state_dict(state_dict)
+        except (RuntimeError, TypeError) as exc:
+            raise ValueError(
+                f"checkpoint '{model_path}' does not match the expected _DummyCNN architecture: "
+                f"{exc}. This runner benchmarks a fixed dummy CNN; supply a matching state_dict."
+            ) from exc
         model_id = Path(model_path).name
         logger.info("Loaded model from %s", model_path)
     model.eval()
@@ -187,6 +199,13 @@ def benchmark_runner(
     Raises:
         FileNotFoundError: If model_path is provided but file does not exist.
     """
+    if epsilon < 0.0 or epsilon != epsilon or epsilon == float("inf"):
+        raise ValueError(f"epsilon must be a finite, non-negative float, got {epsilon}")
+    if pgd_steps < 1:
+        raise ValueError(f"pgd_steps must be >= 1, got {pgd_steps}")
+    if batch_size < 1:
+        raise ValueError(f"batch_size must be >= 1, got {batch_size}")
+
     model, model_id = _load_model(model_path)
     images, labels = _make_test_batch(batch_size=batch_size)
 

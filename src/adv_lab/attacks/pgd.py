@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from adv_lab.attacks.fgsm import _require_eval_mode
+from adv_lab.attacks.fgsm import _require_eval_mode, _validate_attack_inputs
 
 
 def pgd_attack(
@@ -54,6 +54,11 @@ def pgd_attack(
         Detached adversarial images, same shape as input.
     """
     _require_eval_mode(model)
+    _validate_attack_inputs(images, labels, epsilon)
+    if steps < 1:
+        raise ValueError(f"steps must be >= 1, got {steps}")
+    if alpha <= 0.0:
+        raise ValueError(f"alpha (step size) must be positive, got {alpha}")
 
     x_orig = images.clone().detach()
     x_adv = x_orig.clone().detach()
@@ -148,6 +153,11 @@ def pgd_l2(
         Detached adversarial images, same shape as input.
     """
     _require_eval_mode(model)
+    _validate_attack_inputs(images, labels, epsilon)
+    if steps < 1:
+        raise ValueError(f"steps must be >= 1, got {steps}")
+    if alpha <= 0.0:
+        raise ValueError(f"alpha (step size) must be positive, got {alpha}")
 
     x_orig = images.clone().detach()
     x_adv = x_orig.clone().detach()
