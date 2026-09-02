@@ -144,7 +144,8 @@ jobs:
 
       - name: pip-audit (fail on known vulns)
         run: |
-          pip-audit -r requirements.txt --skip-editable --format json -o pip-audit.json || true
+          python -m pip install --upgrade pip pip-audit
+          pip-audit -r requirements.txt --skip-editable --format json -o pip-audit.json
           python .github/scripts/check_pip_audit.py
 
       - name: Generate CycloneDX SBOM
