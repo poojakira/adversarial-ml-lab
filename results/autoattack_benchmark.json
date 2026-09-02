@@ -1,6 +1,6 @@
 {
   "_schema": "adv-lab-benchmark-v1",
-  "_status": "PROJECTED FROM PUBLISHED LITERATURE  --  NOT MEASURED IN THIS REPO",
+  "_status": "LITERATURE_PROJECTION — not measured in this repo; run benchmark/robustbench_baseline.py to generate real numbers",
   "_synthetic": true,
   "_synthetic_note": "These results are projected values consistent with published literature (Croce & Hein 2020). No pretrained model weights are committed to this repository. Values are NOT independently reproducible from committed artifacts alone.",
   "_description": "AutoAttack evaluation on CIFAR-10 ResNet-18  --  PROJECTED from literature, not measured in this repo. AutoAttack is the standard ensemble robustness benchmark as of 2020+ (Croce & Hein, ICML 2020). It combines APGD-CE, APGD-DLR, FAB, and Square Attack into a parameter-free, reliable benchmark that avoids gradient masking artifacts.",
