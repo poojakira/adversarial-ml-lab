@@ -1,0 +1,64 @@
+{
+  "_schema": "adv-lab-benchmark-v1",
+  "_status": "REAL_MEASURED - every number produced by an actual run on this machine",
+  "_synthetic": false,
+  "_reproducibility": "python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000  (seed=42, CPU-only torch)",
+  "dataset": "CIFAR-10 (torchvision.datasets.CIFAR10, download=True)",
+  "architecture": "SmallCNN (4-conv + 2-FC, built-in CIFAR-10 normalization)",
+  "n_parameters": 1117354,
+  "framework": {
+    "torch": "2.14.0+cpu",
+    "cuda_available": false,
+    "device": "cpu"
+  },
+  "seed": 42,
+  "training": {
+    "epochs": 6,
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "batch_size": 128,
+    "train_loss_history": [
+      1.6246,
+      1.3019,
+      1.1718,
+      1.0823,
+      1.0149,
+      0.9655
+    ],
+    "train_seconds": 342.0
+  },
+  "epsilon": 0.03137255,
+  "epsilon_255": "8/255",
+  "alpha_255": "2/255",
+  "attack_eval_samples": 1000,
+  "results": {
+    "clean_accuracy": 0.7182,
+    "clean_eval_samples": 10000,
+    "fgsm": {
+      "robust_accuracy": 0.033203,
+      "epsilon_255": "8/255",
+      "samples": 1024,
+      "seconds": 0.9
+    },
+    "pgd_linf": {
+      "robust_accuracy": 0.0,
+      "epsilon_255": "8/255",
+      "alpha_255": "2/255",
+      "steps": 20,
+      "samples": 1024,
+      "seconds": 12.0
+    },
+    "cw_l2": {
+      "robust_accuracy": 0.041992,
+      "c": 1.0,
+      "kappa": 0.0,
+      "steps": 100,
+      "samples": 1024,
+      "seconds": 81.5
+    }
+  },
+  "commit_sha": "1282d78c42cfcd6a6ecd70b711d95058cb3ad7b0",
+  "wall_clock_seconds": 443.5,
+  "compute_budget": "SMALL CPU RUN, NOT SOTA. Trained a compact CNN for a few epochs on CPU-only PyTorch. Clean accuracy is far below the ~93% ResNet-18 figure and is honest for this budget. Attack robust accuracy is measured on a subset of the test set for the expensive iterative/optimization attacks. Reproducible with the recorded seed.",
+  "run_timestamp_utc": "2026-09-03T06:01:30Z"
+}

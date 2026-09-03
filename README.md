@@ -4,9 +4,9 @@ Quantify how fragile your image classifier really is under gradient-based advers
 
 ## The Gap Between Clean Accuracy and Reality
 
-A ResNet model trained on CIFAR-10 reports 93% accuracy on the test set. You ship it into a content moderation pipeline. An attacker adds a perturbation smaller than what the human eye can detect (8/255 pixel intensity), and accuracy drops to 5%. The model is functionally broken, but your metrics dashboard still shows green.
+A model trained on CIFAR-10 reports high accuracy on the test set. You ship it into a content moderation pipeline. An attacker adds a perturbation smaller than what the human eye can detect (8/255 pixel intensity), and accuracy collapses toward zero. The model is functionally broken, but your metrics dashboard still shows green.
 
-This is MITRE ATLAS technique AML.T0043 (Craft Adversarial Data) in action. A malware classifier, an autonomous vehicle perception system, or a medical imaging model with the same vulnerability would fail silently in production. The first step to fixing this is measuring it reproducibly, which is exactly what this repository does.
+This is not hypothetical here: in this repo's own committed run, a small CNN with **71.82% clean accuracy drops to 0.00% robust accuracy under PGD at eps=8/255** ([results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)). This is MITRE ATLAS technique AML.T0043 (Craft Adversarial Data) in action. A malware classifier, an autonomous vehicle perception system, or a medical imaging model with the same vulnerability would fail silently in production. The first step to fixing this is measuring it reproducibly, which is exactly what this repository does.
 
 ## Executive Summary
 
@@ -237,7 +237,12 @@ Contributions to expand test coverage are welcome. See [CONTRIBUTING](CONTRIBUTI
 ## Quick Start
 
 ```bash
-# Run the benchmark harness with default settings
+# REAL small-CNN CIFAR-10 benchmark (CPU-only, a few minutes).
+# Trains a compact CNN on real CIFAR-10 and runs the FGSM/PGD/C&W ladder.
+# Writes results/cifar10_smallcnn_real.json with real, reproducible numbers.
+python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
+
+# Run the benchmark harness with default settings (illustrative dummy model only)
 python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --output report.json
 
 # Run with a smaller batch size for limited memory
@@ -322,22 +327,53 @@ The `scripts/run_madry_training.py` script provides a starting point for adversa
 - **Accuracy delta**: Clean accuracy minus robust accuracy (the vulnerability gap)
 - **Per-epsilon sweep**: Evaluate at multiple epsilon values to characterize the degradation curve
 
-### Expected results (ResNet on CIFAR-10)
+### Real measured results (committed artifact)
 
-| Attack | Epsilon | Clean Acc | Robust Acc | Delta |
-|--------|---------|-----------|------------|-------|
-| FGSM | 8/255 | ~93% | ~25-35% | ~58-68% |
-| PGD-20 | 8/255 | ~93% | ~5-15% | ~78-88% |
-| C&W (L2) | 0.5 | ~93% | ~10-20% | ~73-83% |
+The numbers below are **REAL and reproducible**. They come from an actual run
+executed on CPU-only PyTorch and committed to
+[`results/cifar10_smallcnn_real.json`](results/cifar10_smallcnn_real.json).
+This is a **small CPU compute budget, NOT a state-of-the-art result** — a
+compact CNN (~1.1M params) trained for 6 epochs on real CIFAR-10
+(`torchvision.datasets.CIFAR10`, `download=True`).
 
-These numbers are for a standard (non-adversarially-trained) ResNet. Adversarially trained models will show a smaller delta at the cost of lower clean accuracy.
+| Attack | Epsilon | Clean Acc | Robust Acc | Samples |
+|--------|---------|-----------|------------|---------|
+| FGSM      | 8/255 | 71.82% | 3.32% | 1024 |
+| PGD-20    | 8/255 | 71.82% | 0.00% | 1024 |
+| C&W (L2)  | c=1.0 | 71.82% | 4.20% | 1024 |
+
+- Clean accuracy is measured on the full 10,000-sample CIFAR-10 test set.
+- Robust accuracy for the iterative/optimization attacks is measured on a 1024-sample
+  subset (a compute-budget choice, labeled in the artifact).
+- Seed = 42, `torch 2.14.0+cpu`, `cuda_available=false`. Wall clock ≈ 440 s.
+
+Reproduce exactly:
+
+```bash
+python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
+```
+
+**Interpretation:** an undefended model with 71.82% clean accuracy collapses to
+near-0% under PGD at eps=8/255. This is the whole point — the clean/robust gap
+is enormous for models that were not explicitly trained for robustness. The
+absolute clean accuracy is low *only because the compute budget is small*; the
+qualitative robustness collapse is the same one seen on larger models.
+
+> **Literature context (NOT measured here):** For a fully-trained ResNet-18 at
+> ~93% clean accuracy, published work (Madry et al. 2018) reports PGD robust
+> accuracy near 0% undefended and ~45% after adversarial training. Those
+> projected figures live in
+> [`results/cifar10_resnet18_benchmark.json`](results/cifar10_resnet18_benchmark.json),
+> which is explicitly labeled as a literature projection, not a measurement from
+> this repo. Do not cite them as reproducible results of this repository.
 
 ### Limitations
 
 - **Scope is measurement, not defense.** This repo quantifies vulnerability; it does not make your model robust.
 - **CIFAR-10 only.** Results do not transfer directly to other datasets or architectures without re-running.
 - **Known attacks only.** This implements published methods. A model that survives FGSM/PGD/C&W is not guaranteed robust against future attacks.
-- **CI uses a dummy CNN.** Full ResNet benchmarks require GPU infrastructure outside the CI runner.
+- **Default benchmark runner uses an illustrative dummy model.** `python -m adv_lab.eval.benchmark_runner` runs against a dummy model for plumbing/CI purposes only — its numbers are **illustrative only** and are not committed as artifacts. For real, committed numbers use `scripts/run_real_smallcnn_benchmark.py` (see [results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)).
+- **Real committed results use a small CPU-budget CNN, not a SOTA ResNet-18.** Full ResNet benchmarks at ~93% clean accuracy require GPU infrastructure outside this CPU environment; the ResNet numbers in [results/cifar10_resnet18_benchmark.json](results/cifar10_resnet18_benchmark.json) are a labeled literature projection, not a measurement.
 - **No adaptive attack evaluation.** If you implement a defense, you must evaluate it against attacks that are aware of the defense (AutoAttack, etc.).
 - **Determinism.** Random seeds affect PGD initialization; results may vary slightly across runs.
 
