@@ -162,7 +162,7 @@ jobs:
   benchmark:
     name: CIFAR-10 Robustness Benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     needs: [test]
     # Heavy job: installs PyTorch and downloads CIFAR-10 + a RobustBench model.
     # Run it only on the weekly schedule or manual dispatch so it never blocks
