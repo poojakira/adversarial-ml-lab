@@ -785,10 +785,10 @@ security-critical value is exposed as a function argument with a documented defa
 
 | Capability | Readiness | Evidence |
 |-----------|-----------|---------|
-| FGSM/PGD/C&W white-box attacks | Production-ready | Standard implementations, well-validated algorithms |
-| CI gate with HMAC signing | Production-ready | Uses stdlib crypto, follows OWASP/NIST guidance |
-| Benchmark harness (JSON output) | Production-ready | Deterministic, reproducible, CI-integrable |
-| Multi-norm attack suite | Production-ready | L0/L1/L2/Linf all follow published algorithms |
+| FGSM/PGD/C&W white-box attacks | Implemented and repository-tested | Standard implementations, well-validated algorithms |
+| CI gate with HMAC signing | Implemented and repository-tested | Uses stdlib crypto, follows OWASP/NIST guidance |
+| Benchmark harness (JSON output) | Implemented and repository-tested | Deterministic, reproducible, CI-integrable |
+| Multi-norm attack suite | Implemented and repository-tested | L0/L1/L2/Linf all follow published algorithms |
 | Input hashing and replay detection | Production-ready | SHA-256, timestamp-based nonce |
 | Gradient masking detection | Production-ready | Loss trajectory monitoring is well-understood |
 | Adversarial training (PGD-AT) | Production-ready | Madry et al. is the standard approach |
