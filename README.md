@@ -2,9 +2,9 @@
 
 **Repository owner & maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira)) — I lead the design, implementation, validation, documentation, and maintenance of this repository, and I verify public claims against repository evidence.
 
-Quantify how fragile your image classifier really is under gradient-based adversarial attacks, with results mapped to the MITRE ATLAS threat framework.
+Measure classifier robustness under gradient-based adversarial attacks and map the resulting security findings to MITRE ATLAS.
 
-## The Gap Between Clean Accuracy and Reality
+## Clean Accuracy vs. Adversarial Robustness
 
 A model trained on CIFAR-10 reports high accuracy on the test set. You ship it into a content moderation pipeline. An attacker adds a perturbation smaller than what the human eye can detect (8/255 pixel intensity), and accuracy collapses toward zero. The model is functionally broken, but your metrics dashboard still shows green.
 
