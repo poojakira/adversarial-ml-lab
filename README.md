@@ -1,5 +1,7 @@
 # adversarial-ml-lab
 
+**Repository owner & maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira)) — I review changes, verify public claims, and maintain the repository record.
+
 Quantify how fragile your image classifier really is under gradient-based adversarial attacks, with results mapped to the MITRE ATLAS threat framework.
 
 ## The Gap Between Clean Accuracy and Reality
