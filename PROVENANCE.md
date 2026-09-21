@@ -38,3 +38,26 @@ Evidence considered in this pass included:
 - previously verified academic/publication evidence, used only as background unless a direct lineage could be established.
 
 **Audit date:** 2026-09-21
+
+
+## Expanded proof matrix
+
+| Evidence source | What was checked | Result |
+|---|---|---|
+| Reachable Git history | Earliest reachable commit on `main` | **2026-07-11** — [`db779b116181`](https://github.com/poojakira/adversarial-ml-lab/commit/db779b11618122014d66b40dbb9a56c47b9ba8a0) — `Initial commit` |
+| Repository files/docs | README, changelog, reports, embedded date labels, provenance files, and high-visibility docs | No dated file reviewed establishes this repository or a clearly identifiable direct precursor before **2026**. |
+| Course/project references | Course codes, academic project references, publication links, and research-period references present in or connected to the repository | No course/publication reference reviewed proves this repository existed before **2026**. Earlier academic work remains a separate provenance track unless direct lineage is documented. |
+| Internal evidence | Repository-local evidence files and previously audited connected-source metadata | Supports the documented 2026 development/research period; no direct pre-2026 same-project artifact was established. |
+| Commit identity/history integrity | Historical author/committer objects and existing timestamps | Preserved as-is. No commits were backdated, timestamp-rewritten, or replaced to manufacture an older timeline. |
+
+### Repository-specific evidence notes
+
+- Published attack papers and framework dates are background references, not evidence that this implementation existed earlier.
+
+### Provenance confidence
+
+**High for the mapped year (2026).** The reachable Git history is direct evidence. Any earlier year would require a dated source artifact that can be tied to this exact repository or a clearly identifiable direct precursor.
+
+### History policy
+
+This audit records provenance **without rewriting Git history**. If stronger pre-Git evidence is discovered later, document it as pre-Git lineage with the artifact date and source; do not alter historical commit timestamps.
