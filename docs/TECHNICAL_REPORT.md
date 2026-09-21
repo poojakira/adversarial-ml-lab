@@ -781,17 +781,17 @@ security-critical value is exposed as a function argument with a documented defa
 
 ## 12. Honest Assessment
 
-### 12.1 What Works in Production
+### 12.1 Implemented and Testable in This Repository
 
 | Capability | Readiness | Evidence |
 |-----------|-----------|---------|
-| FGSM/PGD/C&W white-box attacks | Production-ready | Standard implementations, well-validated algorithms |
-| CI gate with HMAC signing | Production-ready | Uses stdlib crypto, follows OWASP/NIST guidance |
-| Benchmark harness (JSON output) | Production-ready | Deterministic, reproducible, CI-integrable |
-| Multi-norm attack suite | Production-ready | L0/L1/L2/Linf all follow published algorithms |
-| Input hashing and replay detection | Production-ready | SHA-256, timestamp-based nonce |
-| Gradient masking detection | Production-ready | Loss trajectory monitoring is well-understood |
-| Adversarial training (PGD-AT) | Production-ready | Madry et al. is the standard approach |
+| FGSM/PGD/C&W white-box attacks | Implemented; repository-tested | Standard implementations, well-validated algorithms |
+| CI gate with HMAC signing | Implemented; repository-tested | Uses stdlib crypto, follows OWASP/NIST guidance |
+| Benchmark harness (JSON output) | Implemented; repository-tested | Deterministic, reproducible, CI-integrable |
+| Multi-norm attack suite | Implemented; repository-tested | L0/L1/L2/Linf all follow published algorithms |
+| Input hashing and replay detection | Implemented; repository-tested | SHA-256, timestamp-based nonce |
+| Gradient masking detection | Research implementation | Loss trajectory monitoring is well-understood |
+| Adversarial training (PGD-AT) | Research implementation | Madry et al. is the standard approach |
 
 ### 12.2 What Remains a Lab Demo
 
