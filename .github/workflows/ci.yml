@@ -183,6 +183,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install torch==2.2.2+cpu torchvision==0.17.2+cpu --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev]"
+          # torch/torchvision 2.2.x wheels are not compatible with NumPy 2.x.
+          # Keep this benchmark environment reproducible until the pinned torch stack is upgraded.
+          pip install "numpy<2"
 
       - name: Run RobustBench baseline benchmark
         run: PYTHONPATH=src python benchmark/robustbench_baseline.py
