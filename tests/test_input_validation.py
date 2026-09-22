@@ -12,7 +12,7 @@ import torch.nn as nn
 from adv_lab.attacks.cw import cw_l2_attack
 from adv_lab.attacks.fgsm import _validate_attack_inputs, fgsm_attack
 from adv_lab.attacks.pgd import pgd_attack, pgd_l2
-from adv_lab.eval.benchmark_runner import benchmark_runner
+from adv_lab.eval.benchmark_runner import _load_evaluation_batch, _make_test_batch, benchmark_runner
 
 
 class _Net(nn.Module):
@@ -198,3 +198,34 @@ def test_production_mode_requires_torchscript(tmp_path) -> None:
             pgd_steps=1,
             batch_size=1,
         )
+
+
+def test_synthetic_smoke_batch_is_deterministic() -> None:
+    x1, y1 = _make_test_batch(batch_size=4, seed=123)
+    x2, y2 = _make_test_batch(batch_size=4, seed=123)
+    assert torch.equal(x1, x2)
+    assert torch.equal(y1, y2)
+
+
+def test_evaluation_dataset_rejects_float_labels(tmp_path) -> None:
+    import numpy as np
+
+    path = tmp_path / "bad-labels.npz"
+    np.savez(
+        path,
+        images=np.zeros((2, 1, 28, 28), dtype=np.float32),
+        labels=np.array([0.0, 1.0], dtype=np.float32),
+    )
+    with pytest.raises(ValueError, match="integer dtype"):
+        _load_evaluation_batch(str(path), batch_size=2)
+
+
+def test_evaluation_dataset_rejects_out_of_range_images(tmp_path) -> None:
+    import numpy as np
+
+    path = tmp_path / "bad-images.npz"
+    images = np.zeros((2, 1, 28, 28), dtype=np.float32)
+    images[0, 0, 0, 0] = 1.5
+    np.savez(path, images=images, labels=np.array([0, 1], dtype=np.int64))
+    with pytest.raises(ValueError, match=r"\[0, 1\]"):
+        _load_evaluation_batch(str(path), batch_size=2)
