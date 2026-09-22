@@ -279,10 +279,10 @@ class TestBenchmarkRunner:
 
     def test_severity_from_robust_acc(self):
         """_severity_from_robust_acc maps accuracy to correct severity levels."""
-        assert _severity_from_robust_acc(0.01) == "CRITICAL"
-        assert _severity_from_robust_acc(0.10) == "HIGH"
-        assert _severity_from_robust_acc(0.40) == "MEDIUM"
-        assert _severity_from_robust_acc(0.60) == "LOW"
+        assert _severity_from_robust_acc(0.01, 0.30) == "CRITICAL"
+        assert _severity_from_robust_acc(0.10, 0.30) == "HIGH"
+        assert _severity_from_robust_acc(0.40, 0.30) == "LOW"
+        assert _severity_from_robust_acc(0.60, 0.30) == "LOW"
 
 
 # ── evaluate_robustness Tests ─────────────────────────────────────────────────
