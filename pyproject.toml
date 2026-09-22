@@ -20,7 +20,12 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
 ]
-attack = ["attack-v19-core>=19.1,<20"]\nservice = [\n    "fastapi>=0.115,<1",\n    "uvicorn[standard]>=0.32,<1",\n    "pydantic>=2.9,<3",\n]
+attack = ["attack-v19-core>=19.1,<20"]
+service = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.32,<1",
+    "pydantic>=2.9,<3",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
