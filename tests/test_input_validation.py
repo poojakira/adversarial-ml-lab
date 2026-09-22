@@ -12,7 +12,12 @@ import torch.nn as nn
 from adv_lab.attacks.cw import cw_l2_attack
 from adv_lab.attacks.fgsm import _validate_attack_inputs, fgsm_attack
 from adv_lab.attacks.pgd import pgd_attack, pgd_l2
-from adv_lab.eval.benchmark_runner import _load_evaluation_batch, _make_test_batch, benchmark_runner
+from adv_lab.eval.benchmark_runner import (
+    _attack_success_rate,
+    _load_evaluation_batch,
+    _make_test_batch,
+    benchmark_runner,
+)
 
 
 class _Net(nn.Module):
@@ -229,3 +234,29 @@ def test_evaluation_dataset_rejects_out_of_range_images(tmp_path) -> None:
     np.savez(path, images=images, labels=np.array([0, 1], dtype=np.int64))
     with pytest.raises(ValueError, match=r"\[0, 1\]"):
         _load_evaluation_batch(str(path), batch_size=2)
+
+
+class _ThresholdClassifier(nn.Module):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        score = x[:, 0, 0, 0]
+        return torch.stack((1.0 - score, score), dim=1)
+
+
+def test_attack_success_rate_excludes_preexisting_clean_errors() -> None:
+    model = _ThresholdClassifier().eval()
+    labels = torch.tensor([0, 1, 0])
+    clean_correct = torch.tensor([True, False, True])
+    adv_images = torch.zeros((3, 1, 1, 1), dtype=torch.float32)
+    rate, denominator = _attack_success_rate(model, adv_images, labels, clean_correct)
+    assert denominator == 2
+    assert rate == 0.0
+
+
+def test_attack_success_rate_is_undefined_without_clean_correct_examples() -> None:
+    model = _ThresholdClassifier().eval()
+    labels = torch.tensor([0, 1])
+    clean_correct = torch.tensor([False, False])
+    adv_images = torch.zeros((2, 1, 1, 1), dtype=torch.float32)
+    rate, denominator = _attack_success_rate(model, adv_images, labels, clean_correct)
+    assert denominator == 0
+    assert rate is None
