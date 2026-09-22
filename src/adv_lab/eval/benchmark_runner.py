@@ -229,8 +229,8 @@ def benchmark_runner(
     Run the full adversarial robustness benchmark and return a structured report.
 
     Runs FGSM, PGD (L-inf), and a C&W proxy attack against the specified model.
-    Exits with code 1 if any HIGH or CRITICAL severity finding is present
-    (i.e., PGD robust accuracy < 30%)  --  enabling use as a CI gate.
+    Produces a failing result when measured PGD robust accuracy is below the
+    configured deployment threshold, enabling use as an explicit CI admission gate.
 
     MITRE ATLAS:
         AML.T0029  --  Discover ML Model Ontology
@@ -363,14 +363,14 @@ def benchmark_runner(
             "defense": "madry_pgd7_adversarial_training",
             "robust_accuracy_eps8_255_literature": 0.45,
             "training_overhead": "+3x training time",
-            "recommendation": "Recommended for high-risk deployments (fraud detection, biometric auth)",  # noqa: E501
+            "recommendation": "Candidate defense to evaluate under the same deployment benchmark",
             "note": "Literature estimate (Madry et al. 2018); run on your model to verify",
         },
         {
             "defense": "randomized_smoothing",
             "robust_accuracy": "certified L2 radius guarantee",
             "training_overhead": "+2x inference time",
-            "recommendation": "Use when certified robustness is required",
+            "recommendation": "Evaluate when an L2 certification objective is part of the threat model",
             "note": "Cohen et al. 2019; provides provable L2 bounds, not L-inf",
         },
     ]
