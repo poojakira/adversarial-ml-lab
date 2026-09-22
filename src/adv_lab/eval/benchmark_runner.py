@@ -114,10 +114,14 @@ def _make_test_batch(
     height: int = 28,
     width: int = 28,
     num_classes: int = 10,
+    *,
+    seed: int = 42,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Generate a synthetic test batch for benchmarking."""
-    images = torch.rand(batch_size, channels, height, width)
-    labels = torch.randint(0, num_classes, (batch_size,))
+    """Generate a deterministic synthetic batch for smoke/demo benchmarking."""
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(seed)
+    images = torch.rand(batch_size, channels, height, width, generator=generator)
+    labels = torch.randint(0, num_classes, (batch_size,), generator=generator)
     return images, labels
 
 
@@ -139,6 +143,16 @@ def _load_evaluation_batch(dataset_path: str, batch_size: int) -> tuple[torch.Te
         raise ValueError("evaluation images must be a 4D NCHW array")
     if labels_np.ndim != 1:
         raise ValueError("evaluation labels must be a 1D array")
+    if not np.issubdtype(images_np.dtype, np.number):
+        raise ValueError("evaluation images must use a numeric dtype")
+    if not np.issubdtype(labels_np.dtype, np.integer):
+        raise ValueError("evaluation labels must use an integer dtype")
+    if not np.isfinite(images_np).all():
+        raise ValueError("evaluation images contain NaN or infinity")
+    if images_np.size and (float(images_np.min()) < 0.0 or float(images_np.max()) > 1.0):
+        raise ValueError("evaluation images must be normalized to the [0, 1] range")
+    if labels_np.size and int(labels_np.min()) < 0:
+        raise ValueError("evaluation labels must be non-negative class indices")
     if len(images_np) != len(labels_np):
         raise ValueError("evaluation image/label counts do not match")
     if len(images_np) < batch_size:
@@ -149,6 +163,33 @@ def _load_evaluation_batch(dataset_path: str, batch_size: int) -> tuple[torch.Te
     images = torch.from_numpy(images_np[:batch_size]).to(dtype=torch.float32)
     labels = torch.from_numpy(labels_np[:batch_size]).to(dtype=torch.long)
     return images, labels
+
+
+def _validate_model_batch_contract(
+    model: nn.Module,
+    images: torch.Tensor,
+    labels: torch.Tensor,
+) -> None:
+    """Fail before attacks when the deployed model and evidence batch are incompatible."""
+    try:
+        with torch.no_grad():
+            logits = model(images[: min(2, len(images))])
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"model cannot evaluate the supplied dataset shape: {exc}") from exc
+
+    if logits.ndim != 2 or logits.shape[0] != min(2, len(images)):
+        raise ValueError(
+            "model output must be a 2D [batch, classes] logits tensor for this evaluator"
+        )
+    if logits.shape[1] < 2:
+        raise ValueError("model must expose at least two output classes")
+    if not torch.isfinite(logits).all():
+        raise ValueError("model produced NaN or infinity on the supplied evaluation data")
+    if labels.numel() and int(labels.max().item()) >= logits.shape[1]:
+        raise ValueError(
+            f"evaluation label {int(labels.max().item())} exceeds model class range "
+            f"0..{logits.shape[1] - 1}"
+        )
 
 
 # ── Attack imports (canonical implementations from adv_lab.attacks) ───────────
@@ -224,6 +265,7 @@ def benchmark_runner(
     model_format: str = "state-dict",
     production: bool = False,
     min_pgd_robust_accuracy: float = PGD_ROBUST_ACC_GATE,
+    seed: int = 42,
 ) -> dict[str, Any]:
     """
     Run the full adversarial robustness benchmark and return a structured report.
@@ -273,14 +315,15 @@ def benchmark_runner(
         dataset_source = str(Path(dataset_path).resolve())
         dataset_sha256 = _sha256_file(dataset_path)
     else:
-        images, labels = _make_test_batch(batch_size=batch_size)
-        dataset_source = "synthetic_random_batch"
+        images, labels = _make_test_batch(batch_size=batch_size, seed=seed)
+        dataset_source = "synthetic_seeded_smoke_batch"
         dataset_sha256 = None
 
     # Ensure model is in eval mode before running attacks.
     # Attacks measured during training mode produce incorrect results because
     # batch normalization and dropout behave differently.
     model.eval()
+    _validate_model_batch_contract(model, images, labels)
 
     logger.info("Running FGSM attack (epsilon=%.3f)...", epsilon)
     # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
@@ -343,8 +386,8 @@ def benchmark_runner(
     remediation_hints: list[str] = []
     if pgd_robust_acc < min_pgd_robust_accuracy:
         remediation_hints.append(
-            f"Apply Madry adversarial training (PGD-7, eps={epsilon:.3f})  --  "
-            "expected to improve robust accuracy to ~40-50%."
+            f"Evaluate adversarial training (for example PGD-based training at eps={epsilon:.3f}) "
+            "and re-run this same gate; do not assume a literature result transfers to this model."
         )
         remediation_hints.append(
             "Consider randomized smoothing for certified robustness guarantees."
@@ -385,6 +428,7 @@ def benchmark_runner(
         "model_sha256": _sha256_file(model_path) if model_path else None,
         "dataset_source": dataset_source,
         "dataset_sha256": dataset_sha256,
+        "synthetic_seed": None if dataset_path else seed,
         "production_mode": production,
         "min_pgd_robust_accuracy": min_pgd_robust_accuracy,
         "epsilon": epsilon,
@@ -438,14 +482,13 @@ def _main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Benchmark dummy model (default)
-  python -m adv_lab.eval.benchmark_runner --epsilon 0.03
+  # Deterministic smoke/demo only (not deployment evidence)
+  python -m adv_lab.eval.benchmark_runner --epsilon 0.03 --seed 42
 
-  # Benchmark your model, write to file
-  python -m adv_lab.eval.benchmark_runner --model-path ./model.pt --output report.json
-
-  # Use as CI gate (exits 1 if robust_acc < 30%)
-  python -m adv_lab.eval.benchmark_runner && echo PASS || echo FAIL
+  # Production admission gate: explicit deployed model + representative data
+  python -m adv_lab.eval.benchmark_runner --production \
+    --model-path ./model.ts --model-format torchscript \
+    --dataset-path ./evaluation.npz --output report.json
         """,
     )
     parser.add_argument("--model-path", default=None, help="Path to model artifact")
@@ -475,6 +518,12 @@ Examples:
     parser.add_argument("--pgd-steps", type=int, default=40, help="PGD iterations (default: 40)")
     parser.add_argument("--output", default="benchmark_report.json", help="Output JSON path")
     parser.add_argument("--batch-size", type=int, default=32, help="Test batch size")
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Seed for synthetic smoke/demo data only (ignored when --dataset-path is supplied).",
+    )
     args = parser.parse_args()
 
     report = benchmark_runner(
@@ -487,6 +536,7 @@ Examples:
         model_format=args.model_format,
         production=args.production,
         min_pgd_robust_accuracy=args.min_pgd_robust_accuracy,
+        seed=args.seed,
     )
 
     print(json.dumps(report, indent=2))
