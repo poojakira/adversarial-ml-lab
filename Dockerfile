@@ -13,18 +13,26 @@ RUN python -m pip install --no-cache-dir --upgrade pip build \
 FROM python:3.12-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    ADV_MODEL_PATH=/models/model.ts \
+    ADV_DATASET_PATH=/data/eval.npz
 
 RUN groupadd --system evaluator \
-    && useradd --system --gid evaluator --create-home --home-dir /home/evaluator evaluator
+    && useradd --system --gid evaluator --create-home --home-dir /home/evaluator evaluator \
+    && mkdir -p /models /data \
+    && chown evaluator:evaluator /models /data
 
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir /wheels/*.whl \
+RUN python -m pip install --no-cache-dir "/wheels/adversarial_ml_lab-1.0.0-py3-none-any.whl[service]" \
     && rm -rf /wheels
 
 USER evaluator
 WORKDIR /work
 
-# This image is a batch admission job, not a network service. Production mode
-# refuses to run without an explicit TorchScript model and NPZ evaluation set.
-ENTRYPOINT ["python", "-m", "adv_lab.eval.benchmark_runner", "--production"]
+VOLUME ["/models", "/data"]
+EXPOSE 8007
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8007/health', timeout=3).read()" || exit 1
+
+CMD ["uvicorn", "adv_lab.api:app", "--host", "0.0.0.0", "--port", "8007", "--workers", "1", "--no-access-log"]
