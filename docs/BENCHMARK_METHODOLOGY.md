@@ -1,372 +1,231 @@
 # Benchmark Methodology
 
-## Document Information
+## Scope
 
-| Field | Value |
-|-------|-------|
-| Version | 1.0 |
-| Last Updated | 2026-08-24 |
-| Scope | Adversarial robustness benchmarking for CIFAR-10 classifiers |
-| Standard | Aligned with RobustBench evaluation protocol |
+This document describes the behavior that is implemented by
+`src/adv_lab/eval/benchmark_runner.py` on the current repository head. It is
+not a proposal for future AutoAttack, multi-seed, or confidence-interval work.
 
----
+The runner is an adversarial-robustness **measurement and admission job**. It
+does not make a model robust and it does not prove safety against attacks that
+are outside the evaluated threat model.
 
-## 1. Overview
+## Two execution modes
 
-This document defines the methodology for evaluating adversarial robustness of image
-classifiers in this repository. The benchmark measures the gap between clean accuracy
-(standard test performance) and robust accuracy (performance under adversarial attack)
-across multiple attack types and perturbation budgets.
+### Smoke / development mode
 
----
-
-## 2. Attack Parameters
-
-### 2.1 FGSM (Fast Gradient Sign Method)
-
-| Parameter | Default | Range | Notes |
-|-----------|---------|-------|-------|
-| `epsilon` | 8/255 (0.031) | [1/255, 16/255] | L∞ perturbation budget |
-| `targeted` | False | {True, False} | Untargeted by default |
-| `loss_fn` | CrossEntropy | {CE, CW-loss} | Loss function for gradient computation |
-
-### 2.2 PGD (Projected Gradient Descent)
-
-| Parameter | Default | Range | Notes |
-|-----------|---------|-------|-------|
-| `epsilon` | 8/255 (0.031) | [1/255, 16/255] | L∞ perturbation budget |
-| `step_size` | 2/255 (0.0078) | [ε/10, ε/2] | Per-iteration step size |
-| `num_steps` | 20 | [7, 100] | Number of PGD iterations |
-| `random_start` | True | {True, False} | Uniform random initialization in ε-ball |
-| `restarts` | 1 | [1, 10] | Number of random restarts |
-| `loss_fn` | CrossEntropy | {CE, CW-loss, DLR} | Loss function |
-
-### 2.3 C&W (Carlini & Wagner L2)
-
-| Parameter | Default | Range | Notes |
-|-----------|---------|-------|-------|
-| `confidence` (κ) | 0 | [0, 50] | Minimum margin for misclassification |
-| `learning_rate` | 0.01 | [1e-4, 0.1] | Adam optimizer learning rate |
-| `max_iterations` | 1000 | [100, 10000] | Optimization steps |
-| `binary_search_steps` | 9 | [1, 20] | Steps for finding optimal constant c |
-| `initial_const` | 1e-3 | [1e-5, 1.0] | Initial value of tradeoff constant c |
-| `abort_early` | True | {True, False} | Stop if loss stops decreasing |
-
-### 2.4 AutoAttack
-
-| Parameter | Default | Range | Notes |
-|-----------|---------|-------|-------|
-| `epsilon` | 8/255 | [1/255, 16/255] | L∞ perturbation budget |
-| `norm` | Linf | {Linf, L2} | Threat model norm |
-| `version` | standard | {standard, plus, rand} | Attack ensemble variant |
-| `attacks_to_run` | all | subset of {apgd-ce, apgd-t, fab, square} | Components to execute |
-| `n_target_classes` | 9 | [1, 9] | Targeted attack class count |
-
-### 2.5 Standard Epsilon Budgets
-
-| Dataset | Norm | Standard ε | Rationale |
-|---------|------|-----------|-----------|
-| CIFAR-10 | L∞ | 8/255 | RobustBench standard; Madry et al. convention |
-| CIFAR-10 | L2 | 0.5 | RobustBench standard |
-| CIFAR-10 | L∞ | 4/255 | Conservative budget for practical threats |
-| ImageNet | L∞ | 4/255 | RobustBench standard |
-
----
-
-## 3. Evaluation Metrics
-
-### 3.1 Primary Metrics
-
-| Metric | Definition | Formula |
-|--------|-----------|---------|
-| Clean Accuracy | Correct predictions on unperturbed test set | `correct_clean / total` |
-| Robust Accuracy | Correct predictions on adversarial examples | `correct_adv / total` |
-| Attack Success Rate (ASR) | Fraction of correctly-classified inputs that become misclassified | `(correct_clean - correct_adv) / correct_clean` |
-| Accuracy Drop | Absolute difference between clean and robust accuracy | `clean_acc - robust_acc` |
-
-### 3.2 Secondary Metrics
-
-| Metric | Definition | Use Case |
-|--------|-----------|----------|
-| Average Perturbation (L2) | Mean L2 norm of successful adversarial perturbations | C&W attack quality |
-| Median Perturbation (L2) | Median L2 norm of successful perturbations | Robust to outliers |
-| Query Count | Number of model queries per successful attack | Black-box efficiency |
-| Time per Sample | Wall-clock seconds per adversarial example | Computational cost |
-| Certified Radius | Provable L2 radius from randomized smoothing | Certified defense evaluation |
-
-### 3.3 Metric Computation
-
-```python
-# Primary metric computation (pseudocode)
-clean_correct = sum(model(x) == y for x, y in test_set)
-adv_correct = sum(model(attack(x)) == y for x, y in test_set)
-
-clean_accuracy = clean_correct / len(test_set)
-robust_accuracy = adv_correct / len(test_set)
-attack_success_rate = (clean_correct - adv_correct) / clean_correct
-```
-
-### 3.4 CI Gate Thresholds
-
-| Metric | Threshold | Action on Failure |
-|--------|-----------|-------------------|
-| PGD robust accuracy (ε=8/255) | ≥ 30% | Block merge |
-| Clean accuracy | ≥ 85% | Warning |
-| Attack success rate | ≤ 70% | Block merge |
-| Benchmark completion | 100% (no crashes) | Block merge |
-
----
-
-## 4. Statistical Significance Testing
-
-### 4.1 Confidence Intervals
-
-All reported accuracy values include 95% Wilson score confidence intervals:
-
-```
-CI = (p̂ + z²/2n ± z√(p̂(1-p̂)/n + z²/4n²)) / (1 + z²/n)
-```
-
-Where:
-- p̂ = observed accuracy
-- n = test set size (10,000 for CIFAR-10)
-- z = 1.96 (95% confidence)
-
-For n=10,000 and p̂=0.50, the 95% CI width is approximately ±0.98%.
-
-### 4.2 Random Seed Protocol
-
-Each benchmark run uses three fixed random seeds to account for:
-- Random initialization in PGD (affects which local optima are found)
-- Stochastic components in AutoAttack (Square Attack queries)
-- Data loader shuffling
-
-**Required seeds**: `[42, 123, 2024]`
-
-Report the mean and standard deviation across seeds. If std > 1% accuracy, flag
-as high-variance result requiring investigation.
-
-### 4.3 Comparison Testing
-
-When comparing two models or two attack configurations:
-
-1. **McNemar's test**: For paired binary outcomes (correct/incorrect per sample)
-   - Null hypothesis: Both configurations have the same error rate
-   - Use when comparing model A vs. model B on the same test set
-
-2. **Bootstrap confidence intervals**: For reporting uncertainty on accuracy differences
-   - 10,000 bootstrap resamples of the test set
-   - Report 95% percentile confidence interval on the difference
-
-### 4.4 Multiple Comparisons
-
-When comparing across multiple epsilon values or attack types simultaneously, apply
-Bonferroni correction:
-
-```
-α_adjusted = 0.05 / k
-```
-
-Where k = number of simultaneous comparisons.
-
----
-
-## 5. Hardware Requirements
-
-### 5.1 Minimum Requirements (CI Pipeline)
-
-| Component | Specification | Notes |
-|-----------|--------------|-------|
-| GPU | Not required | CI uses CPU with reduced test set |
-| CPU | 4 cores | GitHub Actions runner |
-| RAM | 8 GB | Sufficient for CIFAR-10 + ResNet-18 |
-| Disk | 2 GB free | Dataset + model checkpoints |
-| Time budget | 10 minutes max | CI timeout constraint |
-
-### 5.2 Full Benchmark Requirements
-
-| Component | Specification | Notes |
-|-----------|--------------|-------|
-| GPU | NVIDIA A100 (40GB) or RTX 4090 (24GB) | Required for AutoAttack |
-| CPU | 8+ cores | Data loading parallelism |
-| RAM | 32 GB | Full test set in memory |
-| Disk | 10 GB free | Datasets + multiple checkpoints |
-| Time budget | ~2 hours | Full AutoAttack on 10k samples |
-
-### 5.3 Benchmark Scaling
-
-| Configuration | Samples | GPU Time (A100) | GPU Time (RTX 4090) |
-|---------------|---------|-----------------|---------------------|
-| FGSM only | 10,000 | ~30 seconds | ~45 seconds |
-| PGD-20 | 10,000 | ~5 minutes | ~8 minutes |
-| PGD-100 | 10,000 | ~25 minutes | ~40 minutes |
-| C&W (1000 iter) | 10,000 | ~45 minutes | ~70 minutes |
-| AutoAttack (standard) | 10,000 | ~90 minutes | ~140 minutes |
-
-### 5.4 Memory Usage
-
-| Model | Batch Size | GPU Memory |
-|-------|-----------|------------|
-| ResNet-18 | 128 | ~4 GB |
-| ResNet-18 | 256 | ~7 GB |
-| WideResNet-28-10 | 64 | ~8 GB |
-| WideResNet-28-10 | 128 | ~14 GB |
-| WideResNet-70-16 | 32 | ~16 GB |
-
----
-
-## 6. Reproducibility Checklist
-
-### 6.1 Environment
-
-- [ ] Python version pinned (≥3.10, specify exact in results)
-- [ ] PyTorch version pinned (specify CUDA version if GPU)
-- [ ] All dependency versions recorded (`pip freeze` or `uv.lock`)
-- [ ] Hardware specification documented (GPU model, driver version)
-- [ ] Operating system documented
-
-### 6.2 Data
-
-- [ ] CIFAR-10 test set used without modification (10,000 images)
-- [ ] No data augmentation applied to test inputs
-- [ ] Data normalization matches training normalization
-- [ ] Dataset download verified via SHA-256 hash
-- [ ] Subset indices documented if not using full test set
-
-### 6.3 Model
-
-- [ ] Model architecture fully specified (layer count, width, activations)
-- [ ] Training procedure documented (epochs, optimizer, learning rate schedule)
-- [ ] Model checkpoint hash recorded (SHA-256)
-- [ ] Inference mode enabled (`model.eval()`, `torch.no_grad()`)
-- [ ] Batch normalization in eval mode (not tracking running stats)
-
-### 6.4 Attack Configuration
-
-- [ ] All attack hyperparameters documented (see Section 2)
-- [ ] Random seeds fixed and reported (see Section 4.2)
-- [ ] Loss function specified
-- [ ] Perturbation constraints verified (pixel values clipped to [0,1])
-- [ ] Number of restarts documented
-- [ ] Early stopping criteria documented (if applicable)
-
-### 6.5 Evaluation
-
-- [ ] Full test set used (or subset clearly documented with indices)
-- [ ] Confidence intervals reported (see Section 4.1)
-- [ ] Variance across seeds reported
-- [ ] Wall-clock time recorded
-- [ ] JSON results file includes all parameters and environment info
-
-### 6.6 Reporting
-
-- [ ] Results JSON schema validated
-- [ ] Clean accuracy matches expected range for model
-- [ ] Robust accuracy monotonically decreases with increasing ε
-- [ ] Results compared against RobustBench leaderboard (if applicable)
-- [ ] Any deviations from standard protocol explicitly noted
-
----
-
-## 7. Benchmark Execution Protocol
-
-### 7.1 Standard Run
+Without `--production`, the runner may use the built-in `_DummyCNN` and a
+deterministic synthetic batch. That path exists to exercise the benchmark
+plumbing.
 
 ```bash
-# 1. Set up environment
-pip install -e ".[dev]"
-
-# 2. Run full benchmark
 python -m adv_lab.eval.benchmark_runner \
-    --epsilon 0.031 \
-    --pgd-steps 20 \
-    --seeds 42 123 2024 \
-    --output results/benchmark.json
-
-# 3. Validate results
-python -m adv_lab.eval.benchmark_runner --validate results/benchmark.json
+  --epsilon 0.031 \
+  --pgd-steps 20 \
+  --seed 42 \
+  --output results/smoke.json
 ```
 
-### 7.2 CI Run (Reduced)
+A smoke result is **not deployment evidence**.
+
+### Production admission mode
+
+Production mode refuses implicit evidence. It requires:
+
+- an explicit TorchScript model;
+- an explicit NPZ evaluation dataset;
+- a deployment-owned PGD robust-accuracy threshold.
 
 ```bash
-# Reduced test set for CI time budget
-python -m adv_lab.eval.benchmark_runner \
-    --epsilon 0.031 \
-    --pgd-steps 20 \
-    --max-samples 1000 \
-    --output results/ci_benchmark.json
+python -m adv_lab.eval.benchmark_runner --production \
+  --model-path artifacts/model.ts \
+  --model-format torchscript \
+  --dataset-path evidence/evaluation.npz \
+  --epsilon 0.031 \
+  --pgd-steps 40 \
+  --min-pgd-robust-accuracy 0.30 \
+  --batch-size 256 \
+  --output results/production.json
 ```
 
-### 7.3 Result Schema
+The command exits nonzero when the configured PGD gate produces a HIGH or
+CRITICAL finding. Invalid or incompatible evidence also terminates the command
+with an error rather than producing a passing report.
 
-```json
-{
-  "metadata": {
-    "timestamp": "2026-08-24T12:00:00Z",
-    "model": "ResNet-18",
-    "dataset": "CIFAR-10",
-    "device": "cuda:0 (NVIDIA A100)",
-    "torch_version": "2.13.0",
-    "python_version": "3.12.4",
-    "seeds": [42, 123, 2024]
-  },
-  "results": {
-    "clean_accuracy": 0.9512,
-    "attacks": {
-      "fgsm": {
-        "epsilon": 0.031,
-        "robust_accuracy": 0.4230,
-        "attack_success_rate": 0.5553,
-        "time_seconds": 28.4
-      },
-      "pgd": {
-        "epsilon": 0.031,
-        "steps": 20,
-        "step_size": 0.0078,
-        "robust_accuracy": 0.3150,
-        "attack_success_rate": 0.6689,
-        "time_seconds": 312.7
-      }
-    }
-  },
-  "ci_gate": {
-    "passed": true,
-    "pgd_robust_accuracy": 0.3150,
-    "threshold": 0.30
-  }
-}
+## Model evidence
+
+In production mode the model must be loadable with `torch.jit.load()`. This
+avoids arbitrary Python-object deserialization in the admission path.
+
+The report records:
+
+- model file name;
+- model format;
+- SHA-256 of the exact model artifact.
+
+The runner performs a pre-attack forward pass and fails when the model cannot
+consume the supplied NCHW batch, does not return a 2D `[batch, classes]`
+logits tensor, exposes fewer than two classes, produces non-finite logits, or
+cannot represent the supplied class labels.
+
+## Dataset evidence
+
+The production dataset is an NPZ containing:
+
+- `images`: numeric 4D NCHW array;
+- `labels`: integer 1D class-index array.
+
+The loader uses `numpy.load(..., allow_pickle=False)`. It rejects:
+
+- missing `images` or `labels`;
+- non-4D image arrays;
+- non-1D label arrays;
+- non-numeric images;
+- non-integer labels;
+- NaN or infinity;
+- image values outside `[0, 1]`;
+- negative labels;
+- mismatched image/label counts;
+- a dataset smaller than the requested batch size.
+
+The report records SHA-256 of the exact NPZ artifact.
+
+The current runner evaluates the first `batch_size` records. It does not
+randomly sample or claim that a subset is population-representative. Operators
+must construct the NPZ evidence set deliberately.
+
+## Implemented attacks
+
+The production runner executes three measurements:
+
+| Report key | Implementation | Norm / behavior |
+|---|---|---|
+| `fgsm` | canonical `adv_lab.attacks.fgsm.fgsm_attack` | L-infinity, one step |
+| `pgd` | canonical `adv_lab.attacks.pgd.pgd_attack` | L-infinity, configured steps, deterministic `random_start=False` |
+| `cw_l2_proxy` | PGD with 100 iterations | **Proxy only**; not the full C&W optimizer |
+
+The repository also contains a full C&W implementation elsewhere, but the
+production benchmark report intentionally labels the third runner measurement
+as a proxy. Do not cite the proxy as a measured C&W-L2 result.
+
+AutoAttack is not executed by this runner.
+
+## Metrics
+
+### Clean accuracy
+
+```
+clean_accuracy = clean_correct / total_examples
 ```
 
----
+### Robust accuracy
 
-## 8. Known Limitations
+For each attack:
 
-1. **Adaptive attacks**: This benchmark uses fixed attack parameters. A truly adaptive
-   adversary may tune attacks specifically to bypass a given defense. AutoAttack
-   partially addresses this but is not exhaustive.
+```
+robust_accuracy = adversarial_correct / total_examples
+```
 
-2. **Computational budget**: Full AutoAttack evaluation on the complete test set requires
-   GPU resources. CI uses reduced samples, which increases confidence interval width.
+This is the primary PGD deployment-gate input.
 
-3. **Distribution shift**: Robustness measured on CIFAR-10 test set does not guarantee
-   robustness on out-of-distribution inputs or real-world images.
+### Attack success rate
 
-4. **Gradient masking**: Some defenses cause gradient masking, making gradient-based
-   attacks appear ineffective while the model remains vulnerable to transfer attacks or
-   black-box methods. AutoAttack's inclusion of Square Attack partially detects this.
+Attack success is conditioned on examples that were classified correctly
+before the attack:
 
-5. **Single model evaluation**: Results are for a specific trained model instance.
-   Different random seeds during training produce models with varying robustness.
+```
+attack_success_rate =
+    clean_correct_and_adversarial_wrong / clean_correct
+```
 
----
+The report also includes `attack_success_denominator`, the number of
+clean-correct examples used in that calculation.
 
-## 9. References
+If there are zero clean-correct examples, attack success rate is undefined and
+is emitted as JSON `null`. The runner does **not** substitute
+`1 - robust_accuracy`, because doing so would count pre-existing clean errors
+as successful attacks.
 
-1. Croce, F. & Hein, M. (2020). Reliable evaluation of adversarial robustness with
-   an ensemble of attacks. *ICML 2020*. (AutoAttack standard protocol)
-2. RobustBench Leaderboard. https://robustbench.github.io/
-3. Madry, A., et al. (2018). Towards Deep Learning Models Resistant to Adversarial
-   Attacks. *ICLR 2018*. (PGD evaluation standard)
-4. Carlini, N., et al. (2019). On Evaluating Adversarial Robustness. *arXiv:1902.06705*.
-   (Best practices for robustness evaluation)
+## Gate semantics
+
+The default configured PGD robust-accuracy threshold is 0.30. This is a
+repository default, not a universal security standard.
+
+For the configured threshold:
+
+- PGD robust accuracy below both 0.05 and the gate -> CRITICAL;
+- PGD robust accuracy below the gate -> HIGH;
+- PGD robust accuracy at or above the gate -> no blocking PGD finding.
+
+A material FGSM/PGD gap may generate a MEDIUM gradient-masking indicator.
+MEDIUM findings are reported but do not make this runner's default gate fail.
+
+Deployment owners should select epsilon, attack steps, evaluation evidence, and
+the minimum acceptable robust accuracy from their own threat model and risk
+acceptance process.
+
+## Reproducibility and provenance
+
+Every report records, where applicable:
+
+- UTC timestamp;
+- model SHA-256;
+- dataset SHA-256;
+- model format;
+- production-mode flag;
+- epsilon;
+- PGD iteration count;
+- batch size;
+- configured PGD threshold;
+- clean accuracy;
+- per-attack robust accuracy;
+- conditioned attack-success rate and denominator.
+
+Smoke mode additionally records the synthetic-data seed. Production mode does
+not invent a seed for externally supplied evidence.
+
+The release workflow builds and publishes a batch-job OCI image whose
+entrypoint includes `--production`. The image therefore refuses to run without
+explicit model and dataset arguments.
+
+## What this runner does not currently provide
+
+The current production runner does **not** implement or claim:
+
+- AutoAttack evaluation;
+- multiple random restarts for the production PGD call;
+- multi-seed aggregation;
+- Wilson confidence intervals;
+- bootstrap confidence intervals;
+- McNemar testing;
+- ImageNet-specific evaluation;
+- distributed or multi-GPU execution;
+- automatic representative-dataset selection;
+- a universal robustness threshold;
+- proof of robustness outside the configured attacks and perturbation budget.
+
+Other scripts or experimental modules in the repository may explore some of
+these ideas. They are not part of this production admission contract unless
+explicitly wired into this runner and its release tests.
+
+## Interpretation
+
+A passing report means only:
+
+> On the exact hashed model artifact and exact hashed evaluation evidence,
+> under the configured FGSM/PGD/proxy attack parameters, the measured PGD
+> robust accuracy met the operator-supplied threshold and no blocking finding
+> was emitted.
+
+It does not mean the model is adversarially robust in general.
+
+## References
+
+- Goodfellow, Shlens, and Szegedy, *Explaining and Harnessing Adversarial
+  Examples* (FGSM).
+- Madry et al., *Towards Deep Learning Models Resistant to Adversarial
+  Attacks* (PGD-based robustness evaluation/training).
+- Carlini and Wagner, *Towards Evaluating the Robustness of Neural Networks*
+  (C&W; note that the runner's `cw_l2_proxy` is not this full optimizer).
+- MITRE ATLAS AML.T0043 / AML.T0015 mappings are used as reporting context,
+  not as evidence of attack coverage beyond the executed benchmark.
