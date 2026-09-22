@@ -31,10 +31,11 @@ pip install -e ".[dev]"
 > **optional** and only needed for the `[attack]` extra. The core FGSM/PGD/C&W
 > attacks, the benchmark runner, and the full test suite do **not** require it.
 
-## Run the Benchmark (synthetic by default -- no dataset needed)
+## Run a deterministic smoke benchmark
 
-The benchmark harness runs on a **synthetic random batch** against a small
-built-in dummy CNN by default. No dataset download, no GPU. It runs FGSM,
+Without `--production`, the harness uses a **deterministic seeded synthetic batch**
+against a small built-in dummy CNN. This is a development smoke path, not
+deployment evidence. No dataset download or GPU is required. It runs FGSM,
 PGD (L-inf), and a PGD-100 proxy for C&W, then writes a structured JSON report.
 
 The dummy CNN is **undefended**, so PGD drives its robust accuracy far below the
@@ -43,18 +44,38 @@ gate firing. That is the expected result, not an error.
 
 ```bash
 # Default: epsilon = 0.031 (8/255), 40 PGD steps
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --output results/report.json
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --seed 42 --output results/report.json
 
 # Smaller batch (lower memory)
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 16 --output results/report.json
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 16 --seed 42 --output results/report.json
 
 # Point at a saved _DummyCNN state_dict (weights_only load) instead of a fresh dummy
 python -m adv_lab.eval.benchmark_runner --model-path checkpoints/model.pt --epsilon 0.031 --output results/report.json
 ```
 
-Verified output (default run): `results/report.json` with
-`pass_fail: "FAIL"`, a `pgd` robust accuracy well under the 0.30 gate, and
-attack keys `fgsm`, `pgd`, `cw_l2_proxy`. Process exit code is `1` (gate fired).
+The smoke report records `synthetic_seed` so the input generation is reproducible.
+Its pass/fail result says nothing about a deployed model.
+
+## Production admission gate
+
+Production mode refuses implicit model or dataset evidence and requires a
+TorchScript model plus an NPZ containing numeric `images` (NCHW, normalized
+to [0,1]) and integer `labels`.
+
+```bash
+python -m adv_lab.eval.benchmark_runner --production \
+  --model-path artifacts/model.ts \
+  --model-format torchscript \
+  --dataset-path evidence/evaluation.npz \
+  --epsilon 0.031 \
+  --pgd-steps 40 \
+  --min-pgd-robust-accuracy 0.30 \
+  --output results/production-report.json
+```
+
+The report binds the decision to SHA-256 hashes of both model and dataset.
+A blocking PGD result exits 1. Invalid or incompatible evidence raises an
+error and the command exits nonzero.
 
 > **Input validation:** the attacks fail loud on bad inputs. Non-`[0,1]` images,
 > a train()-mode model, a batch/label size mismatch, an empty batch, or a
@@ -97,7 +118,9 @@ out of scope for a CPU-only smoke test.
 pytest tests/ -q
 ```
 
-Verified: **94 tests pass**. The suite covers FGSM/PGD/C&W attacks and their
+A prior verified snapshot recorded **94 passing tests**. Current counts must be
+taken from the latest successful CI run because the suite continues to evolve.
+The suite covers FGSM/PGD/C&W attacks and their
 input-validation guards, the evaluation harness and robustness gate, epsilon
 constraints, defenses/detection, the RobustBench loader, and the benchmark
 runner's error paths.
@@ -109,8 +132,8 @@ ruff check src/adv_lab attack_mapping tests
 ruff format --check src/adv_lab attack_mapping tests
 ```
 
-Verified clean with ruff 0.8.4 ("All checks passed!" / "44 files already
-formatted"). `make lint` / `make format` wrap the same commands.
+`make lint` / `make format` wrap the same checks. Use CI on the exact commit
+as the authoritative clean/failed status.
 
 ## Security Scanning
 
@@ -120,9 +143,10 @@ python -m pip install --upgrade pip
 pip-audit
 ```
 
-Verified: **no known vulnerabilities**. (pip-audit skips the local editable
-`adversarial-ml-lab` package itself, which is expected -- it isn't published to
-PyPI.) `make security` additionally runs `bandit`.
+`make security` runs dependency and static security checks. Use the latest CI
+result on the exact commit as the authoritative vulnerability status; do not
+carry a historical "no known vulnerabilities" statement forward after code or
+dependency changes.
 
 ## Dashboard
 
