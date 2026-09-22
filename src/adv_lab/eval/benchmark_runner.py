@@ -15,6 +15,7 @@ NIST AI RMF: MANAGE 2.4  --  Measure and manage AI risks
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import sys
@@ -22,6 +23,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -55,8 +57,20 @@ class _DummyCNN(nn.Module):
         return self.classifier(x)
 
 
-def _load_model(model_path: str | None) -> tuple[nn.Module, str]:
-    """Load a model from path, or return a dummy CNN if no path given."""
+def _sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _load_model(
+    model_path: str | None,
+    *,
+    model_format: str = "state-dict",
+) -> tuple[nn.Module, str]:
+    """Load a model from path, or return a dummy CNN if no path is given."""
     if model_path is None:
         model = _DummyCNN()
         model_id = "dummy_cnn"
@@ -64,25 +78,32 @@ def _load_model(model_path: str | None) -> tuple[nn.Module, str]:
     else:
         if not Path(model_path).exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
-        # Load state dict only  --  never use pickle.load() on untrusted files.
-        # weights_only=True prevents arbitrary code execution via pickle.
-        try:
-            state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
-        except Exception as exc:  # noqa: BLE001 - surface a clear, actionable message
-            raise ValueError(
-                f"failed to load checkpoint '{model_path}' as a weights-only state dict: {exc}. "
-                "The file must be a torch.save() of a plain state_dict (no pickled objects)."
-            ) from exc
-        model = _DummyCNN()
-        try:
-            model.load_state_dict(state_dict)
-        except (RuntimeError, TypeError) as exc:
-            raise ValueError(
-                f"checkpoint '{model_path}' does not match the expected _DummyCNN architecture: "
-                f"{exc}. This runner benchmarks a fixed dummy CNN; supply a matching state_dict."
-            ) from exc
+        if model_format == "torchscript":
+            try:
+                model = torch.jit.load(model_path, map_location="cpu")
+            except Exception as exc:  # noqa: BLE001
+                raise ValueError(f"failed to load TorchScript model '{model_path}': {exc}") from exc
+        elif model_format == "state-dict":
+            # Load state dict only -- never deserialize arbitrary Python objects.
+            try:
+                state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
+            except Exception as exc:  # noqa: BLE001 - surface a clear, actionable message
+                raise ValueError(
+                    f"failed to load checkpoint '{model_path}' as a weights-only state dict: {exc}. "
+                    "The file must be a torch.save() of a plain state_dict (no pickled objects)."
+                ) from exc
+            model = _DummyCNN()
+            try:
+                model.load_state_dict(state_dict)
+            except (RuntimeError, TypeError) as exc:
+                raise ValueError(
+                    f"checkpoint '{model_path}' does not match the expected _DummyCNN architecture: "
+                    f"{exc}. Use --model-format torchscript for an arbitrary trusted model architecture."
+                ) from exc
+        else:
+            raise ValueError("model_format must be 'state-dict' or 'torchscript'")
         model_id = Path(model_path).name
-        logger.info("Loaded model from %s", model_path)
+        logger.info("Loaded %s model from %s", model_format, model_path)
     model.eval()
     return model, model_id
 
@@ -97,6 +118,36 @@ def _make_test_batch(
     """Generate a synthetic test batch for benchmarking."""
     images = torch.rand(batch_size, channels, height, width)
     labels = torch.randint(0, num_classes, (batch_size,))
+    return images, labels
+
+
+def _load_evaluation_batch(dataset_path: str, batch_size: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """Load an explicit NPZ evaluation batch without pickle deserialization."""
+    path = Path(dataset_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Evaluation dataset not found: {dataset_path}")
+    try:
+        with np.load(path, allow_pickle=False) as data:
+            if "images" not in data or "labels" not in data:
+                raise ValueError("evaluation NPZ must contain 'images' and 'labels' arrays")
+            images_np = np.asarray(data["images"])
+            labels_np = np.asarray(data["labels"])
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"failed to load evaluation dataset '{dataset_path}': {exc}") from exc
+
+    if images_np.ndim != 4:
+        raise ValueError("evaluation images must be a 4D NCHW array")
+    if labels_np.ndim != 1:
+        raise ValueError("evaluation labels must be a 1D array")
+    if len(images_np) != len(labels_np):
+        raise ValueError("evaluation image/label counts do not match")
+    if len(images_np) < batch_size:
+        raise ValueError(
+            f"evaluation dataset contains {len(images_np)} samples, fewer than batch_size={batch_size}"
+        )
+
+    images = torch.from_numpy(images_np[:batch_size]).to(dtype=torch.float32)
+    labels = torch.from_numpy(labels_np[:batch_size]).to(dtype=torch.long)
     return images, labels
 
 
@@ -171,6 +222,10 @@ def benchmark_runner(
     pgd_steps: int = 40,
     output_path: str = "benchmark_report.json",
     batch_size: int = 32,
+    *,
+    dataset_path: str | None = None,
+    model_format: str = "state-dict",
+    production: bool = False,
 ) -> dict[str, Any]:
     """
     Run the full adversarial robustness benchmark and return a structured report.
@@ -205,9 +260,22 @@ def benchmark_runner(
         raise ValueError(f"pgd_steps must be >= 1, got {pgd_steps}")
     if batch_size < 1:
         raise ValueError(f"batch_size must be >= 1, got {batch_size}")
+    if production and not model_path:
+        raise ValueError("production mode requires --model-path")
+    if production and not dataset_path:
+        raise ValueError("production mode requires --dataset-path")
+    if production and model_format != "torchscript":
+        raise ValueError("production mode requires --model-format torchscript")
 
-    model, model_id = _load_model(model_path)
-    images, labels = _make_test_batch(batch_size=batch_size)
+    model, model_id = _load_model(model_path, model_format=model_format)
+    if dataset_path:
+        images, labels = _load_evaluation_batch(dataset_path, batch_size)
+        dataset_source = str(Path(dataset_path).resolve())
+        dataset_sha256 = _sha256_file(dataset_path)
+    else:
+        images, labels = _make_test_batch(batch_size=batch_size)
+        dataset_source = "synthetic_random_batch"
+        dataset_sha256 = None
 
     # Ensure model is in eval mode before running attacks.
     # Attacks measured during training mode produce incorrect results because
@@ -312,6 +380,11 @@ def benchmark_runner(
         "scan_date": date.today().isoformat(),
         "scan_timestamp": datetime.now(tz=timezone.utc).isoformat(),
         "model_id": model_id,
+        "model_format": model_format,
+        "model_sha256": _sha256_file(model_path) if model_path else None,
+        "dataset_source": dataset_source,
+        "dataset_sha256": dataset_sha256,
+        "production_mode": production,
         "epsilon": epsilon,
         "pgd_steps": pgd_steps,
         "batch_size": batch_size,
@@ -373,7 +446,23 @@ Examples:
   python -m adv_lab.eval.benchmark_runner && echo PASS || echo FAIL
         """,
     )
-    parser.add_argument("--model-path", default=None, help="Path to PyTorch state dict (.pt)")
+    parser.add_argument("--model-path", default=None, help="Path to model artifact")
+    parser.add_argument(
+        "--model-format",
+        choices=("state-dict", "torchscript"),
+        default="state-dict",
+        help="Model artifact format. Use torchscript for arbitrary deployed architectures.",
+    )
+    parser.add_argument(
+        "--dataset-path",
+        default=None,
+        help="NPZ containing images (NCHW) and labels arrays. Required in production mode.",
+    )
+    parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Fail closed unless an explicit TorchScript model and evaluation dataset are supplied.",
+    )
     parser.add_argument("--epsilon", type=float, default=0.03, help="L-inf epsilon (default: 0.03)")
     parser.add_argument("--pgd-steps", type=int, default=40, help="PGD iterations (default: 40)")
     parser.add_argument("--output", default="benchmark_report.json", help="Output JSON path")
@@ -386,6 +475,9 @@ Examples:
         pgd_steps=args.pgd_steps,
         output_path=args.output,
         batch_size=args.batch_size,
+        dataset_path=args.dataset_path,
+        model_format=args.model_format,
+        production=args.production,
     )
 
     print(json.dumps(report, indent=2))
