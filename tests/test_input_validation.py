@@ -170,3 +170,31 @@ def test_benchmark_runner_default_runs(tmp_path) -> None:
     assert report["tool"] == "adversarial-ml-lab"
     assert set(report["attacks"]) == {"fgsm", "pgd", "cw_l2_proxy"}
     assert report["pass_fail"] in {"PASS", "FAIL"}
+
+
+def test_production_mode_requires_explicit_model_and_dataset(tmp_path) -> None:
+    with pytest.raises(ValueError, match="production mode requires --model-path"):
+        benchmark_runner(
+            production=True,
+            output_path=str(tmp_path / "report.json"),
+            pgd_steps=1,
+            batch_size=1,
+        )
+
+
+def test_production_mode_requires_torchscript(tmp_path) -> None:
+    model = tmp_path / "model.pt"
+    torch.save({}, model)
+    data = tmp_path / "data.npz"
+    import numpy as np
+
+    np.savez(data, images=np.zeros((1, 1, 28, 28), dtype=np.float32), labels=np.zeros(1, dtype=np.int64))
+    with pytest.raises(ValueError, match="requires --model-format torchscript"):
+        benchmark_runner(
+            model_path=str(model),
+            dataset_path=str(data),
+            production=True,
+            output_path=str(tmp_path / "report.json"),
+            pgd_steps=1,
+            batch_size=1,
+        )
