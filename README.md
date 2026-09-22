@@ -8,7 +8,7 @@ Measure classifier robustness under gradient-based adversarial attacks and map t
 
 A model trained on CIFAR-10 reports high accuracy on the test set. You ship it into a content moderation pipeline. An attacker adds a perturbation smaller than what the human eye can detect (8/255 pixel intensity), and accuracy collapses toward zero. The model is functionally broken, but your metrics dashboard still shows green.
 
-This is not hypothetical here: in this repo's own committed run, a small CNN with **71.82% clean accuracy drops to 0.00% robust accuracy under PGD at eps=8/255** ([results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)). This is MITRE ATLAS technique AML.T0043 (Craft Adversarial Data) in action. A malware classifier, an autonomous vehicle perception system, or a medical imaging model with the same vulnerability would fail silently in production. The first step to fixing this is measuring it reproducibly, which is exactly what this repository does.
+In this repo's committed CIFAR-10 run, a small CNN with **71.82% clean accuracy drops to 0.00% robust accuracy under PGD at eps=8/255** ([results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)). This demonstrates how a model can score well on clean benchmark data while remaining highly vulnerable to the evaluated attack configuration. It does **not** establish how an unrelated production model, vehicle system, malware classifier, or medical system would behave.
 
 ## Executive Summary
 
@@ -379,7 +379,7 @@ qualitative robustness collapse is the same one seen on larger models.
 - **No adaptive attack evaluation.** If you implement a defense, you must evaluate it against attacks that are aware of the defense (AutoAttack, etc.).
 - **Determinism.** Random seeds affect PGD initialization; results may vary slightly across runs.
 
-## Production Readiness Assessment
+## Engineering Readiness Assessment
 
 | Criterion | Status | Notes |
 |-----------|--------|-------|
@@ -396,7 +396,7 @@ qualitative robustness collapse is the same one seen on larger models.
 | Dashboard | Yes | Static HTML visualization |
 | Package installable | Yes | `pip install -e .` via setuptools |
 
-**What is missing for full production deployment:**
+**What would still be required before production use:**
 - No model registry integration (weights are ephemeral)
 - No experiment tracking (no MLflow/W&B integration)
 - No distributed evaluation support
@@ -450,6 +450,6 @@ Documentation site: https://poojakira.github.io/adversarial-ml-lab/
 
 ## Engineering Lessons
 
-The most useful thing this project taught: a model's test accuracy is a peacetime metric. It tells you nothing about behavior under adversarial pressure. The delta between clean and robust accuracy is the actual security-relevant measurement, and it is almost always shockingly large for models that were not explicitly trained for robustness. If you ship a classifier without measuring this gap, you are shipping a system whose failure mode you have never tested.
+The main engineering lesson from this project is that clean-set accuracy and adversarial robustness measure different properties. For the models and attacks evaluated here, the gap is material, so robustness testing belongs beside ordinary accuracy evaluation when the threat model includes crafted inputs.
 
 The second lesson is practical: making robustness evaluation a CI gate (not just a report) is what turns measurement into action. Teams respond to red builds. They do not respond to informational dashboards.
