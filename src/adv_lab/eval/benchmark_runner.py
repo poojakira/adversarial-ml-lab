@@ -230,16 +230,36 @@ def _pgd(
     )
 
 
+def _predictions(model: nn.Module, images: torch.Tensor) -> torch.Tensor:
+    """Return class predictions for a batch under eval mode."""
+    with torch.no_grad():
+        return model(images).argmax(dim=1)
+
+
 def _robust_accuracy(
     model: nn.Module,
     adv_images: torch.Tensor,
     labels: torch.Tensor,
 ) -> float:
-    """Fraction of adversarial examples that the model still classifies correctly."""
-    with torch.no_grad():
-        preds = model(adv_images).argmax(dim=1)
+    """Fraction of all evaluated examples still classified correctly after attack."""
+    preds = _predictions(model, adv_images)
     correct = (preds == labels).sum().item()
     return correct / len(labels)
+
+
+def _attack_success_rate(
+    model: nn.Module,
+    adv_images: torch.Tensor,
+    labels: torch.Tensor,
+    clean_correct: torch.Tensor,
+) -> tuple[float | None, int]:
+    """Attack success only among examples classified correctly before attack."""
+    denominator = int(clean_correct.sum().item())
+    if denominator == 0:
+        return None, 0
+    adv_preds = _predictions(model, adv_images)
+    successes = (clean_correct & (adv_preds != labels)).sum().item()
+    return float(successes / denominator), denominator
 
 
 # ── Report construction ───────────────────────────────────────────────────────
@@ -325,15 +345,22 @@ def benchmark_runner(
     model.eval()
     _validate_model_batch_contract(model, images, labels)
 
+    clean_preds = _predictions(model, images)
+    clean_correct = clean_preds == labels
+    clean_correct_count = int(clean_correct.sum().item())
+    clean_accuracy = float(clean_correct_count / len(labels))
+
     logger.info("Running FGSM attack (epsilon=%.3f)...", epsilon)
     # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     adv_fgsm = _fgsm(model, images, labels, epsilon=epsilon)
     fgsm_robust_acc = _robust_accuracy(model, adv_fgsm, labels)
+    fgsm_asr, fgsm_asr_n = _attack_success_rate(model, adv_fgsm, labels, clean_correct)
 
     logger.info("Running PGD attack (epsilon=%.3f, steps=%d)...", epsilon, pgd_steps)
     # MITRE ATLAS: AML.T0015  --  Evade ML Model
     adv_pgd = _pgd(model, images, labels, epsilon=epsilon, steps=pgd_steps)
     pgd_robust_acc = _robust_accuracy(model, adv_pgd, labels)
+    pgd_asr, pgd_asr_n = _attack_success_rate(model, adv_pgd, labels, clean_correct)
 
     # C&W proxy: use PGD with more steps as a computationally feasible proxy
     # Full C&W optimization (Carlini & Wagner 2017) is available via cw_l2_attack
@@ -342,6 +369,7 @@ def benchmark_runner(
     # MITRE ATLAS: AML.T0043  --  Craft Adversarial Data
     adv_cw_proxy = _pgd(model, images, labels, epsilon=epsilon, steps=100)
     cw_robust_acc = _robust_accuracy(model, adv_cw_proxy, labels)
+    cw_asr, cw_asr_n = _attack_success_rate(model, adv_cw_proxy, labels, clean_correct)
 
     # Findings
     pgd_severity = _severity_from_robust_acc(pgd_robust_acc, min_pgd_robust_accuracy)
@@ -434,23 +462,28 @@ def benchmark_runner(
         "epsilon": epsilon,
         "pgd_steps": pgd_steps,
         "batch_size": batch_size,
+        "clean_accuracy": round(clean_accuracy, 4),
+        "clean_correct": clean_correct_count,
         "attacks": {
             "fgsm": {
                 "robust_accuracy": round(fgsm_robust_acc, 4),
-                "attack_success_rate": round(1.0 - fgsm_robust_acc, 4),
+                "attack_success_rate": None if fgsm_asr is None else round(fgsm_asr, 4),
+                "attack_success_denominator": fgsm_asr_n,
                 "atlas_technique": "AML.T0043",
                 "note": "Single-step; use PGD for honest evaluation",
             },
             "pgd": {
                 "robust_accuracy": round(pgd_robust_acc, 4),
-                "attack_success_rate": round(1.0 - pgd_robust_acc, 4),
+                "attack_success_rate": None if pgd_asr is None else round(pgd_asr, 4),
+                "attack_success_denominator": pgd_asr_n,
                 "steps": pgd_steps,
                 "atlas_technique": "AML.T0015",
                 "note": "Standard honest white-box evaluation metric",
             },
             "cw_l2_proxy": {
                 "robust_accuracy": round(cw_robust_acc, 4),
-                "attack_success_rate": round(1.0 - cw_robust_acc, 4),
+                "attack_success_rate": None if cw_asr is None else round(cw_asr, 4),
+                "attack_success_denominator": cw_asr_n,
                 "note": "PGD-100 proxy; full C&W optimization available via cw_l2_attack()",
                 "atlas_technique": "AML.T0043",
             },
