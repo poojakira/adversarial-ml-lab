@@ -23,7 +23,8 @@ RUN groupadd --system evaluator \
     && chown evaluator:evaluator /models /data
 
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir "/wheels/adversarial_ml_lab-1.0.0-py3-none-any.whl[service]" \
+RUN python -m pip install --no-cache-dir /wheels/*.whl \
+    && python -m pip install --no-cache-dir "fastapi>=0.115,<1" "uvicorn[standard]>=0.32,<1" "pydantic>=2.9,<3" \
     && rm -rf /wheels
 
 USER evaluator
