@@ -36,6 +36,7 @@ Thumbs.db
 # Documentation (not needed in container)
 docs/
 *.md
+!README.md
 LICENSE
 CHANGELOG.md
 
