@@ -204,16 +204,13 @@ def _robust_accuracy(
 # ── Report construction ───────────────────────────────────────────────────────
 
 
-def _severity_from_robust_acc(robust_acc: float) -> str:
-    """Map PGD robust accuracy to a severity level for the CI gate."""
-    if robust_acc < 0.05:
+def _severity_from_robust_acc(robust_acc: float, gate: float) -> str:
+    """Map measured PGD accuracy to severity relative to the configured gate."""
+    if robust_acc < min(0.05, gate):
         return "CRITICAL"
-    elif robust_acc < PGD_ROBUST_ACC_GATE:
+    if robust_acc < gate:
         return "HIGH"
-    elif robust_acc < 0.50:
-        return "MEDIUM"
-    else:
-        return "LOW"
+    return "LOW"
 
 
 def benchmark_runner(
@@ -226,6 +223,7 @@ def benchmark_runner(
     dataset_path: str | None = None,
     model_format: str = "state-dict",
     production: bool = False,
+    min_pgd_robust_accuracy: float = PGD_ROBUST_ACC_GATE,
 ) -> dict[str, Any]:
     """
     Run the full adversarial robustness benchmark and return a structured report.
@@ -266,6 +264,8 @@ def benchmark_runner(
         raise ValueError("production mode requires --dataset-path")
     if production and model_format != "torchscript":
         raise ValueError("production mode requires --model-format torchscript")
+    if not 0.0 <= min_pgd_robust_accuracy <= 1.0:
+        raise ValueError("min_pgd_robust_accuracy must be in [0, 1]")
 
     model, model_id = _load_model(model_path, model_format=model_format)
     if dataset_path:
@@ -301,18 +301,19 @@ def benchmark_runner(
     cw_robust_acc = _robust_accuracy(model, adv_cw_proxy, labels)
 
     # Findings
-    pgd_severity = _severity_from_robust_acc(pgd_robust_acc)
+    pgd_severity = _severity_from_robust_acc(pgd_robust_acc, min_pgd_robust_accuracy)
     findings: list[dict[str, Any]] = []
 
-    if pgd_robust_acc < PGD_ROBUST_ACC_GATE:
+    if pgd_robust_acc < min_pgd_robust_accuracy:
         findings.append(
             {
                 "severity": pgd_severity,
                 "attack": "pgd",
                 "atlas_technique": "AML.T0015",
                 "message": (
-                    f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {PGD_ROBUST_ACC_GATE:.0%} "  # noqa: E501
-                    f"CI gate threshold. This model is not safe for adversarial environments."
+                    f"PGD robust accuracy {pgd_robust_acc:.1%} is below the {min_pgd_robust_accuracy:.0%} "  # noqa: E501
+                    "configured deployment gate for this evaluation. Review the model, data, "
+                    "threat model, and policy before promotion."
                 ),
             }
         )
@@ -340,7 +341,7 @@ def benchmark_runner(
     pass_fail = "FAIL" if (severity_summary["CRITICAL"] + severity_summary["HIGH"] > 0) else "PASS"
 
     remediation_hints: list[str] = []
-    if pgd_robust_acc < PGD_ROBUST_ACC_GATE:
+    if pgd_robust_acc < min_pgd_robust_accuracy:
         remediation_hints.append(
             f"Apply Madry adversarial training (PGD-7, eps={epsilon:.3f})  --  "
             "expected to improve robust accuracy to ~40-50%."
@@ -354,9 +355,9 @@ def benchmark_runner(
             "defense": "no_defense",
             "robust_accuracy_eps_provided": round(pgd_robust_acc, 4),
             "training_overhead": "none",
-            "recommendation": "Not safe for adversarial environments"
-            if pgd_robust_acc < PGD_ROBUST_ACC_GATE
-            else "Acceptable for low-risk deployments",
+            "recommendation": "Fails configured robustness gate"
+            if pgd_robust_acc < min_pgd_robust_accuracy
+            else "Meets configured robustness gate",
         },
         {
             "defense": "madry_pgd7_adversarial_training",
@@ -385,6 +386,7 @@ def benchmark_runner(
         "dataset_source": dataset_source,
         "dataset_sha256": dataset_sha256,
         "production_mode": production,
+        "min_pgd_robust_accuracy": min_pgd_robust_accuracy,
         "epsilon": epsilon,
         "pgd_steps": pgd_steps,
         "batch_size": batch_size,
@@ -463,6 +465,12 @@ Examples:
         action="store_true",
         help="Fail closed unless an explicit TorchScript model and evaluation dataset are supplied.",
     )
+    parser.add_argument(
+        "--min-pgd-robust-accuracy",
+        type=float,
+        default=PGD_ROBUST_ACC_GATE,
+        help="Deployment-owned minimum PGD robust accuracy gate (default: 0.30).",
+    )
     parser.add_argument("--epsilon", type=float, default=0.03, help="L-inf epsilon (default: 0.03)")
     parser.add_argument("--pgd-steps", type=int, default=40, help="PGD iterations (default: 40)")
     parser.add_argument("--output", default="benchmark_report.json", help="Output JSON path")
@@ -478,6 +486,7 @@ Examples:
         dataset_path=args.dataset_path,
         model_format=args.model_format,
         production=args.production,
+        min_pgd_robust_accuracy=args.min_pgd_robust_accuracy,
     )
 
     print(json.dumps(report, indent=2))
