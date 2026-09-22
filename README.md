@@ -201,7 +201,7 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-**94 tests pass.** Line coverage is **~30% overall**, but that number is
+A prior verified snapshot recorded **94 passing tests** and roughly **30% overall line coverage**. The current head has changed since that snapshot; use the latest successful CI run for current counts. The coverage profile is
 dominated by ~20 advanced/experimental attack modules that are intentionally
 lightly tested. The modules that matter for the core robustness story are
 covered well:
@@ -244,14 +244,18 @@ Contributions to expand test coverage are welcome. See [CONTRIBUTING](CONTRIBUTI
 # Writes results/cifar10_smallcnn_real.json with real, reproducible numbers.
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 
-# Run the benchmark harness with default settings (illustrative dummy model only)
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --output report.json
+# Deterministic smoke/demo only. This is NOT deployment evidence.
+python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --pgd-steps 40 --seed 42 --output report.json
 
-# Run with a smaller batch size for limited memory
-python -m adv_lab.eval.benchmark_runner --epsilon 0.031 --batch-size 16 --output report.json
-
-# Point at a saved model checkpoint
-python -m adv_lab.eval.benchmark_runner --model-path checkpoints/model.pt --epsilon 0.031 --output report.json
+# Production admission: explicit deployed TorchScript model + representative NPZ evidence.
+python -m adv_lab.eval.benchmark_runner --production \
+  --model-path artifacts/model.ts \
+  --model-format torchscript \
+  --dataset-path evidence/evaluation.npz \
+  --epsilon 0.031 \
+  --pgd-steps 40 \
+  --min-pgd-robust-accuracy 0.30 \
+  --output report.json
 
 # Adversarial training (Madry et al. method)
 python scripts/run_madry_training.py --epochs 100 --epsilon 0.031
@@ -269,10 +273,13 @@ python scripts/run_cifar10_benchmark.py
 - name: Robustness benchmark
   run: |
     pip install -e .
-    python -m adv_lab.eval.benchmark_runner \
+    python -m adv_lab.eval.benchmark_runner --production \
+      --model-path artifacts/model.ts \
+      --model-format torchscript \
+      --dataset-path evidence/evaluation.npz \
       --epsilon 0.031 \
       --pgd-steps 20 \
-      --threshold 0.30 \
+      --min-pgd-robust-accuracy 0.30 \
       --output report.json
 ```
 
@@ -313,7 +320,7 @@ This benchmark assumes the strongest practical white-box threat model:
 
 | Defense | Approach | Expected robustness |
 |---------|----------|-------------------|
-| Adversarial training (Madry 2018) | Train on PGD examples | ~45% at eps=8/255 on CIFAR-10 |
+| Adversarial training (Madry 2018) | Train on PGD examples | Literature-dependent; must be re-measured on the target model |
 | Randomized smoothing (Cohen 2019) | Certifiable L2 robustness | Provable guarantees at cost of clean accuracy |
 | Input preprocessing | JPEG compression, bit-depth reduction | Weak against adaptive attacks |
 | Ensemble adversarial training | Train on adversarial examples from multiple models | Marginal gains over single-model AT |
