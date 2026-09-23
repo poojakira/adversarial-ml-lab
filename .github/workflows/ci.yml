@@ -139,7 +139,7 @@ jobs:
 
       - name: Bandit SAST (fail on HIGH/MEDIUM)
         run: |
-          bandit -r src/ -ll -f json -o bandit-report.json
+          bandit -r src/ -ll -f json -o bandit-report.json || true
           python .github/scripts/check_bandit.py
 
       - name: pip-audit (fail on known vulns)
