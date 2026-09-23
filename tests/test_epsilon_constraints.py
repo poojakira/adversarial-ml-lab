@@ -171,9 +171,9 @@ class TestFGSMConstraints:
         images, labels = batch
         adv = fgsm_attack(model, images, labels, epsilon=epsilon)
         max_delta = (adv - images).abs().max().item()
-        assert max_delta <= epsilon + 1e-5, (
-            f"FGSM L-inf violated: max_delta={max_delta:.6f} > epsilon={epsilon}"
-        )
+        assert (
+            max_delta <= epsilon + 1e-5
+        ), f"FGSM L-inf violated: max_delta={max_delta:.6f} > epsilon={epsilon}"
 
     def test_fgsm_output_in_valid_range(self, model, batch):
         images, labels = batch
