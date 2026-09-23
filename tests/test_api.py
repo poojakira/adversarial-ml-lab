@@ -6,7 +6,6 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-
 API_KEY = "adversarial-evaluation-api-key-at-least-32-chars"
 
 
