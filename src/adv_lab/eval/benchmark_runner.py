@@ -97,8 +97,9 @@ def _load_model(
                 model.load_state_dict(state_dict)
             except (RuntimeError, TypeError) as exc:
                 raise ValueError(
-                    f"checkpoint '{model_path}' does not match the expected _DummyCNN architecture: "
-                    f"{exc}. Use --model-format torchscript for an arbitrary trusted model architecture."
+                    f"checkpoint '{model_path}' does not match the expected "
+                    f"_DummyCNN architecture: {exc}. Use --model-format torchscript "
+                    "for an arbitrary trusted model architecture."
                 ) from exc
         else:
             raise ValueError("model_format must be 'state-dict' or 'torchscript'")
@@ -157,7 +158,8 @@ def _load_evaluation_batch(dataset_path: str, batch_size: int) -> tuple[torch.Te
         raise ValueError("evaluation image/label counts do not match")
     if len(images_np) < batch_size:
         raise ValueError(
-            f"evaluation dataset contains {len(images_np)} samples, fewer than batch_size={batch_size}"
+            "evaluation dataset contains "
+            f"{len(images_np)} samples, fewer than batch_size={batch_size}"
         )
 
     images = torch.from_numpy(images_np[:batch_size]).to(dtype=torch.float32)
@@ -441,7 +443,9 @@ def benchmark_runner(
             "defense": "randomized_smoothing",
             "robust_accuracy": "certified L2 radius guarantee",
             "training_overhead": "+2x inference time",
-            "recommendation": "Evaluate when an L2 certification objective is part of the threat model",
+            "recommendation": (
+                "Evaluate when an L2 certification objective is part of the threat model"
+            ),
             "note": "Cohen et al. 2019; provides provable L2 bounds, not L-inf",
         },
     ]
@@ -539,7 +543,10 @@ Examples:
     parser.add_argument(
         "--production",
         action="store_true",
-        help="Fail closed unless an explicit TorchScript model and evaluation dataset are supplied.",
+        help=(
+            "Fail closed unless an explicit TorchScript model and evaluation "
+            "dataset are supplied."
+        ),
     )
     parser.add_argument(
         "--min-pgd-robust-accuracy",
