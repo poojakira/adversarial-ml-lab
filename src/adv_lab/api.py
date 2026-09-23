@@ -33,7 +33,10 @@ _slots = asyncio.Semaphore(_MAX_CONCURRENT)
 app = FastAPI(
     title="Adversarial ML Robustness Evaluation Service",
     version="1.1.0",
-    description="Run bounded FGSM/PGD robustness evaluations against operator-configured artifacts.",
+    description=(
+        "Run bounded FGSM/PGD robustness evaluations against "
+        "operator-configured artifacts."
+    ),
 )
 
 
