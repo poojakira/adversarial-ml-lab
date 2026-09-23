@@ -89,8 +89,9 @@ def _load_model(
                 state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
             except Exception as exc:  # noqa: BLE001 - surface a clear, actionable message
                 raise ValueError(
-                    f"failed to load checkpoint '{model_path}' as a weights-only state dict: {exc}. "
-                    "The file must be a torch.save() of a plain state_dict (no pickled objects)."
+                    f"failed to load checkpoint '{model_path}' as a weights-only "
+                    f"state dict: {exc}. The file must be a torch.save() of a "
+                    "plain state_dict (no pickled objects)."
                 ) from exc
             model = _DummyCNN()
             try:
