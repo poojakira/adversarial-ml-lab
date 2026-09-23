@@ -1,3 +1,1 @@
-Verification run after audit remediation.
-Repository: adversarial-ml-lab
-Verification cycle: 2026-09-22-final-1
+verify formatter and CI after remediation
