@@ -193,7 +193,9 @@ def test_production_mode_requires_torchscript(tmp_path) -> None:
     data = tmp_path / "data.npz"
     import numpy as np
 
-    np.savez(data, images=np.zeros((1, 1, 28, 28), dtype=np.float32), labels=np.zeros(1, dtype=np.int64))
+    np.savez(
+        data, images=np.zeros((1, 1, 28, 28), dtype=np.float32), labels=np.zeros(1, dtype=np.int64)
+    )
     with pytest.raises(ValueError, match="requires --model-format torchscript"):
         benchmark_runner(
             model_path=str(model),

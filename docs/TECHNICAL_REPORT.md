@@ -591,10 +591,10 @@ An attacker with write access to CI artifact storage attempts:
 ### 7.3 Key Derivation Parameters
 
 ```python
-_PBKDF2_ITERATIONS = 600_000   # OWASP 2023 recommendation
+_PBKDF2_ITERATIONS = 600_000  # OWASP 2023 recommendation
 _PBKDF2_HASH = "sha256"
-_KEY_LENGTH = 32               # 256-bit derived key
-_SALT_LENGTH = 16              # 128-bit random salt
+_KEY_LENGTH = 32  # 256-bit derived key
+_SALT_LENGTH = 16  # 128-bit random salt
 ```
 
 ### 7.4 Residual Risks

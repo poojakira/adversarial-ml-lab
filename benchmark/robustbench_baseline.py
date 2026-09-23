@@ -247,7 +247,7 @@ def main() -> None:
     print("Model: torchvision.resnet18 (pretrained=True, ImageNet weights)")
     print("Data:  CIFAR-10 test set (first 20 images)")
     print(f"Device: {DEVICE}")
-    print(f"L-inf budget: eps={EPS:.5f} ({EPS*255:.0f}/255)")
+    print(f"L-inf budget: eps={EPS:.5f} ({EPS * 255:.0f}/255)")
     print("=" * 70)
 
     # Load model
@@ -275,7 +275,7 @@ def main() -> None:
 
     # Attack evaluations
     print("\n[4/4] Running adversarial attacks...")
-    print(f"\n  FGSM (eps={EPS*255:.0f}/255)...")
+    print(f"\n  FGSM (eps={EPS * 255:.0f}/255)...")
     fgsm_results = evaluate_fgsm(model, images, labels, epsilon=EPS)
     print(
         f"       Fooled: {fgsm_results['fooled']}/{fgsm_results['clean_correct']}"
@@ -285,7 +285,7 @@ def main() -> None:
     print(f"       Time: {fgsm_results['elapsed_seconds']:.3f}s")
 
     print(
-        f"\n  PGD-20 (eps={EPS*255:.0f}/255, alpha={PGD_ALPHA*255:.0f}/255, steps={PGD_STEPS})..."
+        f"\n  PGD-20 (eps={EPS * 255:.0f}/255, alpha={PGD_ALPHA * 255:.0f}/255, steps={PGD_STEPS})..."
     )
     pgd_results = evaluate_pgd(model, images, labels, epsilon=EPS, alpha=PGD_ALPHA, steps=PGD_STEPS)
     print(
@@ -326,8 +326,7 @@ def main() -> None:
             "forward/backward passes.",
             "ImageNet-pretrained model evaluated on CIFAR-10 via input "
             "upsampling + logit grouping.",
-            "Clean accuracy is expected to be low due to domain mismatch "
-            "(ImageNet vs CIFAR-10).",
+            "Clean accuracy is expected to be low due to domain mismatch (ImageNet vs CIFAR-10).",
             "Attack success rates measure the fraction of correctly-classified "
             "images that are fooled.",
             "PGD-20 is strictly stronger than FGSM; if FGSM > PGD success, "

@@ -48,11 +48,11 @@ from adv_lab.attacks.fgsm import fgsm_attack
 from adv_lab.attacks.pgd import pgd_attack
 
 # ── Standard CIFAR-10 benchmark constants ───────────────────────────────────────
-EPSILON = 8 / 255          # L-inf budget (canonical CIFAR-10 benchmark)
-ALPHA = 2 / 255            # PGD step size
-PGD_STEPS = 20             # PGD iterations for evaluation
-CW_STEPS = 100             # C&W Adam iterations (kept small for CPU budget)
-CW_C = 1.0                 # C&W loss trade-off constant
+EPSILON = 8 / 255  # L-inf budget (canonical CIFAR-10 benchmark)
+ALPHA = 2 / 255  # PGD step size
+PGD_STEPS = 20  # PGD iterations for evaluation
+CW_STEPS = 100  # C&W Adam iterations (kept small for CPU budget)
+CW_C = 1.0  # C&W loss trade-off constant
 SEED = 42
 
 CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
@@ -268,7 +268,9 @@ def main() -> None:
         steps=PGD_STEPS,
     )
     pgd_secs = time.time() - t0
-    print(f"[bench]   PGD-{PGD_STEPS} robust acc = {pgd_acc * 100:.2f}%  (n={pgd_n}, {pgd_secs:.1f}s)")
+    print(
+        f"[bench]   PGD-{PGD_STEPS} robust acc = {pgd_acc * 100:.2f}%  (n={pgd_n}, {pgd_secs:.1f}s)"
+    )
 
     print(f"[bench] C&W L2 ({CW_STEPS} steps, c={CW_C}) on {args.attack_samples} samples...")
     t0 = time.time()

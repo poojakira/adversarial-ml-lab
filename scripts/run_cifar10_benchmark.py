@@ -17,6 +17,7 @@ Reference: Madry et al. "Towards Deep Learning Models Resistant to
            Adversarial Attacks" (ICLR 2018). arXiv:1706.06083.
 RobustBench leaderboard: https://robustbench.github.io/ (top ~66-71% eps=8/255)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -39,13 +40,14 @@ from adv_lab.attacks.pgd import pgd_attack
 from adv_lab.models.cifar10_resnet18 import ResNet18CIFAR10, get_cifar10_loaders
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-EPSILON = 8 / 255        # L-inf budget (standard CIFAR-10 benchmark)
-ALPHA   = 2 / 255        # PGD step size
-PGD_STEPS = 40           # PGD-40 for evaluation (more steps → tighter lower bound)
+EPSILON = 8 / 255  # L-inf budget (standard CIFAR-10 benchmark)
+ALPHA = 2 / 255  # PGD step size
+PGD_STEPS = 40  # PGD-40 for evaluation (more steps → tighter lower bound)
 RESULTS_PATH = _REPO_ROOT / "results" / "cifar10_demo_run.json"
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def evaluate_clean(model: nn.Module, loader, device: torch.device) -> float:
     """Clean test accuracy."""
@@ -109,6 +111,7 @@ def train_one_epoch(
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="CIFAR-10 ResNet-18 adversarial robustness benchmark (demo run)"
@@ -117,7 +120,7 @@ def main() -> None:
         "--skip-train",
         action="store_true",
         help="Skip the 1-epoch warm-up training and evaluate a freshly initialized model. "
-             "Useful for verifying attack plumbing without waiting for training.",
+        "Useful for verifying attack plumbing without waiting for training.",
     )
     parser.add_argument(
         "--data-dir",
@@ -151,9 +154,7 @@ def main() -> None:
 
     # ── Model ───────────────────────────────────────────────────────────────────
     model = ResNet18CIFAR10(num_classes=10).to(device)
-    optimizer = torch.optim.SGD(
-        model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4
-    )
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
     # ── Optional 1-epoch training ────────────────────────────────────────────────
     if args.skip_train:
@@ -175,11 +176,14 @@ def main() -> None:
     print(f"[benchmark] Evaluating FGSM robustness (eps={EPSILON * 255:.1f}/255)...")
     t0 = time.time()
     fgsm_acc = evaluate_robust(
-        model, test_loader, device, fgsm_attack,
+        model,
+        test_loader,
+        device,
+        fgsm_attack,
         max_batches=args.max_eval_batches,
         epsilon=EPSILON,
     )
-    print(f"[benchmark]   FGSM robust accuracy: {fgsm_acc * 100:.2f}%  ({time.time()-t0:.1f}s)")
+    print(f"[benchmark]   FGSM robust accuracy: {fgsm_acc * 100:.2f}%  ({time.time() - t0:.1f}s)")
 
     print(
         f"[benchmark] Evaluating PGD-{PGD_STEPS} robustness "
@@ -187,13 +191,18 @@ def main() -> None:
     )
     t0 = time.time()
     pgd_acc = evaluate_robust(
-        model, test_loader, device, pgd_attack,
+        model,
+        test_loader,
+        device,
+        pgd_attack,
         max_batches=args.max_eval_batches,
         epsilon=EPSILON,
         alpha=ALPHA,
         steps=PGD_STEPS,
     )
-    print(f"[benchmark]   PGD-{PGD_STEPS} robust accuracy: {pgd_acc * 100:.2f}%  ({time.time()-t0:.1f}s)")
+    print(
+        f"[benchmark]   PGD-{PGD_STEPS} robust accuracy: {pgd_acc * 100:.2f}%  ({time.time() - t0:.1f}s)"
+    )
 
     # ── Results JSON ─────────────────────────────────────────────────────────────
     results = {

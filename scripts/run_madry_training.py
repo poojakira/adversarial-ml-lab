@@ -22,6 +22,7 @@ RobustBench CIFAR-10 L-inf leaderboard (eps=8/255):
   Top models reach ~66-71%, but require larger architectures and
   more sophisticated training procedures (e.g., WideResNet-70-16).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -42,16 +43,17 @@ from adv_lab.attacks.pgd import pgd_attack
 from adv_lab.models.cifar10_resnet18 import ResNet18CIFAR10, get_cifar10_loaders
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-EPSILON    = 8 / 255    # L-inf budget
-ALPHA      = 2 / 255    # PGD step size (both inner training attack and eval)
-PGD_TRAIN_STEPS = 7     # PGD-7 during training (cost/robustness sweet spot)
-PGD_EVAL_STEPS  = 40    # PGD-40 for final evaluation (tighter lower bound)
+EPSILON = 8 / 255  # L-inf budget
+ALPHA = 2 / 255  # PGD step size (both inner training attack and eval)
+PGD_TRAIN_STEPS = 7  # PGD-7 during training (cost/robustness sweet spot)
+PGD_EVAL_STEPS = 40  # PGD-40 for final evaluation (tighter lower bound)
 
 CHECKPOINT_PATH = _REPO_ROOT / "checkpoints" / "madry_at_resnet18.pth"
-RESULTS_PATH    = _REPO_ROOT / "results" / "madry_at_results.json"
+RESULTS_PATH = _REPO_ROOT / "results" / "madry_at_results.json"
 
 
 # ── PGD-7 inner attack for training ──────────────────────────────────────────
+
 
 def _pgd7_inner(
     model: nn.Module,
@@ -76,6 +78,7 @@ def _pgd7_inner(
 
 
 # ── Training helpers ───────────────────────────────────────────────────────────
+
 
 def madry_train_epoch(
     model: nn.Module,
@@ -123,16 +126,16 @@ def madry_train_epoch(
         with torch.no_grad():
             model.eval()
             clean_preds = model(images).argmax(dim=1)
-            adv_preds   = model(x_adv).argmax(dim=1)
+            adv_preds = model(x_adv).argmax(dim=1)
             model.train()
 
         n_clean_correct += int((clean_preds == labels).sum().item())
-        n_adv_correct   += int((adv_preds == labels).sum().item())
+        n_adv_correct += int((adv_preds == labels).sum().item())
 
     return {
-        "loss":       total_loss / max(n_seen, 1),
-        "clean_acc":  n_clean_correct / max(n_seen, 1),
-        "pgd7_acc":   n_adv_correct   / max(n_seen, 1),   # training proxy
+        "loss": total_loss / max(n_seen, 1),
+        "clean_acc": n_clean_correct / max(n_seen, 1),
+        "pgd7_acc": n_adv_correct / max(n_seen, 1),  # training proxy
     }
 
 
@@ -144,7 +147,7 @@ def evaluate_clean(model: nn.Module, loader, device: torch.device) -> float:
         for images, labels in loader:
             images, labels = images.to(device), labels.to(device)
             n_correct += int((model(images).argmax(1) == labels).sum().item())
-            n_total   += labels.shape[0]
+            n_total += labels.shape[0]
     return n_correct / max(n_total, 1)
 
 
@@ -156,8 +159,12 @@ def evaluate_pgd40(model: nn.Module, loader, device: torch.device) -> float:
     for images, labels in loader:
         images, labels = images.to(device), labels.to(device)
         x_adv = pgd_attack(
-            model, images, labels,
-            epsilon=EPSILON, alpha=ALPHA, steps=PGD_EVAL_STEPS,
+            model,
+            images,
+            labels,
+            epsilon=EPSILON,
+            alpha=ALPHA,
+            steps=PGD_EVAL_STEPS,
         )
         with torch.no_grad():
             n_correct += int((model(x_adv).argmax(1) == labels).sum().item())
@@ -166,6 +173,7 @@ def evaluate_pgd40(model: nn.Module, loader, device: torch.device) -> float:
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -176,7 +184,7 @@ def main() -> None:
         type=int,
         default=100,
         help="Number of training epochs (default: 100). "
-             "100 epochs reproduces the canonical Madry 2018 ~45%% PGD-40 result.",
+        "100 epochs reproduces the canonical Madry 2018 ~45%% PGD-40 result.",
     )
     parser.add_argument(
         "--data-dir",
@@ -231,9 +239,7 @@ def main() -> None:
         nesterov=True,
     )
     # Cosine annealing  --  standard choice for Madry AT (avoids step-LR epochs)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=args.epochs
-    )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     # ── Training loop ────────────────────────────────────────────────────────────
     epoch_logs: list[dict] = []
@@ -247,19 +253,19 @@ def main() -> None:
         elapsed = time.time() - t0
 
         log_entry = {
-            "epoch":      epoch,
-            "loss":       round(stats["loss"], 4),
-            "clean_acc":  round(stats["clean_acc"] * 100, 2),
-            "pgd7_acc":   round(stats["pgd7_acc"] * 100, 2),
-            "elapsed_s":  round(elapsed, 1),
+            "epoch": epoch,
+            "loss": round(stats["loss"], 4),
+            "clean_acc": round(stats["clean_acc"] * 100, 2),
+            "pgd7_acc": round(stats["pgd7_acc"] * 100, 2),
+            "elapsed_s": round(elapsed, 1),
         }
         epoch_logs.append(log_entry)
 
         print(
             f"[madry-at] epoch {epoch:3d}/{args.epochs} | "
             f"loss={stats['loss']:.4f} | "
-            f"clean={stats['clean_acc']*100:.1f}% | "
-            f"pgd7={stats['pgd7_acc']*100:.1f}%  [{elapsed:.0f}s]"
+            f"clean={stats['clean_acc'] * 100:.1f}% | "
+            f"pgd7={stats['pgd7_acc'] * 100:.1f}%  [{elapsed:.0f}s]"
         )
 
         # Save a checkpoint whenever robust acc improves (PGD-7 proxy)
@@ -283,10 +289,10 @@ def main() -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
         {
-            "epoch":                args.epochs,
-            "model_state_dict":     model.state_dict(),
+            "epoch": args.epochs,
+            "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
-            "clean_accuracy":       clean_acc,
+            "clean_accuracy": clean_acc,
             "pgd40_robust_accuracy": pgd40_acc,
         },
         checkpoint_path,
@@ -295,22 +301,22 @@ def main() -> None:
 
     # ── Save results JSON ─────────────────────────────────────────────────────────
     results = {
-        "epochs":                args.epochs,
-        "clean_accuracy":        round(float(clean_acc), 6),
+        "epochs": args.epochs,
+        "clean_accuracy": round(float(clean_acc), 6),
         "pgd40_robust_accuracy": round(float(pgd40_acc), 6),
-        "training_method":       "Madry PGD-7 adversarial training",
-        "epsilon":               float(EPSILON),
-        "epsilon_255":           "8/255",
-        "alpha_255":             "2/255",
-        "pgd_train_steps":       PGD_TRAIN_STEPS,
-        "pgd_eval_steps":        PGD_EVAL_STEPS,
-        "optimizer":             "SGD momentum=0.9 wd=5e-4 nesterov",
-        "lr_schedule":           f"CosineAnnealingLR T_max={args.epochs}",
-        "batch_size":            args.batch_size,
+        "training_method": "Madry PGD-7 adversarial training",
+        "epsilon": float(EPSILON),
+        "epsilon_255": "8/255",
+        "alpha_255": "2/255",
+        "pgd_train_steps": PGD_TRAIN_STEPS,
+        "pgd_eval_steps": PGD_EVAL_STEPS,
+        "optimizer": "SGD momentum=0.9 wd=5e-4 nesterov",
+        "lr_schedule": f"CosineAnnealingLR T_max={args.epochs}",
+        "batch_size": args.batch_size,
         "training_time_minutes": round(total_time / 60, 1),
-        "checkpoint":            str(checkpoint_path),
-        "reference":             "Madry et al. (2018) ICLR  --  arXiv:1706.06083",
-        "epoch_logs":            epoch_logs,
+        "checkpoint": str(checkpoint_path),
+        "reference": "Madry et al. (2018) ICLR  --  arXiv:1706.06083",
+        "epoch_logs": epoch_logs,
     }
 
     results_path = Path(args.results)

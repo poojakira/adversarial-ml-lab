@@ -114,7 +114,9 @@ def _run_evaluation(payload: EvaluationRequest, output_path: str) -> dict[str, o
 )
 async def evaluate(payload: EvaluationRequest) -> EvaluationResponse:
     started = time.perf_counter()
-    with tempfile.NamedTemporaryFile(prefix="adv-eval-", suffix=".json", delete=True) as report_file:
+    with tempfile.NamedTemporaryFile(
+        prefix="adv-eval-", suffix=".json", delete=True
+    ) as report_file:
         try:
             async with _slots:
                 report = await asyncio.wait_for(

@@ -187,8 +187,8 @@ This runbook covers common incident scenarios for the adversarial ML research la
    ```python
    import torch
 
-   ckpt = torch.load('checkpoint.pt', map_location='cpu', weights_only=True)
-   state_dict = ckpt.get('model_state_dict', ckpt)
+   ckpt = torch.load("checkpoint.pt", map_location="cpu", weights_only=True)
+   state_dict = ckpt.get("model_state_dict", ckpt)
 
    for name, param in state_dict.items():
        if torch.isnan(param).any():
@@ -276,6 +276,7 @@ This runbook covers common incident scenarios for the adversarial ML research la
 1. **Get memory snapshot**:
    ```python
    import torch
+
    print(f"Allocated: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
    print(f"Reserved: {torch.cuda.memory_reserved() / 1e9:.2f} GB")
    print(f"Max allocated: {torch.cuda.max_memory_allocated() / 1e9:.2f} GB")
@@ -297,7 +298,9 @@ This runbook covers common incident scenarios for the adversarial ML research la
    # After
    mem_after = torch.cuda.memory_allocated()
    mem_peak = torch.cuda.max_memory_allocated()
-   print(f"Before: {mem_before/1e9:.2f}GB, After: {mem_after/1e9:.2f}GB, Peak: {mem_peak/1e9:.2f}GB")
+   print(
+       f"Before: {mem_before / 1e9:.2f}GB, After: {mem_after / 1e9:.2f}GB, Peak: {mem_peak / 1e9:.2f}GB"
+   )
    ```
 
 ### Quick Fixes (in order of preference)
