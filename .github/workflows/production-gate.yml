@@ -1,4 +1,4 @@
-name: Production Gate
+name: Build and Security Gate
 
 on:
   push:
@@ -11,26 +11,30 @@ permissions:
   contents: read
 
 concurrency:
-  group: production-gate-${{ github.workflow }}-${{ github.ref }}
+  group: adv-build-security-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
           cache: pip
-      - name: Upgrade packaging tools
-        run: python -m pip install --upgrade pip build
       - name: Install
-        run: python -m pip install -e ".[dev,service]"
+        run: python -m pip install --upgrade pip build && python -m pip install -e ".[dev,service]" && python -m pip install bandit==1.8.3 pip-audit==2.10.1
       - name: Unit and integration tests
         run: python -m pytest -q
       - name: Static quality gate
-        run: python -m ruff check src tests
+        run: |
+          python -m ruff check src tests
+          python -m ruff format --check src tests
+      - name: Security gate
+        run: |
+          bandit -r src/ -ll
+          pip-audit --local
       - name: Build/release smoke check
         run: python -m build
