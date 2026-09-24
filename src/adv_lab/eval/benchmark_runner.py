@@ -69,6 +69,7 @@ def _load_model(
     model_path: str | None,
     *,
     model_format: str = "state-dict",
+    expected_model_sha256: str | None = None,
 ) -> tuple[nn.Module, str]:
     """Load a model from path, or return a dummy CNN if no path is given."""
     if model_path is None:
@@ -79,10 +80,29 @@ def _load_model(
         if not Path(model_path).exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
         if model_format == "torchscript":
+            if not expected_model_sha256:
+                raise ValueError(
+                    "TorchScript loading requires an explicit expected_model_sha256 trust anchor"
+                )
+            expected = expected_model_sha256.strip().lower()
+            if len(expected) != 64:
+                raise ValueError("expected_model_sha256 must be a 64-character SHA-256 hex digest")
             try:
+                int(expected, 16)
+            except ValueError as exc:
+                raise ValueError("expected_model_sha256 must be hexadecimal") from exc
+            actual = _sha256_file(model_path)
+            if actual.lower() != expected:
+                raise ValueError(
+                    f"TorchScript model SHA-256 mismatch: expected {expected}, got {actual}"
+                )
+            try:
+                # nosec B614 -- TorchScript is restricted to an operator-configured,
+                # immutable SHA-256-pinned artifact. Network callers cannot set the path
+                # or trust anchor; see adv_lab.api and the production runbook.
                 model = torch.jit.load(model_path, map_location="cpu")
             except Exception as exc:  # noqa: BLE001
-                raise ValueError(f"failed to load TorchScript model '{model_path}': {exc}") from exc
+                raise ValueError(f"failed to load trusted TorchScript model '{model_path}': {exc}") from exc
         elif model_format == "state-dict":
             # Load state dict only -- never deserialize arbitrary Python objects.
             try:
@@ -286,6 +306,7 @@ def benchmark_runner(
     *,
     dataset_path: str | None = None,
     model_format: str = "state-dict",
+    expected_model_sha256: str | None = None,
     production: bool = False,
     min_pgd_robust_accuracy: float = PGD_ROBUST_ACC_GATE,
     seed: int = 42,
@@ -329,10 +350,16 @@ def benchmark_runner(
         raise ValueError("production mode requires --dataset-path")
     if production and model_format != "torchscript":
         raise ValueError("production mode requires --model-format torchscript")
+    if production and not expected_model_sha256:
+        raise ValueError("production mode requires --model-sha256")
     if not 0.0 <= min_pgd_robust_accuracy <= 1.0:
         raise ValueError("min_pgd_robust_accuracy must be in [0, 1]")
 
-    model, model_id = _load_model(model_path, model_format=model_format)
+    model, model_id = _load_model(
+        model_path,
+        model_format=model_format,
+        expected_model_sha256=expected_model_sha256,
+    )
     if dataset_path:
         images, labels = _load_evaluation_batch(dataset_path, batch_size)
         dataset_source = str(Path(dataset_path).resolve())
@@ -526,6 +553,7 @@ Examples:
   # Production admission gate: explicit deployed model + representative data
   python -m adv_lab.eval.benchmark_runner --production \
     --model-path ./model.ts --model-format torchscript \
+    --model-sha256 "$(sha256sum ./model.ts | awk '{print $1}')" \
     --dataset-path ./evaluation.npz --output report.json
         """,
     )
@@ -535,6 +563,11 @@ Examples:
         choices=("state-dict", "torchscript"),
         default="state-dict",
         help="Model artifact format. Use torchscript for arbitrary deployed architectures.",
+    )
+    parser.add_argument(
+        "--model-sha256",
+        default=None,
+        help="Expected SHA-256 of the trusted TorchScript artifact; required in production mode.",
     )
     parser.add_argument(
         "--dataset-path",
@@ -575,6 +608,7 @@ Examples:
         batch_size=args.batch_size,
         dataset_path=args.dataset_path,
         model_format=args.model_format,
+        expected_model_sha256=args.model_sha256,
         production=args.production,
         min_pgd_robust_accuracy=args.min_pgd_robust_accuracy,
         seed=args.seed,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 from pathlib import Path
 from unittest.mock import patch
@@ -17,6 +18,7 @@ def _client(monkeypatch, tmp_path: Path):
     monkeypatch.setenv("ADV_API_KEY", API_KEY)
     monkeypatch.setenv("ADV_MODEL_PATH", str(model))
     monkeypatch.setenv("ADV_DATASET_PATH", str(dataset))
+    monkeypatch.setenv("ADV_MODEL_SHA256", hashlib.sha256(model.read_bytes()).hexdigest())
     import adv_lab.api as api
 
     api = importlib.reload(api)
@@ -56,6 +58,9 @@ def test_evaluate_uses_only_operator_configured_artifacts(monkeypatch, tmp_path)
     kwargs = runner.call_args.kwargs
     assert kwargs["production"] is True
     assert kwargs["model_format"] == "torchscript"
+    assert kwargs["expected_model_sha256"] == hashlib.sha256(
+        Path(kwargs["model_path"]).read_bytes()
+    ).hexdigest()
     assert Path(kwargs["model_path"]).name == "model.ts"
     assert Path(kwargs["dataset_path"]).name == "eval.npz"
 

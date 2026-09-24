@@ -1,8 +1,9 @@
 """Authenticated service for bounded adversarial robustness evaluations.
 
 The network boundary never accepts model or dataset paths from callers. Operators
-configure one trusted TorchScript model and one immutable NPZ evaluation set via
-environment variables; requests may only tune bounded evaluation parameters.
+configure one trusted, SHA-256-pinned TorchScript model and one immutable NPZ
+evaluation set via environment variables; requests may only tune bounded evaluation
+parameters.
 """
 
 from __future__ import annotations
@@ -59,14 +60,21 @@ def _configured_api_key() -> str:
     return key
 
 
-def _artifact_paths() -> tuple[Path, Path]:
+def _artifact_config() -> tuple[Path, Path, str]:
     model = Path(os.environ.get("ADV_MODEL_PATH", "")).expanduser()
     dataset = Path(os.environ.get("ADV_DATASET_PATH", "")).expanduser()
+    digest = os.environ.get("ADV_MODEL_SHA256", "").strip().lower()
     if not model.is_file():
         raise HTTPException(status_code=503, detail="Configured TorchScript model is unavailable")
     if not dataset.is_file():
         raise HTTPException(status_code=503, detail="Configured evaluation dataset is unavailable")
-    return model.resolve(), dataset.resolve()
+    if len(digest) != 64:
+        raise HTTPException(status_code=503, detail="ADV_MODEL_SHA256 is not securely configured")
+    try:
+        int(digest, 16)
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail="ADV_MODEL_SHA256 must be hexadecimal") from exc
+    return model.resolve(), dataset.resolve(), digest
 
 
 def _require_api_key(request: Request) -> None:
@@ -84,7 +92,7 @@ def health() -> dict[str, str]:
 @app.get("/ready")
 def ready() -> dict[str, object]:
     _configured_api_key()
-    model, dataset = _artifact_paths()
+    model, dataset, _ = _artifact_config()
     return {
         "status": "ready",
         "model": model.name,
@@ -95,11 +103,12 @@ def ready() -> dict[str, object]:
 
 
 def _run_evaluation(payload: EvaluationRequest, output_path: str) -> dict[str, object]:
-    model, dataset = _artifact_paths()
+    model, dataset, model_sha256 = _artifact_config()
     return benchmark_runner(
         model_path=str(model),
         dataset_path=str(dataset),
         model_format="torchscript",
+        expected_model_sha256=model_sha256,
         production=True,
         epsilon=payload.epsilon,
         pgd_steps=payload.pgd_steps,

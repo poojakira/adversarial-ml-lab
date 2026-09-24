@@ -207,6 +207,29 @@ def test_production_mode_requires_torchscript(tmp_path) -> None:
         )
 
 
+def test_production_mode_requires_model_sha256(tmp_path) -> None:
+    model = tmp_path / "model.ts"
+    model.write_bytes(b"placeholder")
+    data = tmp_path / "data.npz"
+    import numpy as np
+
+    np.savez(
+        data,
+        images=np.zeros((1, 1, 28, 28), dtype=np.float32),
+        labels=np.zeros(1, dtype=np.int64),
+    )
+    with pytest.raises(ValueError, match="requires --model-sha256"):
+        benchmark_runner(
+            model_path=str(model),
+            model_format="torchscript",
+            dataset_path=str(data),
+            production=True,
+            output_path=str(tmp_path / "report.json"),
+            pgd_steps=1,
+            batch_size=1,
+        )
+
+
 def test_synthetic_smoke_batch_is_deterministic() -> None:
     x1, y1 = _make_test_batch(batch_size=4, seed=123)
     x2, y2 = _make_test_batch(batch_size=4, seed=123)
