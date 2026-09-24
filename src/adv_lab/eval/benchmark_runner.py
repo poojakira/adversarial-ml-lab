@@ -97,10 +97,10 @@ def _load_model(
                     f"TorchScript model SHA-256 mismatch: expected {expected}, got {actual}"
                 )
             try:
-                # nosec B614 -- TorchScript is restricted to an operator-configured,
-                # immutable SHA-256-pinned artifact. Network callers cannot set the path
+                # TorchScript is restricted to an operator-configured,
+                # SHA-256-pinned artifact. Network callers cannot set the path
                 # or trust anchor; see adv_lab.api and the production runbook.
-                model = torch.jit.load(model_path, map_location="cpu")
+                model = torch.jit.load(model_path, map_location="cpu")  # nosec B614
             except Exception as exc:  # noqa: BLE001
                 raise ValueError(
                     f"failed to load trusted TorchScript model '{model_path}': {exc}"
@@ -580,8 +580,7 @@ Examples:
         "--production",
         action="store_true",
         help=(
-            "Fail closed unless an explicit TorchScript model and evaluation "
-            "dataset are supplied."
+            "Fail closed unless an explicit TorchScript model and evaluation dataset are supplied."
         ),
     )
     parser.add_argument(

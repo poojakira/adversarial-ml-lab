@@ -59,9 +59,9 @@ class TestFGSMProperties:
         adv_images = fgsm_attack(model, images, labels, epsilon=epsilon)
 
         # At least some pixels should differ
-        assert not torch.allclose(
-            adv_images, images
-        ), "FGSM did not modify the input  --  attack is broken"
+        assert not torch.allclose(adv_images, images), (
+            "FGSM did not modify the input  --  attack is broken"
+        )
 
     def test_fgsm_linf_bound(self) -> None:
         """Perturbation must be within epsilon L-inf ball."""
@@ -72,9 +72,9 @@ class TestFGSMProperties:
         adv_images = fgsm_attack(model, images, labels, epsilon=epsilon)
         perturbation = (adv_images - images).abs()
 
-        assert (
-            perturbation.max().item() <= epsilon + 1e-6
-        ), f"FGSM perturbation {perturbation.max().item():.6f} exceeds epsilon {epsilon:.6f}"
+        assert perturbation.max().item() <= epsilon + 1e-6, (
+            f"FGSM perturbation {perturbation.max().item():.6f} exceeds epsilon {epsilon:.6f}"
+        )
 
     def test_fgsm_valid_range(self) -> None:
         """Adversarial examples must be in [0, 1]."""
@@ -126,9 +126,9 @@ class TestPGDProperties:
 
         adv_images = pgd_attack(model, images, labels, epsilon=epsilon, alpha=2 / 255, steps=5)
 
-        assert not torch.allclose(
-            adv_images, images
-        ), "PGD did not modify the input  --  attack is broken"
+        assert not torch.allclose(adv_images, images), (
+            "PGD did not modify the input  --  attack is broken"
+        )
 
     def test_pgd_linf_bound(self) -> None:
         """Perturbation must be within epsilon L-inf ball."""
@@ -139,9 +139,9 @@ class TestPGDProperties:
         adv_images = pgd_attack(model, images, labels, epsilon=epsilon, alpha=2 / 255, steps=10)
         perturbation = (adv_images - images).abs()
 
-        assert (
-            perturbation.max().item() <= epsilon + 1e-6
-        ), f"PGD perturbation {perturbation.max().item():.6f} exceeds epsilon {epsilon:.6f}"
+        assert perturbation.max().item() <= epsilon + 1e-6, (
+            f"PGD perturbation {perturbation.max().item():.6f} exceeds epsilon {epsilon:.6f}"
+        )
 
     def test_pgd_valid_range(self) -> None:
         """Adversarial examples must be in [0, 1]."""
@@ -176,9 +176,9 @@ class TestPGDProperties:
             fgsm_loss = nn.functional.cross_entropy(model(fgsm_adv), labels)
             pgd_loss = nn.functional.cross_entropy(model(pgd_adv), labels)
 
-        assert (
-            pgd_loss.item() >= fgsm_loss.item() - 1e-4
-        ), f"PGD loss {pgd_loss.item():.4f} < FGSM loss {fgsm_loss.item():.4f}"
+        assert pgd_loss.item() >= fgsm_loss.item() - 1e-4, (
+            f"PGD loss {pgd_loss.item():.4f} < FGSM loss {fgsm_loss.item():.4f}"
+        )
 
     def test_pgd_output_detached(self) -> None:
         """Output must be detached from computation graph."""
@@ -201,9 +201,9 @@ class TestPGDL2Properties:
 
         adv_images = pgd_l2(model, images, labels, epsilon=epsilon, alpha=0.1, steps=5)
 
-        assert not torch.allclose(
-            adv_images, images
-        ), "PGD-L2 did not modify the input  --  attack is broken"
+        assert not torch.allclose(adv_images, images), (
+            "PGD-L2 did not modify the input  --  attack is broken"
+        )
 
     def test_pgd_l2_norm_bound(self) -> None:
         """Perturbation L2 norm must be within epsilon for each sample."""
@@ -217,9 +217,9 @@ class TestPGDL2Properties:
         delta = (adv_images - images).view(batch_size, -1)
         l2_norms = delta.norm(p=2, dim=1)
 
-        assert (
-            l2_norms <= epsilon + 1e-4
-        ).all(), f"PGD-L2 perturbation exceeds epsilon: max norm = {l2_norms.max().item():.4f}"
+        assert (l2_norms <= epsilon + 1e-4).all(), (
+            f"PGD-L2 perturbation exceeds epsilon: max norm = {l2_norms.max().item():.4f}"
+        )
 
     def test_pgd_l2_valid_range(self) -> None:
         """Adversarial examples must be in [0, 1]."""

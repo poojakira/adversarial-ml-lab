@@ -20,7 +20,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.12"
-  RUFF_VERSION: "0.8.4"
+  RUFF_VERSION: "0.16.8"
   PYRIGHT_VERSION: "1.1.388"
   BANDIT_VERSION: "1.8.3"
   PIP_AUDIT_VERSION: "2.10.1"
@@ -224,6 +224,5 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
-
 
 
