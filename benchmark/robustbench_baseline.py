@@ -285,7 +285,8 @@ def main() -> None:
     print(f"       Time: {fgsm_results['elapsed_seconds']:.3f}s")
 
     print(
-        f"\n  PGD-20 (eps={EPS * 255:.0f}/255, alpha={PGD_ALPHA * 255:.0f}/255, steps={PGD_STEPS})..."
+        f"\n  PGD-20 (eps={EPS * 255:.0f}/255, "
+        f"alpha={PGD_ALPHA * 255:.0f}/255, steps={PGD_STEPS})..."
     )
     pgd_results = evaluate_pgd(model, images, labels, epsilon=EPS, alpha=PGD_ALPHA, steps=PGD_STEPS)
     print(
