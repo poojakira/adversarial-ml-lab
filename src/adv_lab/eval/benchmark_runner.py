@@ -102,7 +102,9 @@ def _load_model(
                 # or trust anchor; see adv_lab.api and the production runbook.
                 model = torch.jit.load(model_path, map_location="cpu")
             except Exception as exc:  # noqa: BLE001
-                raise ValueError(f"failed to load trusted TorchScript model '{model_path}': {exc}") from exc
+                raise ValueError(
+                    f"failed to load trusted TorchScript model '{model_path}': {exc}"
+                ) from exc
         elif model_format == "state-dict":
             # Load state dict only -- never deserialize arbitrary Python objects.
             try:
