@@ -58,9 +58,10 @@ def test_evaluate_uses_only_operator_configured_artifacts(monkeypatch, tmp_path)
     kwargs = runner.call_args.kwargs
     assert kwargs["production"] is True
     assert kwargs["model_format"] == "torchscript"
-    assert kwargs["expected_model_sha256"] == hashlib.sha256(
-        Path(kwargs["model_path"]).read_bytes()
-    ).hexdigest()
+    assert (
+        kwargs["expected_model_sha256"]
+        == hashlib.sha256(Path(kwargs["model_path"]).read_bytes()).hexdigest()
+    )
     assert Path(kwargs["model_path"]).name == "model.ts"
     assert Path(kwargs["dataset_path"]).name == "eval.npz"
 
