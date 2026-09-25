@@ -1,19 +1,21 @@
 # Adversarial ML Lab - Technical Security Report
 
-**Classification:** UNCLASSIFIED // FOR OFFICIAL USE ONLY  
+**Document Type:** Self-authored technical report on this repository's own framework (not an official/classified document; no external audit or penetration test)  
 **Version:** 1.0  
 **Date:** 2025  
 **Framework:** adversarial-ml-lab (Python 3.12 / PyTorch)  
-**Reference Architecture:** _SmallCNN (1x8x8 input, 3 classes)
+**Reference Architecture:** _SmallCNN (1x8x8 input, 3 classes) — a synthetic demo model
 
 ---
 
 ## 1. Executive Summary
 
 This report documents the adversarial machine learning evaluation framework
-implemented across 20 operational tiers. The framework provides a structured
-attack ladder from basic gradient perturbations through certified defense
-evaluation, privacy attacks, and physical-world patch generation.
+implemented in this repository, organized across 20 attack modules ("tiers").
+The framework provides a structured attack ladder from basic gradient
+perturbations through certified defense evaluation, privacy attacks, and
+physical-world patch generation. All figures below are from running the suite
+against the synthetic `_SmallCNN` demo model, not any deployed system.
 
 **Key findings from baseline evaluation (synthetic _SmallCNN):**
 

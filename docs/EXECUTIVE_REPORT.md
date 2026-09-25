@@ -1,19 +1,35 @@
-# Executive Security Report: Adversarial AI Risk Posture
+# Executive Security Report: Adversarial AI Risk Posture (Illustrative Template)
 
-**Classification:** CONFIDENTIAL - BOARD DISTRIBUTION  
-**Prepared for:** CISO / Board of Directors  
+**Document Type:** AI System Security Risk Assessment — **template / illustrative example**  
+**Prepared for:** a hypothetical reader adopting this framework (fill in your own audience)  
 **Date:** 2025  
-**Document Type:** AI System Security Risk Assessment
+**Basis:** this repository's own attack suite run against a **synthetic toy model
+(`_SmallCNN`, 1×8×8 input, 3 classes)** on a small CPU budget
 
 ---
 
+> **This is a template, not an independent security assessment of any real
+> system.** No external penetration test, third-party audit, or engagement with
+> a real organization took place. The numbers below come from running this
+> repo's attacks against a synthetic demonstration model — they illustrate the
+> *shape* of adversarial-ML risk, not measured findings against your production
+> AI. The "your organization / your AI systems" framing is a rhetorical device
+> for the template; substitute your own scoped evaluation before treating any
+> figure as a finding about a real deployment. There is no operated service,
+> monitoring, or on-call behind this document.
+
 ## 1. Executive Summary
 
-Your organization deploys AI models that make automated decisions. This report presents the findings of a comprehensive adversarial security evaluation covering 20 distinct attack classes. **The bottom line: an attacker with minimal resources can cause your AI system to produce incorrect outputs, and the cost to attack is significantly lower than the cost to defend.**
+This report is an illustrative example of how an adversarial-ML risk posture
+could be communicated to leadership. It is driven by a demonstration evaluation
+(this repo's suite) covering 20 distinct attack classes against a synthetic toy
+model. **The illustrative takeaway: an attacker with minimal resources can cause
+a typical undefended model to produce incorrect outputs, and the cost to attack
+is often lower than the cost to defend.**
 
-Our evaluation demonstrates that a single optimization-based attack (taking approximately 5 seconds of compute on consumer hardware) reduces model accuracy from 92% to 3.4%, which is equivalent to random guessing. At the same time, the standard defense (adversarial training) only partially addresses one attack type while leaving the system vulnerable to all others. This represents a structural asymmetry where attackers have the advantage.
+The demonstration shows that a single optimization-based attack (approximately 5 seconds of compute on consumer hardware) reduces the toy model's accuracy from 92% to 3.4% (random guessing for 3 classes is 33%). Adversarial training only partially addresses one attack type while leaving the system vulnerable to others. This illustrates a structural asymmetry where attackers have the advantage. These figures are from the synthetic `_SmallCNN`, not from any deployed system.
 
-From a regulatory perspective, the privacy attacks in this evaluation (model inversion and membership inference) expose training data, creating potential violations under GDPR Article 22, CCPA, and HIPAA. The organization must assume that any AI system processing personal data is a privacy liability until proven otherwise through formal evaluation.
+The regulatory discussion below (GDPR, CCPA, HIPAA) is included to show how such findings *would* be framed for a real evaluation; it is not a legal determination about any actual system.
 
 ---
 
