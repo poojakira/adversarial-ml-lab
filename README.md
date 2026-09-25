@@ -1,6 +1,6 @@
 # adversarial-ml-lab
 
-**Repository owner & maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira)) — I own and maintain this repository and drive its design, engineering, validation, documentation, and evidence-backed releases.
+**Maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira))
 
 Measure classifier robustness under gradient-based adversarial attacks and map the resulting security findings to MITRE ATLAS.
 
@@ -10,13 +10,13 @@ A model trained on CIFAR-10 reports high accuracy on the test set. You ship it i
 
 In this repo's committed CIFAR-10 run, a small CNN with **71.82% clean accuracy drops to 0.00% robust accuracy under PGD at eps=8/255** ([results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)). This demonstrates how a model can score well on clean benchmark data while remaining highly vulnerable to the evaluated attack configuration. It does **not** establish how an unrelated production model, vehicle system, malware classifier, or medical system would behave.
 
-## Executive Summary
+## Overview
 
-This project is for ML engineers, security researchers, and platform teams who need to answer a concrete question: how much does my model's accuracy degrade under adversarial conditions, and at what perturbation budget?
+This project answers a concrete question: how much does a model's accuracy degrade under adversarial conditions, and at what perturbation budget?
 
-It implements three well-studied attacks (FGSM, PGD, and C&W) against CIFAR-10 classifiers, produces structured JSON benchmark reports, and integrates with CI pipelines so that robustness regressions are caught before merge. The results are mapped to MITRE ATLAS for teams who need to report adversarial risk in security frameworks.
+It implements three well-studied attacks (FGSM, PGD, and C&W) against CIFAR-10 classifiers, produces structured JSON benchmark reports, and can run in CI so that robustness regressions are caught before merge. The results are tagged with MITRE ATLAS metadata for teams who report adversarial risk in security frameworks.
 
-This is not a research contribution. It is a measurement harness that reproduces known attacks from published papers and gives you a number to act on.
+This is not a research contribution. It is a measurement harness that reproduces known attacks from published papers.
 
 ## Why This Repository Exists
 
