@@ -1,7 +1,7 @@
 # Research Brief — Poster 06
 
 ## Repository
-`github.com/poojakira/adversarial-ml-lab` (public, default branch `main`, primary language Python). MIT • Python 3.12 • HEAD 0fadaa2 • verified 2026-09-26
+`github.com/poojakira/adversarial-ml-lab` (public, default branch `main`, primary language Python). MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26
 
 ## Academic Project Title
 **Measuring Neural-Network Robustness Under Adversarial Perturbation**

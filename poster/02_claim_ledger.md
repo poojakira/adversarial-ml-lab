@@ -1,6 +1,6 @@
 # Claim Ledger — Poster 06 (06-adversarial-ml-lab)
 
-MIT • Python 3.12 • HEAD 0fadaa2 • verified 2026-09-26. Classification: VERIFIED_CURRENT / VERIFIED_HISTORICAL / PARTIAL / UNVERIFIED / UNSUPPORTED.
+MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26. Classification: VERIFIED_CURRENT / VERIFIED_HISTORICAL / PARTIAL / UNVERIFIED / UNSUPPORTED.
 
 | # | Claim | Classification | Evidence |
 |---|---|---|---|

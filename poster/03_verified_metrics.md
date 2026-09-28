@@ -1,6 +1,6 @@
 # Verified Metrics — Poster 06
 
-MIT • Python 3.12 • HEAD 0fadaa2 • verified 2026-09-26. Verified for this poster on Windows / CPython 3.12.10.
+MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26. Verified for this poster on Windows / CPython 3.12.10.
 
 ## Headline cards
 - 100% — PGD-20 SUCCESS
