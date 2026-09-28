@@ -231,7 +231,9 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-A prior verified snapshot recorded **94 passing tests** and roughly **30% overall line coverage**. The current head has changed since that snapshot; use the latest successful CI run for current counts. The coverage profile is
+The current head records **107 passing tests** and roughly **31% overall line
+coverage** (verified locally on current main; use the latest successful CI run
+for the authoritative figure). The coverage profile is
 dominated by ~20 advanced/experimental attack modules that are intentionally
 lightly tested. The modules that matter for the core robustness story are
 covered well:
@@ -241,7 +243,7 @@ covered well:
 | `attacks/fgsm.py` (FGSM + shared input validation) | 71% |
 | `attacks/pgd.py` (PGD L-inf + L2) | 97% |
 | `attacks/cw.py` (C&W L2) | 98% |
-| `eval/benchmark_runner.py` (runner + error paths) | 85% |
+| `eval/benchmark_runner.py` (runner + error paths) | 69% |
 | `defenses/detection.py` | 99% |
 | `defenses/adversarial_training.py` | 100% |
 
@@ -422,7 +424,7 @@ qualitative robustness collapse is the same one seen on larger models.
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Partial | 15% is the CI gate floor; overall coverage ~30% (94 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (85%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
+| Test suite | Partial | 15% is the CI gate floor; overall coverage ~31% (107 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | uv.lock for reproducibility; pyproject.toml uses >= ranges |
