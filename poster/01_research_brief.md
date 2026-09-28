@@ -1,5 +1,7 @@
 # Research Brief — Poster 06
 
+> Evidence status: This is a dated repository snapshot at the commit identified below. `VERIFIED_AT_SNAPSHOT` means verified for that commit and environment; it does not assert the same result on the latest `main`. Compare newer claims with the repository evidence before reuse.
+
 ## Repository
 `github.com/poojakira/adversarial-ml-lab` (public, default branch `main`, primary language Python). MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26
 
@@ -34,9 +36,9 @@ O4 — Label projected numbers as projected
 ## Methodology
 1 Load (real weights) -> 2 Clean (predict) -> 3 FGSM (ε=8/255) -> 4 PGD-20 (α=2/255) -> 5 Measure (robust acc) -> 6·7 Time + log (JSON)
 
-## Current Verified Evidence + Claim Ledger
-- **VERIFIED_CURRENT** — FGSM & PGD-20 100% attack success on tested subset — results/robustbench_real.json (measured, real torchvision weights, CPU). success_rate=1.0 both.
-- **VERIFIED_CURRENT** — Measured config eps=8/255, PGD-20 alpha=2/255 — robustbench_real.json attack_config; PyTorch 2.3.0+cpu.
+## Evidence at Poster Snapshot + Claim Ledger
+- **VERIFIED_AT_SNAPSHOT** — FGSM & PGD-20 100% attack success on tested subset — results/robustbench_real.json (measured, real torchvision weights, CPU). success_rate=1.0 both.
+- **VERIFIED_AT_SNAPSHOT** — Measured config eps=8/255, PGD-20 alpha=2/255 — robustbench_real.json attack_config; PyTorch 2.3.0+cpu.
 - **VERIFIED_HISTORICAL / PROJECTED** — Undefended PGD ~0%, Madry-AT ~45% — cifar10_resnet18_benchmark.json is explicitly _synthetic:true LITERATURE_PROJECTION (Madry 2018). Shown ONLY as labeled projection.
 - **PARTIAL** — Clean accuracy 5% on subset — robustbench_real.json; low due to ImageNet->CIFAR domain mismatch + 20-image subset. Not full test set.
 - **UNSUPPORTED (disclaimed)** — State-of-the-art / certified robustness — README robustbench_context notes Madry ~45% is baseline not SOTA; no certification.
