@@ -1,5 +1,3 @@
-<!-- profile-growth-header -->
-
 <!-- security-systems-poster -->
 ## Research Poster
 
@@ -9,38 +7,73 @@
 
 > Technical research poster (36 x 48 in). Click the image for the print-resolution **[PDF](poster/poster_36x48.pdf)**.
 > Every metric on it is evidence-backed; historical/projected numbers are labeled and separated from current results.
-> Part of the *Pooja Kiran - Security Systems* engineering poster collection.
 <!-- security-systems-poster -->
 
-
 # adversarial-ml-lab
 
-> **Adversarial ML / MITRE ATLAS**
+> Measure classifier robustness under gradient-based adversarial attacks (FGSM, PGD, C&W), gate it in CI, and map findings to MITRE ATLAS.
 
-Measure classifier robustness under adversarial attacks and map findings to MITRE ATLAS.
-
-**Why this project:** security teams need a reproducible way to test, inspect, or measure this boundary before treating a security control as effective.
-
-**Quick path**
-1. Read the threat model / scope below.
-2. Run the smallest documented example.
-3. Reproduce the tests or benchmark.
-4. Inspect the limitations and evidence before making deployment claims.
-5. Open an issue or PR if you find a gap, add a fixture, or improve the documentation.
-
-# adversarial-ml-lab
+[![CI](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-107%20passing-brightgreen)](#testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira))
 
-Measure classifier robustness under gradient-based adversarial attacks and map the resulting security findings to MITRE ATLAS.
-
-## Clean Accuracy vs. Adversarial Robustness
-
-A model trained on CIFAR-10 reports high accuracy on the test set. You ship it into a content moderation pipeline. An attacker adds a perturbation smaller than what the human eye can detect (8/255 pixel intensity), and accuracy collapses toward zero. The model is functionally broken, but your metrics dashboard still shows green.
-
-In this repo's committed CIFAR-10 run, a small CNN with **71.82% clean accuracy drops to 0.00% robust accuracy under PGD at eps=8/255** ([results/cifar10_smallcnn_real.json](results/cifar10_smallcnn_real.json)). This demonstrates how a model can score well on clean benchmark data while remaining highly vulnerable to the evaluated attack configuration. It does **not** establish how an unrelated production model, vehicle system, malware classifier, or medical system would behave.
-
 ## Overview
+
+`adversarial-ml-lab` is a measurement and admission harness that quantifies how much a CIFAR-10 classifier's accuracy degrades under adversarial perturbation. It implements three well-studied attacks (FGSM, PGD-L∞, C&W-L2) from their original papers, emits structured JSON reports tagged with MITRE ATLAS AML.T0043, and runs a robustness gate in CI so regressions are caught before merge. It is a measurement harness reproducing known attacks — not a research contribution and not a defense.
+
+## Verified Snapshot
+
+Reproduced on current `main` (Python 3.12, CPU). Real results are transcribed from committed `results/*.json`.
+
+| Metric | Current verified result |
+|---|---:|
+| Tests | 107 passing, 0 skipped |
+| Statement coverage | 31% (CI gate 15%); core attacks fgsm 71% / pgd 97% / cw 98% |
+| Attacks | FGSM (L∞), PGD-20 (L∞), C&W (L2) |
+| Committed CIFAR-10 result | 71.82% clean → 0.00% robust under PGD @ ε=8/255 (1024-sample subset) |
+| CI robustness gate | PGD robust accuracy ≥ 30% @ ε=8/255 (HIGH/CRITICAL finding otherwise) |
+
+## Security Problem
+
+A model can report high clean-set accuracy yet collapse to near-zero under a perturbation smaller than the human eye can detect (ε=8/255). Most ML teams have no systematic way to measure that exposure. This lab turns published attacks into runnable benchmarks with a pass/fail CI threshold, so adversarial robustness is tested beside ordinary accuracy when the threat model includes crafted inputs.
+
+## Threat Model & Scope
+
+**In scope:** the strongest practical white-box threat model — full model access (weights, gradients), per-sample L∞ (FGSM/PGD, ε=8/255) or L2 (C&W) perturbations, MITRE ATLAS AML.T0043.
+
+**Out of scope / not claimed:** No black-box/transfer/query attacks, no data poisoning, no physical-world perturbations, no AutoAttack. CIFAR-10 only; results do not transfer to other datasets/architectures without re-running. The committed real result uses a small CPU-budget CNN (~1.1M params, 6 epochs), **not** a SOTA ResNet — the ResNet numbers in `results/cifar10_resnet18_benchmark.json` are a labeled literature projection, not a measurement. The production runner's `cw_l2_proxy` is a PGD-100 proxy, not the full C&W optimizer.
+
+## Architecture
+
+```text
+CIFAR-10 test images (torchvision)
+      |
+      v
+Model (load or train small CNN)  -->  clean evaluation
+      |
+      v
+Attack generation: FGSM (L∞) | PGD (L∞) | C&W (L2)
+      |
+      v
+Robust evaluation (per attack, per epsilon)
+      |
+      v
+MITRE ATLAS AML.T0043 enrichment  -->  JSON report  -->  CI gate (fail if PGD robust acc < threshold)
+```
+
+## Core Capabilities
+
+- FGSM (L∞ one-step), PGD (L∞ iterative), C&W (L2 optimization) attack implementations
+- Clean vs. robust accuracy measurement with per-epsilon sweeps
+- Production admission mode: TorchScript model + NPZ evidence + SHA-256 provenance + operator-set PGD threshold
+- CI robustness gate (PGD robust accuracy ≥ 30% @ ε=8/255) with HIGH/CRITICAL findings
+- MITRE ATLAS AML.T0043 result enrichment; structured JSON reports
+- Adversarial-training (Madry) reference script
+
+
+## Motivation
 
 This project answers a concrete question: how much does a model's accuracy degrade under adversarial conditions, and at what perturbation budget?
 
