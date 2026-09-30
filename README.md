@@ -15,7 +15,7 @@
 > Measure classifier robustness under gradient-based adversarial attacks (FGSM, PGD, C&W), gate it in CI, and map findings to MITRE ATLAS.
 
 [![CI](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/poojakira/adversarial-ml-lab/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-107%20passing-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-109%20passing-brightgreen)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Maintainer:** Pooja Kiran ([@poojakira](https://github.com/poojakira))
@@ -31,7 +31,7 @@ Reproduced on current `main` (Python 3.12, CPU). Real results are transcribed fr
 | Metric | Current verified result |
 |---|---:|
 | Tests | 107 passing, 0 skipped |
-| Statement coverage | 31% (CI gate 15%); core attacks fgsm 71% / pgd 97% / cw 98% |
+| Statement coverage | 32.16% (CI gate 15%); core attacks fgsm 71% / pgd 97% / cw 98% |
 | Attacks | FGSM (L∞), PGD-20 (L∞), C&W (L2) |
 | Committed CIFAR-10 result | 71.82% clean → 0.00% robust under PGD @ ε=8/255 (1024-sample subset) |
 | CI robustness gate | PGD robust accuracy ≥ 30% @ ε=8/255 (HIGH/CRITICAL finding otherwise) |
@@ -268,8 +268,7 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-The current head records **107 passing tests** and roughly **31% overall line
-coverage** (verified locally on current main; use the latest successful CI run
+The current head records **109 passing tests** and **32.16% overall line coverage** (verified in current-main CI; use the latest successful CI run
 for the authoritative figure). The coverage profile is
 dominated by ~20 advanced/experimental attack modules that are intentionally
 lightly tested. The modules that matter for the core robustness story are
@@ -461,7 +460,7 @@ qualitative robustness collapse is the same one seen on larger models.
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Partial | 15% is the CI gate floor; overall coverage ~31% (107 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
+| Test suite | Partial | 15% is the CI gate floor; overall coverage 32.16% (109 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | Core libraries use bounded/ranged requirements; the GitHub-only `attack-v19-core` optional integration is pinned to an immutable commit |

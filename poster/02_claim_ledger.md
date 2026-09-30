@@ -1,18 +1,16 @@
-# Claim Ledger — Poster 06 (06-adversarial-ml-lab)
+# Claim Ledger - Poster 06
 
-> Evidence status: This is a dated repository snapshot at the commit identified below. `VERIFIED_AT_SNAPSHOT` means verified for that commit and environment; it does not assert the same result on the latest `main`. Compare newer claims with the repository evidence before reuse.
-
-MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26. Classification: VERIFIED_AT_SNAPSHOT / VERIFIED_HISTORICAL / PARTIAL / UNVERIFIED / UNSUPPORTED.
+> Verified code snapshot: `8412e98d38f28c2e4b43cdcbf8269133b346ca16`; successful CI run `36783579501`, 2026-09-30. Robustness numbers are from the committed measured artifact `results/cifar10_smallcnn_real.json`.
 
 | # | Claim | Classification | Evidence |
 |---|---|---|---|
-| 1 | FGSM & PGD-20 100% attack success on tested subset | VERIFIED_AT_SNAPSHOT | results/robustbench_real.json (measured, real torchvision weights, CPU). success_rate=1.0 both. |
-| 2 | Measured config eps=8/255, PGD-20 alpha=2/255 | VERIFIED_AT_SNAPSHOT | robustbench_real.json attack_config; PyTorch 2.3.0+cpu. |
-| 3 | Undefended PGD ~0%, Madry-AT ~45% | VERIFIED_HISTORICAL / PROJECTED | cifar10_resnet18_benchmark.json is explicitly _synthetic:true LITERATURE_PROJECTION (Madry 2018). Shown ONLY as labeled projection. |
-| 4 | Clean accuracy 5% on subset | PARTIAL | robustbench_real.json; low due to ImageNet->CIFAR domain mismatch + 20-image subset. Not full test set. |
-| 5 | State-of-the-art / certified robustness | UNSUPPORTED (disclaimed) | README robustbench_context notes Madry ~45% is baseline not SOTA; no certification. |
+| 1 | 109 tests pass | VERIFIED_AT_SNAPSHOT | Current-main Python 3.12 CI. |
+| 2 | 32.16% statement coverage | VERIFIED_AT_SNAPSHOT | Current-main Python 3.12 CI. |
+| 3 | Clean CIFAR-10 accuracy 71.82% | VERIFIED_COMMITTED_MEASUREMENT | `results/cifar10_smallcnn_real.json`; full 10,000-image clean evaluation. |
+| 4 | FGSM robust accuracy 3.32% at epsilon 8/255 | VERIFIED_COMMITTED_MEASUREMENT | Same artifact; 1,024 attack samples. |
+| 5 | PGD-20 robust accuracy 0.00% at epsilon 8/255 | VERIFIED_COMMITTED_MEASUREMENT | Same artifact; 1,024 attack samples. |
+| 6 | C&W L2 robust accuracy 4.20% | VERIFIED_COMMITTED_MEASUREMENT | Same artifact; 1,024 attack samples. |
+| 7 | Projected ResNet-18 robustness values are measured by this repo | UNSUPPORTED | `results/cifar10_resnet18_benchmark.json` is explicitly synthetic/literature projection. |
+| 8 | State-of-the-art or certified robustness | UNSUPPORTED | No such evidence is established. |
 
-## Policy applied
-- Only VERIFIED_AT_SNAPSHOT figures appear as prominent current results.
-- Historical/projected values are labeled (dashed box / explicit note).
-- Unsupported production/accuracy claims are omitted or shown in the red "NOT ESTABLISHED" box.
+The older ImageNet-to-CIFAR 20-image mismatch artifact is historical and no longer the headline benchmark.

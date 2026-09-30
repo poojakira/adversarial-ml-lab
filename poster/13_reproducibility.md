@@ -1,12 +1,24 @@
-# Reproduce the Work — Poster 06
+# Reproduce the Work - Poster 06
 
-> Evidence status: This is a dated repository snapshot at the commit identified below. `VERIFIED_AT_SNAPSHOT` means verified for that commit and environment; it does not assert the same result on the latest `main`. Compare newer claims with the repository evidence before reuse.
+**Repository:** `github.com/poojakira/adversarial-ml-lab`  
+**Verified code snapshot:** `8412e98d38f28c2e4b43cdcbf8269133b346ca16`  
+**CI run:** `36783579501`
 
-**Repository:** `github.com/poojakira/adversarial-ml-lab` · MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26
-
+```bash
+git clone https://github.com/poojakira/adversarial-ml-lab.git
+cd adversarial-ml-lab
+git checkout 8412e98d38f28c2e4b43cdcbf8269133b346ca16
+python -m pip install -e ".[dev]"
+pytest tests/ -q --cov=adv_lab --cov-report=term
+python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
-python benchmark/robustbench_baseline.py
-pytest tests/
-```
 
-Evidence artifacts: results/robustbench_real.json (measured), results/cifar10_resnet18_benchmark.json (projected)
+Current CI expectation: **109 tests passed**, **32.16% statement coverage**.
+
+Committed real benchmark reference:
+
+- clean: **71.82%**
+- FGSM robust: **3.32%**
+- PGD-20 robust: **0.00%**
+- C&W L2 robust: **4.20%**
+- attack subset: **1,024**

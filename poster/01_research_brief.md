@@ -1,71 +1,70 @@
-# Research Brief — Poster 06
+# Research Brief - Poster 06
 
-> Evidence status: This is a dated repository snapshot at the commit identified below. `VERIFIED_AT_SNAPSHOT` means verified for that commit and environment; it does not assert the same result on the latest `main`. Compare newer claims with the repository evidence before reuse.
+> Evidence status: Refreshed against current code snapshot `8412e98d38f28c2e4b43cdcbf8269133b346ca16` and successful CI run `36783579501` on 2026-09-30. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
 
 ## Repository
-`github.com/poojakira/adversarial-ml-lab` (public, default branch `main`, primary language Python). MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26
+
+`github.com/poojakira/adversarial-ml-lab` - public, default branch `main`.
 
 ## Academic Project Title
+
 **Measuring Neural-Network Robustness Under Adversarial Perturbation**
 
 ### Subtitle
+
 Experimental Evaluation of Model Behavior Under Gradient-Based Attacks
 
 ## One-Sentence Contribution
-A gradient-attack evaluation harness (FGSM/PGD/C&W) that measures robustness collapse on real pretrained weights and enforces a hard separation between measured results and literature projections — the projected file is explicitly flagged _synthetic and not reproducible.
 
-## Problem Statement
-Small L-infinity perturbations flip confident model predictions. Reporting robustness is easy to fake: a single-step FGSM can look 'robust' due to gradient masking, and literature values can be pasted in as if measured. This lab separates REAL measured runs from clearly-labeled literature projections.
+A reproducible robustness-evaluation harness for FGSM, PGD, and C&W that shows a measured **71.82% clean CIFAR-10 SmallCNN collapsing to 0.00% robust accuracy under PGD-20 at epsilon 8/255**, while explicitly separating measured results from literature projections.
 
-## Threat Model
-Chain: CLEAN SAMPLE -> ATTACK GENERATION -> PERTURBATION ε=8/255 -> EVALUATION BOUNDARY -> ROBUST ACCURACY.
-Adversary capability: white-box gradient access, ε-bounded; Assumptions: fixed ε, seed 42; measured on real weights; Out of scope: black-box transfer; certified robustness; full test-set (subset); Residual risk: subset variance; domain mismatch in one run.
+## Method
 
-## Research / Engineering Question
-> How does a model's accuracy collapse under FGSM/PGD/C&W attacks — and are the reported numbers actually measured, not projected from literature?
+1. Train/evaluate a compact CIFAR-10 classifier under a fixed seed and CPU budget.
+2. Measure clean accuracy on the full CIFAR-10 test set.
+3. Generate epsilon-bounded FGSM and PGD adversarial samples plus C&W L2 samples.
+4. Measure robust accuracy on the committed attack subset.
+5. Emit structured evidence and CI robustness-gate logic.
 
-## Objective
-Measure real robustness collapse under gradient attacks and keep measured results strictly separate from literature projections.
+## Current Verified Evidence
 
-## Engineering Sub-Objectives
-O1 — FGSM / PGD / C&W attack impls
-O2 — Measured runs on real weights
-O3 — Robust-accuracy metrics + timing
-O4 — Label projected numbers as projected
+Current-main Python 3.12 CI reports:
 
-## Methodology
-1 Load (real weights) -> 2 Clean (predict) -> 3 FGSM (ε=8/255) -> 4 PGD-20 (α=2/255) -> 5 Measure (robust acc) -> 6·7 Time + log (JSON)
+- **109 tests passed**.
+- **32.16% statement coverage**; CI gate is 15%.
+- Lint/format, security audit, and CodeQL jobs succeeded.
+- The current CI robustness benchmark job is skipped on ordinary pushes, so the benchmark values below come from the committed real artifact rather than this CI run.
 
-## Evidence at Poster Snapshot + Claim Ledger
-- **VERIFIED_AT_SNAPSHOT** — FGSM & PGD-20 100% attack success on tested subset — results/robustbench_real.json (measured, real torchvision weights, CPU). success_rate=1.0 both.
-- **VERIFIED_AT_SNAPSHOT** — Measured config eps=8/255, PGD-20 alpha=2/255 — robustbench_real.json attack_config; PyTorch 2.3.0+cpu.
-- **VERIFIED_HISTORICAL / PROJECTED** — Undefended PGD ~0%, Madry-AT ~45% — cifar10_resnet18_benchmark.json is explicitly _synthetic:true LITERATURE_PROJECTION (Madry 2018). Shown ONLY as labeled projection.
-- **PARTIAL** — Clean accuracy 5% on subset — robustbench_real.json; low due to ImageNet->CIFAR domain mismatch + 20-image subset. Not full test set.
-- **UNSUPPORTED (disclaimed)** — State-of-the-art / certified robustness — README robustbench_context notes Madry ~45% is baseline not SOTA; no certification.
+Committed measured CIFAR-10 artifact:
 
-## Important Negative / Honest Results
-See RESULTS panel: Real measured run; clean acc low due to ImageNet→CIFAR domain mismatch on the subset. Not full-test-set.
+| Attack | Setting | Clean accuracy | Robust accuracy | Samples |
+|---|---|---:|---:|---:|
+| FGSM | epsilon 8/255 | 71.82% | **3.32%** | 1,024 |
+| PGD-20 | epsilon 8/255, alpha 2/255 | 71.82% | **0.00%** | 1,024 |
+| C&W L2 | c=1.0, 100 steps | 71.82% | **4.20%** | 1,024 |
+
+The model is a **1,117,354-parameter SmallCNN**, trained for 6 epochs on CPU. Clean accuracy is measured on all 10,000 CIFAR-10 test examples.
+
+## Correction to the Older Poster
+
+The older poster centered `results/robustbench_real.json`, an ImageNet-pretrained ResNet evaluated on a tiny CIFAR-10 subset with severe domain mismatch. That artifact remains historical evidence, but it is no longer the best representation of this project's current measured result. The poster now uses `results/cifar10_smallcnn_real.json`.
 
 ## Limitations
-1. Measured run uses a small subset, not full test set.
-2. Clean accuracy low (ImageNet→CIFAR domain mismatch).
-3. Literature file is projection, not reproducible.
-4. White-box only; no black-box/transfer attacks.
-5. No certified-robustness claim.
 
-## Future Work
-• Full 10k CIFAR-10 test-set measured run.
-• CIFAR-trained model (remove domain mismatch).
-• Madry adversarial-training measured baseline.
-• AutoAttack ensemble evaluation.
-• Certified-robustness comparison.
+- This repository measures vulnerability; it does not make a model robust.
+- Robust-accuracy attacks use a 1,024-sample subset, not the full 10,000 test set.
+- No AutoAttack, black-box transfer, or certified-robustness result is established.
+- `results/cifar10_resnet18_benchmark.json` is explicitly literature-projected/synthetic and must not be presented as measured.
 
 ## Reproducibility
-```
-python benchmark/robustbench_baseline.py
-pytest tests/
-```
-Evidence: results/robustbench_real.json (measured), results/cifar10_resnet18_benchmark.json (projected)
 
-## References
-[1] Goodfellow et al. (2015) FGSM · [2] Madry et al. (2018) PGD, ICLR · [3] Carlini & Wagner (2017) · [4] Croce & Hein (2020) AutoAttack · [5] RobustBench · [6] MITRE ATLAS AML.T0043
+```bash
+git clone https://github.com/poojakira/adversarial-ml-lab.git
+cd adversarial-ml-lab
+git checkout 8412e98d38f28c2e4b43cdcbf8269133b346ca16
+python -m pip install -e ".[dev]"
+pytest tests/ -q --cov=adv_lab --cov-report=term
+python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
+```
+
+Expected current CI evidence: **109 passed**, **32.16% coverage**.

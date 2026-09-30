@@ -1,31 +1,19 @@
-# Verified Metrics — Poster 06
+# Verified Metrics - Poster 06
 
-> Evidence status: This is a dated repository snapshot at the commit identified below. `VERIFIED_AT_SNAPSHOT` means verified for that commit and environment; it does not assert the same result on the latest `main`. Compare newer claims with the repository evidence before reuse.
+**Code snapshot:** `8412e98d38f28c2e4b43cdcbf8269133b346ca16`  
+**CI run:** https://github.com/poojakira/adversarial-ml-lab/actions/runs/36783579501
 
-MIT • Python 3.12 • HEAD cd7547d • verified 2026-09-26. Verified for this poster on Windows / CPython 3.12.10.
+| Metric | Current value |
+|---|---:|
+| Tests passed | **109** |
+| Statement coverage | **32.16%** |
+| SmallCNN parameters | **1,117,354** |
+| Clean CIFAR-10 accuracy | **71.82%** |
+| FGSM robust accuracy @ 8/255 | **3.32%** |
+| PGD-20 robust accuracy @ 8/255 | **0.00%** |
+| C&W L2 robust accuracy | **4.20%** |
+| Robust attack evaluation subset | **1,024 samples** |
 
-## Headline cards
-- 100% — PGD-20 SUCCESS
-- 100% — FGSM SUCCESS
-Notes: Measured on real weights, CIFAR-10 subset (robustbench_real.json). On correctly-classified inputs; PGD-20 stronger than FGSM (no masking).
+Benchmark source: `results/cifar10_smallcnn_real.json`.
 
-## Verified surface
-| Item | Value |
-|---|---|
-| Attack budget ε | 8/255 |
-| PGD steps | 20 |
-| Framework | torch 2.3 |
-
-## Chart values
-| Series | Value |
-|---|---|
-| Clean (subset) | 5 |
-| FGSM adv acc | 0 |
-| PGD-20 adv acc | 0 |
-Note: Real measured run; clean acc low due to ImageNet→CIFAR domain mismatch on the subset. Not full-test-set.
-
-## Historical / provenance
-cifar10_resnet18_benchmark.json is a LITERATURE PROJECTION (Madry 2018): undefended PGD ~0%, Madry-AT ~45%. NOT measured here — shown as context.
-
-## Not established by this repository
-State-of-the-art robustness. Certified guarantees. Full-test-set numbers. Black-box transferability.
+The current CI validates tests/security/code quality; its expensive CIFAR-10 robustness job was skipped on this push. Do not describe the benchmark as rerun by current CI.
