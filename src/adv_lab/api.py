@@ -20,10 +20,13 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from adv_lab.eval.benchmark_runner import PGD_ROBUST_ACC_GATE, benchmark_runner
+
+logger = logging.getLogger(__name__)
 
 _MAX_CONCURRENT = int(os.environ.get("ADV_MAX_CONCURRENT_EVALUATIONS", "1"))
 _TIMEOUT_SECONDS = float(os.environ.get("ADV_EVALUATION_TIMEOUT_SECONDS", "300"))
@@ -48,6 +51,37 @@ app = FastAPI(
         "Run bounded FGSM/PGD robustness evaluations against operator-configured artifacts."
     ),
 )
+
+
+@app.middleware("http")
+async def _request_security_boundary(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH"}:
+        declared = request.headers.get("content-length")
+        if declared:
+            try:
+                if int(declared) > _MAX_REQUEST_BYTES:
+                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+            except ValueError:
+                return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        body = await request.body()
+        if len(body) > _MAX_REQUEST_BYTES:
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
+
+
+def _consume_rate_limit(identity: str) -> bool:
+    now = time.time()
+    cutoff = now - 60.0
+    bucket = _rate_windows.setdefault(identity, [])
+    bucket[:] = [ts for ts in bucket if ts > cutoff]
+    if len(bucket) >= _RATE_LIMIT_RPM:
+        return False
+    bucket.append(now)
+    return True
 
 
 class EvaluationRequest(BaseModel):
@@ -123,6 +157,10 @@ def _require_api_key(request: Request) -> None:
     supplied = request.headers.get("X-API-Key", "")
     if not supplied or not hmac.compare_digest(supplied, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
+    peer = request.client.host if request.client else "unknown"
+    identity = hashlib.sha256((supplied + "\0" + peer).encode("utf-8")).hexdigest()[:32]
+    if not _consume_rate_limit(identity):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"})
 
 
 @app.get("/health")
