@@ -7,9 +7,9 @@
 
 | ID | Severity | Finding | Status |
 |---|---|---|---|
-| AML-001 | High | The authenticated evaluation endpoint has no request-rate limiter. | Open |
-| AML-002 | Medium | No raw request-body byte limit is enforced before request parsing. | Open |
-| AML-003 | Medium | Public 422 responses can include raw `FileNotFoundError`/`ValueError` text, including local artifact details. | Open |
+| AML-001 | High | The authenticated evaluation endpoint now rate-limits by peer/API-key identity before evaluation work. | Fixed |
+| AML-002 | Medium | HTTP middleware now enforces a bounded raw request-body size before evaluation handling. | Fixed |
+| AML-003 | Medium | Artifact/configuration exceptions are now mapped to the generic public response `Evaluation configuration is invalid`. | Fixed |
 | AML-004 | Info | Caller input cannot select arbitrary model/dataset paths; artifacts are operator configured and model SHA-256 is required. | Verified |
 
 ## Existing controls verified
