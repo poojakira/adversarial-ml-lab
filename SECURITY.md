@@ -64,7 +64,7 @@ The benchmark report (`benchmark_report.json`) contains model evaluation metadat
 
 ### 4. Dependency supply chain
 
-Runtime dependencies are declared with lower bounds in `pyproject.toml`, and `uv.lock` is committed for reproducible installs. The CI pipeline runs `bandit -r src/ -ll` on every PR. Dependency updates are gated on passing tests and bandit scans.
+Runtime dependencies are declared in `pyproject.toml`. The optional `attack-v19-core` integration is pinned to an immutable Git commit because that package is maintained in GitHub rather than resolved from PyPI. No dependency lockfile is currently claimed as authoritative; release/CI installs are validated by the repository gates. The CI pipeline runs static and dependency security checks, and dependency changes are gated on tests.
 
 ---
 
