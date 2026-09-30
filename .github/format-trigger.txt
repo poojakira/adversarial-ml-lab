@@ -1,1 +1,1 @@
-verify formatter and CI after remediation
+security-hardening-format-pass-2026-09-30
