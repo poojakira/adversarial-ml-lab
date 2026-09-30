@@ -60,6 +60,3 @@ dashboard/
 helm/
 github-actions/
 Makefile
-
-# Lock files
-uv.lock
