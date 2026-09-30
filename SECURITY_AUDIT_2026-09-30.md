@@ -22,3 +22,13 @@ Authenticated FastAPI adversarial-evaluation service using operator-configured m
 
 ## Not applicable
 SQL tenant isolation, password reset, browser XSS, payments.
+
+<!-- repo-verification:start -->
+## Verification update — 2026-09-30
+
+- **Scope:** Account-wide `poojakira` repository pass covering source/configuration, CI/release workflows, security-hygiene gates, dependency/SAST controls, and documentation consistency.
+- **Remediation:** Ran the safe Ruff repair workflow, corrected the import/format gate, and pinned release/container/CodeQL/artifact actions to immutable revisions.
+- **Verification state:** CI, Build and Security Gate, Security Hygiene, and Documentation Integrity completed successfully after the fixes; the evaluation-container workflow was still running at the audit snapshot.
+- **Security note:** Robustness benchmarks remain evaluation evidence, not a claim of production robustness.
+- **Evidence boundary:** This update records repository and GitHub Actions evidence observed during the pass. It is not a claim of independent penetration testing, production deployment, or zero residual risk.
+<!-- repo-verification:end -->
