@@ -19,10 +19,10 @@ from collections import defaultdict
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
+from adv_lab.body_limit import RequestBodyLimit
 from adv_lab.eval.benchmark_runner import PGD_ROBUST_ACC_GATE, benchmark_runner
 
 _MAX_CONCURRENT = int(os.environ.get("ADV_MAX_CONCURRENT_EVALUATIONS", "1"))
@@ -82,28 +82,11 @@ def _is_rate_limited(request: Request) -> bool:
     return False
 
 
+app.add_middleware(RequestBodyLimit, max_bytes=_MAX_REQUEST_BYTES)
+
+
 @app.middleware("http")
 async def _request_size_limit(request: Request, call_next):
-    if request.method in {"POST", "PUT", "PATCH"}:
-        declared = request.headers.get("content-length")
-        if declared:
-            try:
-                if int(declared) > _MAX_REQUEST_BYTES:
-                    return JSONResponse(
-                        status_code=413,
-                        content={"detail": "Request body too large"},
-                    )
-            except ValueError:
-                return JSONResponse(
-                    status_code=400,
-                    content={"detail": "Invalid Content-Length"},
-                )
-        body = await request.body()
-        if len(body) > _MAX_REQUEST_BYTES:
-            return JSONResponse(
-                status_code=413,
-                content={"detail": "Request body too large"},
-            )
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -153,7 +136,7 @@ def _artifact_config() -> tuple[Path, Path, str]:
 def _require_api_key(request: Request) -> None:
     expected = _configured_api_key()
     supplied = request.headers.get("X-API-Key", "")
-    if not supplied or not hmac.compare_digest(supplied, expected):
+    if not supplied or not hmac.compare_digest(supplied.encode("utf-8"), expected.encode("utf-8")):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 

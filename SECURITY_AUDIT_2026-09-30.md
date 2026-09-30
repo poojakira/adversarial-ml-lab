@@ -1,41 +1,19 @@
-# Security Audit — 2026-09-30
+# Security review, 30 September 2026
 
-## Scope
-Initial pre-remediation review of the current `main` branch.
+Reviewed baseline: `2a5c783446413c3ad5ead370565b99ed4057c9cb`. Source review and focused regression verification; this is not proof that all vulnerabilities are absent.
 
-## Runtime surface
-Authenticated FastAPI adversarial-evaluation service using operator-configured model/dataset artifacts.
+## Fixes and reviewed controls
 
-## Verified controls
-- Caller cannot choose arbitrary model/dataset paths through the API.
-- API key is required with constant-time comparison.
-- Evaluation parameters, concurrency, and execution timeout are bounded.
-- Configured model integrity is SHA-256 pinned.
-- No confirmed live API key was found in the current main branch.
+Streaming body limit runs before parsing and constant-time comparisons use UTF-8 bytes. Runtime dependency floors exclude audited vulnerable Starlette/AnyIO versions. Operator-configured artifact paths, SHA-256-pinned TorchScript loading and allow_pickle=False dataset loading were inspected.
 
-## Findings to remediate/verify
-1. Add request-rate limiting and request-byte limits.
-2. Ensure model/dataset configured paths cannot traverse symlinks into unintended sensitive locations.
-3. Confirm temporary outputs are created with restrictive permissions and deleted on all failure paths.
-4. Return only generic internal errors; log detailed exceptions server-side.
-5. Add structured critical alerts and health-gated deployment rollback.
+## Verification
 
-## Not applicable
-SQL tenant isolation, password reset, browser XSS, payments.
+109 tests passed in the full suite with OMP_NUM_THREADS=1 and MKL_NUM_THREADS=1; an earlier unrestricted-thread run exceeded 90 seconds. Tests ran in an isolated Python 3.12 environment. FastAPI TestClient required execution outside the default sandbox; a minimal unchanged app reproduced the sandbox deadlock. Final installed-environment pip-audit reported no known vulnerabilities. This does not cover every optional dependency, every container image, or arbitrary older environments allowed by broad dependency bounds.
 
-<!-- repo-verification:start -->
-## Verification update — 2026-09-30
+## Secret history review
 
-- **Scope:** Account-wide `poojakira` repository pass covering source/configuration, CI/release workflows, security-hygiene gates, dependency/SAST controls, and documentation consistency.
-- **Remediation:** Ran the safe Ruff repair workflow, corrected the import/format gate, and pinned release/container/CodeQL/artifact actions to immutable revisions.
-- **Verification state:** CI, Build and Security Gate, Security Hygiene, and Documentation Integrity completed successfully after the fixes; the evaluation-container workflow was still running at the audit snapshot.
-- **Security note:** Robustness benchmarks remain evaluation evidence, not a claim of production robustness.
-- **Evidence boundary:** This update records repository and GitHub Actions evidence observed during the pass. It is not a claim of independent penetration testing, production deployment, or zero residual risk.
-<!-- repo-verification:end -->
+One historical match was a synthetic API test key. No tracked environment or private-key paths found in fetched history. Gitleaks classifications are pattern matches, not provider validity checks. No provider key was tested or revoked, and fetched Git refs do not include every cached/forked copy. `.env` and local credential patterns remain ignored; example files must contain placeholders only.
 
-## Verification checkpoint — 2026-09-30
+## Deployment and remaining limits
 
-- **Snapshot commit:** `95d9c097efc63ad4e8aed48cb85bc599a2de40cc`
-- **Status:** PARTIALLY VERIFIED
-- **Evidence:** Security Hygiene, Documentation Integrity, and Build and Security Gate passed. CI and the evaluation-container workflow were still running at the verification snapshot.
-- This checkpoint is intentionally date-bounded. It does not claim zero vulnerabilities or universal production readiness.
+A shared service key authenticates every holder as an evaluation operator; no tenant/role authorization exists. No caller-controlled upload path is accepted. TorchScript still executes model operations and must come from a trusted operator-controlled artifact. Evaluation timeout does not kill running worker threads; deploy killable worker processes and resource limits. Rate state is per process.
