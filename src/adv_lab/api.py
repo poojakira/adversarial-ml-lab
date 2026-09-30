@@ -20,13 +20,11 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from adv_lab.eval.benchmark_runner import PGD_ROBUST_ACC_GATE, benchmark_runner
 
-logger = logging.getLogger(__name__)
 
 _MAX_CONCURRENT = int(os.environ.get("ADV_MAX_CONCURRENT_EVALUATIONS", "1"))
 _TIMEOUT_SECONDS = float(os.environ.get("ADV_EVALUATION_TIMEOUT_SECONDS", "300"))
@@ -53,42 +51,15 @@ app = FastAPI(
 )
 
 
-@app.middleware("http")
-async def _request_security_boundary(request: Request, call_next):
-    if request.method in {"POST", "PUT", "PATCH"}:
-        declared = request.headers.get("content-length")
-        if declared:
-            try:
-                if int(declared) > _MAX_REQUEST_BYTES:
-                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-            except ValueError:
-                return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
-        body = await request.body()
-        if len(body) > _MAX_REQUEST_BYTES:
-            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    return response
-
-
-def _consume_rate_limit(identity: str) -> bool:
-    now = time.time()
-    cutoff = now - 60.0
-    bucket = _rate_windows.setdefault(identity, [])
-    bucket[:] = [ts for ts in bucket if ts > cutoff]
-    if len(bucket) >= _RATE_LIMIT_RPM:
-        return False
-    bucket.append(now)
-    return True
-
-
 class EvaluationRequest(BaseModel):
     epsilon: float = Field(default=8 / 255, ge=0.0, le=0.5)
     pgd_steps: int = Field(default=40, ge=1, le=200)
     batch_size: int = Field(default=32, ge=1, le=512)
-    min_pgd_robust_accuracy: float = Field(default=PGD_ROBUST_ACC_GATE, ge=0.0, le=1.0)
+    min_pgd_robust_accuracy: float = Field(
+        default=PGD_ROBUST_ACC_GATE,
+        ge=0.0,
+        le=1.0,
+    )
 
 
 class EvaluationResponse(BaseModel):
@@ -100,7 +71,7 @@ class EvaluationResponse(BaseModel):
 def _is_rate_limited(request: Request) -> bool:
     supplied = request.headers.get("X-API-Key", "")
     peer = request.client.host if request.client else "unknown"
-    key = hashlib.sha256(f"{peer}\0{supplied}".encode("utf-8")).hexdigest()[:32]
+    key = hashlib.sha256(f"{peer}\0{supplied}".encode()).hexdigest()[:32]
     now = time.time()
     cutoff = now - 60.0
     hits = [stamp for stamp in _request_log[key] if stamp > cutoff]
@@ -119,19 +90,35 @@ async def _request_size_limit(request: Request, call_next):
         if declared:
             try:
                 if int(declared) > _MAX_REQUEST_BYTES:
-                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+                    return JSONResponse(
+                        status_code=413,
+                        content={"detail": "Request body too large"},
+                    )
             except ValueError:
-                return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+                return JSONResponse(
+                    status_code=400,
+                    content={"detail": "Invalid Content-Length"},
+                )
         body = await request.body()
         if len(body) > _MAX_REQUEST_BYTES:
-            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-    return await call_next(request)
+            return JSONResponse(
+                status_code=413,
+                content={"detail": "Request body too large"},
+            )
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
 
 
 def _configured_api_key() -> str:
     key = os.environ.get("ADV_API_KEY", "")
     if len(key) < 32:
-        raise HTTPException(status_code=503, detail="ADV_API_KEY is not securely configured")
+        raise HTTPException(
+            status_code=503,
+            detail="ADV_API_KEY is not securely configured",
+        )
     return key
 
 
@@ -140,15 +127,27 @@ def _artifact_config() -> tuple[Path, Path, str]:
     dataset = Path(os.environ.get("ADV_DATASET_PATH", "")).expanduser()
     digest = os.environ.get("ADV_MODEL_SHA256", "").strip().lower()
     if not model.is_file():
-        raise HTTPException(status_code=503, detail="Configured TorchScript model is unavailable")
+        raise HTTPException(
+            status_code=503,
+            detail="Configured TorchScript model is unavailable",
+        )
     if not dataset.is_file():
-        raise HTTPException(status_code=503, detail="Configured evaluation dataset is unavailable")
+        raise HTTPException(
+            status_code=503,
+            detail="Configured evaluation dataset is unavailable",
+        )
     if len(digest) != 64:
-        raise HTTPException(status_code=503, detail="ADV_MODEL_SHA256 is not securely configured")
+        raise HTTPException(
+            status_code=503,
+            detail="ADV_MODEL_SHA256 is not securely configured",
+        )
     try:
         int(digest, 16)
     except ValueError as exc:
-        raise HTTPException(status_code=503, detail="ADV_MODEL_SHA256 must be hexadecimal") from exc
+        raise HTTPException(
+            status_code=503,
+            detail="ADV_MODEL_SHA256 must be hexadecimal",
+        ) from exc
     return model.resolve(), dataset.resolve(), digest
 
 
@@ -157,10 +156,6 @@ def _require_api_key(request: Request) -> None:
     supplied = request.headers.get("X-API-Key", "")
     if not supplied or not hmac.compare_digest(supplied, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    peer = request.client.host if request.client else "unknown"
-    identity = hashlib.sha256((supplied + "\0" + peer).encode("utf-8")).hexdigest()[:32]
-    if not _consume_rate_limit(identity):
-        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"})
 
 
 @app.get("/health")
@@ -218,7 +213,10 @@ async def evaluate(payload: EvaluationRequest, request: Request) -> EvaluationRe
         except asyncio.TimeoutError as exc:
             raise HTTPException(status_code=504, detail="Evaluation timed out") from exc
         except (FileNotFoundError, ValueError) as exc:
-            raise HTTPException(status_code=422, detail="Evaluation configuration is invalid") from exc
+            raise HTTPException(
+                status_code=422,
+                detail="Evaluation configuration is invalid",
+            ) from exc
 
     return EvaluationResponse(
         evaluation_id=str(uuid.uuid4()),
