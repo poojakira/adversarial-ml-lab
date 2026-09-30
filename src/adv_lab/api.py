@@ -9,14 +9,17 @@ parameters.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import hmac
 import os
 import tempfile
 import time
 import uuid
+from collections import defaultdict
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
@@ -24,10 +27,17 @@ from adv_lab.eval.benchmark_runner import PGD_ROBUST_ACC_GATE, benchmark_runner
 
 _MAX_CONCURRENT = int(os.environ.get("ADV_MAX_CONCURRENT_EVALUATIONS", "1"))
 _TIMEOUT_SECONDS = float(os.environ.get("ADV_EVALUATION_TIMEOUT_SECONDS", "300"))
+_MAX_REQUEST_BYTES = int(os.environ.get("ADV_MAX_REQUEST_BYTES", "16384"))
+_RATE_LIMIT_RPM = int(os.environ.get("ADV_RATE_LIMIT_RPM", "30"))
+_request_log: dict[str, list[float]] = defaultdict(list)
 if _MAX_CONCURRENT < 1 or _MAX_CONCURRENT > 8:
     raise RuntimeError("ADV_MAX_CONCURRENT_EVALUATIONS must be between 1 and 8")
 if _TIMEOUT_SECONDS <= 0 or _TIMEOUT_SECONDS > 3600:
     raise RuntimeError("ADV_EVALUATION_TIMEOUT_SECONDS must be in (0, 3600]")
+if _MAX_REQUEST_BYTES < 1024 or _MAX_REQUEST_BYTES > 1024 * 1024:
+    raise RuntimeError("ADV_MAX_REQUEST_BYTES must be between 1024 and 1048576")
+if _RATE_LIMIT_RPM < 1 or _RATE_LIMIT_RPM > 10000:
+    raise RuntimeError("ADV_RATE_LIMIT_RPM must be between 1 and 10000")
 
 _slots = asyncio.Semaphore(_MAX_CONCURRENT)
 
@@ -51,6 +61,37 @@ class EvaluationResponse(BaseModel):
     evaluation_id: str
     duration_ms: float
     report: dict[str, object]
+
+
+def _is_rate_limited(request: Request) -> bool:
+    supplied = request.headers.get("X-API-Key", "")
+    peer = request.client.host if request.client else "unknown"
+    key = hashlib.sha256(f"{peer}\0{supplied}".encode("utf-8")).hexdigest()[:32]
+    now = time.time()
+    cutoff = now - 60.0
+    hits = [stamp for stamp in _request_log[key] if stamp > cutoff]
+    if len(hits) >= _RATE_LIMIT_RPM:
+        _request_log[key] = hits
+        return True
+    hits.append(now)
+    _request_log[key] = hits
+    return False
+
+
+@app.middleware("http")
+async def _request_size_limit(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH"}:
+        declared = request.headers.get("content-length")
+        if declared:
+            try:
+                if int(declared) > _MAX_REQUEST_BYTES:
+                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+            except ValueError:
+                return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        body = await request.body()
+        if len(body) > _MAX_REQUEST_BYTES:
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+    return await call_next(request)
 
 
 def _configured_api_key() -> str:
@@ -123,7 +164,9 @@ def _run_evaluation(payload: EvaluationRequest, output_path: str) -> dict[str, o
     response_model=EvaluationResponse,
     dependencies=[Depends(_require_api_key)],
 )
-async def evaluate(payload: EvaluationRequest) -> EvaluationResponse:
+async def evaluate(payload: EvaluationRequest, request: Request) -> EvaluationResponse:
+    if _is_rate_limited(request):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
     started = time.perf_counter()
     with tempfile.NamedTemporaryFile(
         prefix="adv-eval-", suffix=".json", delete=True
@@ -137,7 +180,7 @@ async def evaluate(payload: EvaluationRequest) -> EvaluationResponse:
         except asyncio.TimeoutError as exc:
             raise HTTPException(status_code=504, detail="Evaluation timed out") from exc
         except (FileNotFoundError, ValueError) as exc:
-            raise HTTPException(status_code=422, detail=str(exc)) from exc
+            raise HTTPException(status_code=422, detail="Evaluation configuration is invalid") from exc
 
     return EvaluationResponse(
         evaluation_id=str(uuid.uuid4()),
