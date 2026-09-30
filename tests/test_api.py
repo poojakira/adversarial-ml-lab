@@ -78,7 +78,7 @@ def test_request_parameters_are_bounded(monkeypatch, tmp_path):
 
 def test_oversize_body_rejected_before_json_parsing(monkeypatch, tmp_path):
     api, client = _client(monkeypatch, tmp_path)
-    response = client.post('/evaluate', content=b'x' * (api._MAX_REQUEST_BYTES + 1))
+    response = client.post("/evaluate", content=b"x" * (api._MAX_REQUEST_BYTES + 1))
     assert response.status_code == 413
 
 
@@ -88,7 +88,7 @@ def test_non_ascii_key_is_rejected_without_server_error(monkeypatch, tmp_path):
     from starlette.requests import Request
 
     api, _ = _client(monkeypatch, tmp_path)
-    request = Request({'type': 'http', 'headers': [(b'x-api-key', b'\xff')]})
+    request = Request({"type": "http", "headers": [(b"x-api-key", b"\xff")]})
     with pytest.raises(HTTPException) as error:
         api._require_api_key(request)
     assert error.value.status_code == 401
