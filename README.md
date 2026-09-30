@@ -217,7 +217,7 @@ Without a gate, robustness metrics become informational noise. A hard threshold 
 | Security scanning | Bandit, pip-audit |
 | Build | setuptools 68+, wheel |
 | CI | GitHub Actions |
-| Dependency management | uv (lockfile), Dependabot |
+| Dependency management | `pyproject.toml` + pip/uv; Dependabot |
 | Pre-commit | .pre-commit-config.yaml |
 
 ## Installation
@@ -234,6 +234,9 @@ Without a gate, robustness metrics become informational noise. A hard threshold 
 git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
 pip install -e ".[dev]"      # Includes pytest, pytest-cov, ruff
+
+# Optional ATT&CK integration (resolves the immutable Git-pinned attack-v19-core source)
+pip install -e ".[attack]"
 ```
 
 ### Using Make
@@ -461,7 +464,7 @@ qualitative robustness collapse is the same one seen on larger models.
 | Test suite | Partial | 15% is the CI gate floor; overall coverage ~31% (107 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
-| Dependency pinning | Partial | uv.lock for reproducibility; pyproject.toml uses >= ranges |
+| Dependency pinning | Partial | Core libraries use bounded/ranged requirements; the GitHub-only `attack-v19-core` optional integration is pinned to an immutable commit |
 | Pre-commit hooks | Yes | .pre-commit-config.yaml |
 | Dependabot | Yes | Automated dependency updates |
 | Documentation | Yes | README, RUNBOOK, SECURITY, CONTRIBUTING, CHANGELOG, docs/ |
