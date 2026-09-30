@@ -526,3 +526,13 @@ Documentation site: https://poojakira.github.io/adversarial-ml-lab/
 The main engineering lesson from this project is that clean-set accuracy and adversarial robustness measure different properties. For the models and attacks evaluated here, the gap is material, so robustness testing belongs beside ordinary accuracy evaluation when the threat model includes crafted inputs.
 
 The second lesson is practical: making robustness evaluation a CI gate (not just a report) is what turns measurement into action. Teams respond to red builds. They do not respond to informational dashboards.
+
+<!-- repo-verification:start -->
+## Verification update — 2026-09-30
+
+- **Scope:** Account-wide `poojakira` repository pass covering source/configuration, CI/release workflows, security-hygiene gates, dependency/SAST controls, and documentation consistency.
+- **Remediation:** Ran the safe Ruff repair workflow, corrected the import/format gate, and pinned release/container/CodeQL/artifact actions to immutable revisions.
+- **Verification state:** CI, Build and Security Gate, Security Hygiene, and Documentation Integrity completed successfully after the fixes; the evaluation-container workflow was still running at the audit snapshot.
+- **Security note:** Robustness benchmarks remain evaluation evidence, not a claim of production robustness.
+- **Evidence boundary:** This update records repository and GitHub Actions evidence observed during the pass. It is not a claim of independent penetration testing, production deployment, or zero residual risk.
+<!-- repo-verification:end -->
