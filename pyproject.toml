@@ -22,7 +22,7 @@ dev = [
     "ruff>=0.16.8,<0.17",
     "httpx2>=2.13,<3",
 ]
-attack = ["attack-v19-core>=19.1,<20"]
+attack = ["attack-v19-core @ git+https://github.com/poojakira/attack-v19-core.git@10905bab67703f003e095924746078d1efdf6144"]
 service = [
     "starlette>=1.7.0,<2",
     "anyio>=4.14.2,<5",
