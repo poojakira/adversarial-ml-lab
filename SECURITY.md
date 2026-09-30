@@ -90,3 +90,13 @@ The following are **out of scope**:
 We follow **coordinated disclosure**. We will work with reporters to understand the issue, develop a fix, and publish a GitHub Security Advisory before or simultaneously with public disclosure. We ask reporters to give us at least **14 days** before publishing details publicly.
 
 We do not operate a bug bounty program for this repository.
+
+<!-- credential-response:start -->
+## Credential and secret handling
+
+- Real API keys, tokens, passwords, private keys, cloud credentials, and populated environment files must never be committed.
+- Local users must create their own `.env` from the repository's safe template when environment variables are needed, and must supply **their own** credentials. CI/CD credentials belong in GitHub repository/environment secrets or an external secret manager, not in source or workflow YAML.
+- If a real credential is exposed, treat it as compromised even if the commit is quickly deleted. **Revoke or rotate the credential at its provider first.** Then remove it from the current tree, reachable Git history, logs/artifacts, examples, screenshots, and documentation as applicable.
+- Rewriting Git history or deleting a file does **not** revoke a credential. Provider-side rotation/revocation is required.
+- Placeholder/test credentials must be clearly marked and must not be valid for real services.
+<!-- credential-response:end -->
