@@ -32,3 +32,10 @@ SQL tenant isolation, password reset, browser XSS, payments.
 - **Security note:** Robustness benchmarks remain evaluation evidence, not a claim of production robustness.
 - **Evidence boundary:** This update records repository and GitHub Actions evidence observed during the pass. It is not a claim of independent penetration testing, production deployment, or zero residual risk.
 <!-- repo-verification:end -->
+
+## Verification checkpoint — 2026-09-30
+
+- **Snapshot commit:** `95d9c097efc63ad4e8aed48cb85bc599a2de40cc`
+- **Status:** PARTIALLY VERIFIED
+- **Evidence:** Security Hygiene, Documentation Integrity, and Build and Security Gate passed. CI and the evaluation-container workflow were still running at the verification snapshot.
+- This checkpoint is intentionally date-bounded. It does not claim zero vulnerabilities or universal production readiness.
