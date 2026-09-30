@@ -25,7 +25,6 @@ from starlette.concurrency import run_in_threadpool
 
 from adv_lab.eval.benchmark_runner import PGD_ROBUST_ACC_GATE, benchmark_runner
 
-
 _MAX_CONCURRENT = int(os.environ.get("ADV_MAX_CONCURRENT_EVALUATIONS", "1"))
 _TIMEOUT_SECONDS = float(os.environ.get("ADV_EVALUATION_TIMEOUT_SECONDS", "300"))
 _MAX_REQUEST_BYTES = int(os.environ.get("ADV_MAX_REQUEST_BYTES", "16384"))
