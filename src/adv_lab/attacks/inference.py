@@ -64,7 +64,8 @@ class WatermarkDetector(Protocol):
     positive values indicate watermark presence.
     """
 
-    def __call__(self, logits: Tensor) -> Tensor: ...
+    def __call__(self, logits: Tensor) -> Tensor:
+        raise NotImplementedError
 
 
 # ---------------------------------------------------------------------------
