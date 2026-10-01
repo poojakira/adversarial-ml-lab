@@ -30,6 +30,7 @@ _TIMEOUT_SECONDS = float(os.environ.get("ADV_EVALUATION_TIMEOUT_SECONDS", "300")
 _MAX_REQUEST_BYTES = int(os.environ.get("ADV_MAX_REQUEST_BYTES", "16384"))
 _RATE_LIMIT_RPM = int(os.environ.get("ADV_RATE_LIMIT_RPM", "30"))
 _request_log: dict[str, list[float]] = defaultdict(list)
+_RATE_KEY_SECRET = os.urandom(32)
 if _MAX_CONCURRENT < 1 or _MAX_CONCURRENT > 8:
     raise RuntimeError("ADV_MAX_CONCURRENT_EVALUATIONS must be between 1 and 8")
 if _TIMEOUT_SECONDS <= 0 or _TIMEOUT_SECONDS > 3600:
@@ -70,7 +71,8 @@ class EvaluationResponse(BaseModel):
 def _is_rate_limited(request: Request) -> bool:
     supplied = request.headers.get("X-API-Key", "")
     peer = request.client.host if request.client else "unknown"
-    key = hashlib.sha256(f"{peer}\0{supplied}".encode()).hexdigest()[:32]
+    material = f"{peer}\0{supplied}".encode("utf-8")
+    key = hmac.new(_RATE_KEY_SECRET, material, hashlib.sha256).hexdigest()[:32]
     now = time.time()
     cutoff = now - 60.0
     hits = [stamp for stamp in _request_log[key] if stamp > cutoff]
