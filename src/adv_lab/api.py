@@ -71,7 +71,7 @@ class EvaluationResponse(BaseModel):
 def _is_rate_limited(request: Request) -> bool:
     supplied = request.headers.get("X-API-Key", "")
     peer = request.client.host if request.client else "unknown"
-    material = f"{peer}\0{supplied}".encode("utf-8")
+    material = f"{peer}\0{supplied}".encode()
     key = hmac.new(_RATE_KEY_SECRET, material, hashlib.sha256).hexdigest()[:32]
     now = time.time()
     cutoff = now - 60.0
