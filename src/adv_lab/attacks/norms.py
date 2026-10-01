@@ -383,7 +383,6 @@ def _project_wasserstein(
     spatial distance from the nearest modified pixel.
     """
     batch_size = delta.shape[0]
-    delta.view(batch_size, -1)
 
     # Approximate W1 distance as weighted L1 norm
     # For a grid, W1 is bounded by the L1 norm of pixel values times their
@@ -391,7 +390,6 @@ def _project_wasserstein(
     # W1 <= L1_norm * max_spatial_diameter / num_pixels
     # Here we use the heuristic: scale down delta uniformly if L1 exceeds budget
     h, w = delta.shape[2], delta.shape[3]
-    math.sqrt(h * h + w * w)
 
     # Weighted L1: weight each pixel change by its distance from center
     cy, cx = h / 2.0, w / 2.0
@@ -545,7 +543,6 @@ def _apply_affine_transform(images: Tensor, rotation_deg: Tensor, tx: Tensor, ty
     Uses bilinear grid sampling for differentiability.
     """
     batch_size = images.shape[0]
-    _h, _w = images.shape[2], images.shape[3]
 
     # Convert degrees to radians
     angle_rad = rotation_deg * (math.pi / 180.0)

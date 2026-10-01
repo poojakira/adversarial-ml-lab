@@ -16,6 +16,8 @@ gradient-masking smell (Athalye et al., 2018).
 
 from __future__ import annotations
 
+import math
+
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -83,7 +85,7 @@ def _validate_attack_inputs(
     if epsilon < 0.0:
         raise ValueError(f"epsilon must be non-negative, got {epsilon}")
     # NaN/inf epsilon would silently poison every perturbation.
-    if epsilon != epsilon or epsilon == float("inf"):
+    if not math.isfinite(epsilon):
         raise ValueError(f"epsilon must be finite, got {epsilon}")
 
     # The L-inf/L2 projections and the tanh change-of-variables all assume the
