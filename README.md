@@ -30,7 +30,7 @@ Reproduced on current `main` (Python 3.12, CPU). Real results are transcribed fr
 
 | Metric | Current verified result |
 |---|---:|
-| Tests | 107 passing, 0 skipped |
+| Tests | 109 passing, 0 skipped |
 | Statement coverage | 32.16% (CI gate 15%); core attacks fgsm 71% / pgd 97% / cw 98% |
 | Attacks | FGSM (L∞), PGD-20 (L∞), C&W (L2) |
 | Committed CIFAR-10 result | 71.82% clean → 0.00% robust under PGD @ ε=8/255 (1024-sample subset) |
