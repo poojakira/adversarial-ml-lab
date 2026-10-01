@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-API_KEY = "adversarial-evaluation-api-key-at-least-32-chars"
+API_KEY = "test-api-key-" + ("x" * 32)
 
 
 def _client(monkeypatch, tmp_path: Path):
