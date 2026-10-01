@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404 - fixed executable, argument-list invocation only
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,8 +45,11 @@ PLACEHOLDER_WORDS = (
 
 
 def tracked_files() -> list[Path]:
-    raw = subprocess.check_output(
-        ["git", "-C", str(ROOT), "ls-files", "-z"],
+    git_exe = shutil.which("git")
+    if not git_exe:
+        raise RuntimeError("git executable is required for the repository security scan")
+    raw = subprocess.check_output(  # noqa: S603  # nosec B603
+        [git_exe, "-C", str(ROOT), "ls-files", "-z"],
         text=False,
     ).decode().split("\0")
     return [ROOT / item for item in raw if item]

@@ -391,7 +391,7 @@ def membership_inference_shadow(
     shadow_test_data: tuple[Tensor, Tensor],
     *,
     shadow_model: nn.Module | None = None,
-    threshold: float = 0.5,
+    threshold: float | None = None,
     shadow_epochs: int = 10,
 ) -> MembershipResult:
     """Shadow model membership inference attack.
@@ -413,7 +413,8 @@ def membership_inference_shadow(
         shadow_test_data: (x, y) data NOT used to train shadow (non-members).
         shadow_model: Optional pre-built shadow model. If None, uses a simple
             architecture matching the target's output dimension.
-        threshold: Decision threshold for membership prediction.
+        threshold: Decision threshold for membership prediction. If omitted,
+            derive it from the midpoint of the shadow member/non-member confidence means.
         shadow_epochs: Training epochs for the shadow model.
 
     Returns:
@@ -424,7 +425,6 @@ def membership_inference_shadow(
     """
     _require_eval_mode(model)
 
-    samples.shape[0]
     shadow_x_train, shadow_y_train = shadow_train_data
     shadow_x_test, shadow_y_test = shadow_test_data
 
@@ -463,7 +463,10 @@ def membership_inference_shadow(
     # and lower loss (feature 2)
     member_mean_conf = shadow_member_feats[:, 0].mean()
     non_member_mean_conf = shadow_non_member_feats[:, 0].mean()
-    (member_mean_conf + non_member_mean_conf) / 2.0
+    shadow_threshold = float(((member_mean_conf + non_member_mean_conf) / 2.0).item())
+    decision_threshold = shadow_threshold if threshold is None else threshold
+    if not 0.0 <= decision_threshold <= 1.0:
+        raise ValueError("threshold must be in [0, 1]")
 
     # Score target samples using the target model
     target_feats = _compute_membership_features(model, samples, labels)

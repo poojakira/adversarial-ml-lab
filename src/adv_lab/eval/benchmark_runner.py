@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import logging
+import math
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -340,7 +341,7 @@ def benchmark_runner(
     Raises:
         FileNotFoundError: If model_path is provided but file does not exist.
     """
-    if epsilon < 0.0 or epsilon != epsilon or epsilon == float("inf"):
+    if epsilon < 0.0 or not math.isfinite(epsilon):
         raise ValueError(f"epsilon must be a finite, non-negative float, got {epsilon}")
     if pgd_steps < 1:
         raise ValueError(f"pgd_steps must be >= 1, got {pgd_steps}")

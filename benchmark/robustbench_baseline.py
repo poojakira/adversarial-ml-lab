@@ -324,14 +324,14 @@ def main() -> None:
         "methodology_notes": [
             "All measurements are REAL  --  run on real pretrained weights with real data.",
             "No synthetic/projected numbers. Every value comes from actual "
-            "forward/backward passes.",
+            + "forward/backward passes.",
             "ImageNet-pretrained model evaluated on CIFAR-10 via input "
-            "upsampling + logit grouping.",
+            + "upsampling + logit grouping.",
             "Clean accuracy is expected to be low due to domain mismatch (ImageNet vs CIFAR-10).",
             "Attack success rates measure the fraction of correctly-classified "
-            "images that are fooled.",
+            + "images that are fooled.",
             "PGD-20 is strictly stronger than FGSM; if FGSM > PGD success, "
-            "suspect gradient masking.",
+            + "suspect gradient masking.",
         ],
         "attack_implementations": {
             "fgsm": "adv_lab.attacks.fgsm.fgsm_attack",

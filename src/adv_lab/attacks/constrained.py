@@ -25,6 +25,7 @@ import heapq
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import total_ordering
 
 import torch
 import torch.nn as nn
@@ -139,6 +140,7 @@ class TimedAttack:
 # ---------------------------------------------------------------------------
 
 
+@total_ordering
 @dataclass
 class PerturbationDirection:
     """A candidate perturbation direction with priority score."""
