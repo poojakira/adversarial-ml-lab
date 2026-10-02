@@ -28,7 +28,7 @@
 
 Reproduced on current `main` (Python 3.12, CPU). Real results are transcribed from committed `results/*.json`.
 
-| Metric | Current verified result |
+| Metric | Verified snapshot value |
 |---|---:|
 | Tests | 109 passing, 0 skipped |
 | Statement coverage | 32.16% (CI gate 15%); core attacks fgsm 71% / pgd 97% / cw 98% |
@@ -268,8 +268,7 @@ make verify     # Full check: lint + test + build + security
 
 ### Current Coverage
 
-The current head records **109 passing tests** and **32.16% overall line coverage** (verified in current-main CI; use the latest successful CI run
-for the authoritative figure). The coverage profile is
+The cited verification snapshot records **109 passing tests** and **32.16% overall line coverage**. Use the repository's latest successful CI run to determine whether later commits preserve or change those values. The coverage profile is
 dominated by ~20 advanced/experimental attack modules that are intentionally
 lightly tested. The modules that matter for the core robustness story are
 covered well:
