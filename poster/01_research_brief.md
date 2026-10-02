@@ -26,9 +26,9 @@ A reproducible robustness-evaluation harness for FGSM, PGD, and C&W that shows a
 4. Measure robust accuracy on the committed attack subset.
 5. Emit structured evidence and CI robustness-gate logic.
 
-## Current Verified Evidence
+## Verified Evidence at Poster Snapshot
 
-Current-main Python 3.12 CI reports:
+The cited Python 3.12 CI snapshot reports:
 
 - **109 tests passed**.
 - **32.16% statement coverage**; CI gate is 15%.
@@ -67,4 +67,4 @@ pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Expected current CI evidence: **109 passed**, **32.16% coverage**.
+Expected evidence at the cited snapshot: **109 passed**, **32.16% coverage**.
