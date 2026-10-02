@@ -1,6 +1,6 @@
 # Research Brief - Poster 06
 
-> Evidence status: Refreshed against current code snapshot `8412e98d38f28c2e4b43cdcbf8269133b346ca16` and successful CI run `36783579501` on 2026-09-30. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
+> Evidence status: Refreshed against verified code snapshot `8412e98d38f28c2e4b43cdcbf8269133b346ca16` and successful CI run `36783579501` on 2026-09-30. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
 
 ## Repository
 
