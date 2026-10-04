@@ -4,7 +4,6 @@ import json
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 ARTIFACT = ROOT / "results" / "cifar10_smallcnn_real.json"
 
