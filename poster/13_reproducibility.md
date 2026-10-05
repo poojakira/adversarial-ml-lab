@@ -1,13 +1,13 @@
 # Reproduce the Work - Poster 06
 
 **Repository:** `github.com/poojakira/adversarial-ml-lab`  
-**Verified code snapshot:** `8412e98d38f28c2e4b43cdcbf8269133b346ca16`  
-**CI run:** `36783579501`
+**Verified code snapshot:** `490b71ec480c40622b63b1adaf2bf2f75959b8d6`  
+**CI run:** `37169514061`
 
 ```bash
 git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
-git checkout 8412e98d38f28c2e4b43cdcbf8269133b346ca16
+git checkout 490b71ec480c40622b63b1adaf2bf2f75959b8d6
 python -m pip install -e ".[dev]"
 pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
