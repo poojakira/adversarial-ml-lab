@@ -1,6 +1,6 @@
 # Claim Ledger - Poster 06
 
-> Verified code snapshot: `8412e98d38f28c2e4b43cdcbf8269133b346ca16`; successful CI run `36783579501`, 2026-09-30. Robustness numbers are from the committed measured artifact `results/cifar10_smallcnn_real.json`.
+> Verified code snapshot: `490b71ec480c40622b63b1adaf2bf2f75959b8d6`; successful CI run `37169514061`, 2026-10-04. Robustness numbers are from the committed measured artifact `results/cifar10_smallcnn_real.json`.
 
 | # | Claim | Classification | Evidence |
 |---|---|---|---|
