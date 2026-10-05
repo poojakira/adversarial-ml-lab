@@ -30,8 +30,8 @@ A reproducible robustness-evaluation harness for FGSM, PGD, and C&W that shows a
 
 The cited Python 3.12 CI snapshot reports:
 
-- **109 tests passed**.
-- **32.16% statement coverage**; CI gate is 15%.
+- **112 tests passed**.
+- **32.22% statement coverage**; CI gate is 15%.
 - Lint/format, security audit, and CodeQL jobs succeeded.
 - The current CI robustness benchmark job is skipped on ordinary pushes, so the benchmark values below come from the committed real artifact rather than this CI run.
 
@@ -67,4 +67,4 @@ pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Expected evidence at the cited snapshot: **109 passed**, **32.16% coverage**.
+Expected evidence at the cited snapshot: **109 passed**, **32.22% coverage**.
