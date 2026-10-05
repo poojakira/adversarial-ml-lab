@@ -5,8 +5,8 @@
 
 | Metric | Current value |
 |---|---:|
-| Tests passed | **109** |
-| Statement coverage | **32.16%** |
+| Tests passed | **112** |
+| Statement coverage | **32.22%** |
 | SmallCNN parameters | **1,117,354** |
 | Clean CIFAR-10 accuracy | **71.82%** |
 | FGSM robust accuracy @ 8/255 | **3.32%** |

@@ -13,7 +13,7 @@ pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Current CI expectation: **109 tests passed**, **32.16% statement coverage**.
+Current CI expectation: **112 tests passed**, **32.22% statement coverage**.
 
 Committed real benchmark reference:
 
