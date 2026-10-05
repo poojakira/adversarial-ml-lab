@@ -459,7 +459,7 @@ qualitative robustness collapse is the same one seen on larger models.
 |-----------|--------|-------|
 | CI pipeline | Yes | GitHub Actions: train, attack, validate |
 | CI gate with threshold | Yes | PGD robust accuracy >= 30% at eps=8/255 |
-| Test suite | Partial | 15% is the CI gate floor; overall coverage 32.22% (109 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
+| Test suite | Partial | 15% is the CI gate floor; overall coverage 32.22% (112 tests), with core attacks (fgsm 71%, pgd 97%, cw 98%), benchmark runner (69%), and defenses (99-100%) covered well. Advanced attack modules are lightly tested |
 | Linting and formatting | Yes | Ruff with security rules (S) enabled |
 | Security scanning | Yes | Bandit + pip-audit |
 | Dependency pinning | Partial | Core libraries use bounded/ranged requirements; the GitHub-only `attack-v19-core` optional integration is pinned to an immutable commit |
