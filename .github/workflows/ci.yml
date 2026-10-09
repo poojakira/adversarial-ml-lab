@@ -48,10 +48,10 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run Ruff Linter
-        run: ruff check src/adv_lab tests --output-format=github
+        run: ruff check . --output-format=github
 
       - name: Run Ruff Formatter Check
-        run: ruff format --check src/adv_lab tests
+        run: ruff format --check .
 
       - name: Focused Pyright gate
         run: pyright src/adv_lab/eval/ci_signing.py

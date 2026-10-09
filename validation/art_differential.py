@@ -38,9 +38,7 @@ def main() -> int:
     model = nn.Sequential(nn.Flatten(), nn.Linear(4, 2))
     with torch.no_grad():
         linear = model[1]
-        linear.weight.copy_(
-            torch.tensor([[1.2, -0.7, 0.4, -0.2], [-0.8, 0.9, -0.3, 0.7]])
-        )
+        linear.weight.copy_(torch.tensor([[1.2, -0.7, 0.4, -0.2], [-0.8, 0.9, -0.3, 0.7]]))
         linear.bias.copy_(torch.tensor([0.1, -0.1]))
     model.eval()
 

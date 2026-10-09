@@ -47,6 +47,8 @@ select = ["E", "F", "I", "N", "W", "B", "UP", "S"]
 ignore = ["S101", "N802", "N803", "N806"]
 
 [tool.ruff.lint.per-file-ignores]
+# Poster HTML/SVG template literals retain intentional long lines.
+"poster/render_poster.py" = ["E501"]
 "scripts/**" = ["E402", "E501"]
 "src/adv_lab/eval/benchmark_runner.py" = ["E402"]
 "tests/**" = ["B011"]

@@ -32,8 +32,8 @@ jobs:
         run: python -m pytest -q
       - name: Static quality gate
         run: |
-          python -m ruff check src tests
-          python -m ruff format --check src tests
+          python -m ruff check .
+          python -m ruff format --check .
       - name: Security gate
         run: |
           bandit -r src/ -ll
