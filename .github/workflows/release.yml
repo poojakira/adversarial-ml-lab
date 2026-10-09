@@ -44,8 +44,8 @@ jobs:
 
       - name: Run release gates
         run: |
-          ruff check src/adv_lab tests
-          ruff format --check src/adv_lab tests
+          ruff check .
+          ruff format --check .
           pyright src/adv_lab/eval/ci_signing.py
           bandit -r src/adv_lab -ll
           pip-audit --skip-editable --progress-spinner=off
