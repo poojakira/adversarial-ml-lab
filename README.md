@@ -260,7 +260,12 @@ make verify                # lint + test + build + security (full check)
 
 ## Testing
 
+The API tests under `tests/test_api.py` import `fastapi`, which lives in the
+`service` extra. Install both `dev` and `service` extras so the full suite
+collects; with only `.[dev]` that module fails to import.
+
 ```bash
+pip install -e ".[dev,service]"
 pytest tests/ -q
 make test       # Also installs the optional attack-v19-core sibling + downloads its data
 make verify     # Full check: lint + test + build + security
