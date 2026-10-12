@@ -1,15 +1,3 @@
-<!-- security-systems-poster -->
-## Research Poster
-
-**Security Systems / 06 — Measuring Neural-Network Robustness Under Adversarial Perturbation**
-
-[![Research poster](poster/poster.png)](poster/poster_36x48.pdf)
-
-> Technical research poster (36 x 48 in). Click the image for the print-resolution **[PDF](poster/poster_36x48.pdf)**.
-> Poster measurements are dated snapshots at their printed commits. Use the repository evidence files for newer results; do not read the poster as a verification of the latest `main`.
-> Every metric on it is evidence-backed; historical/projected numbers are labeled and separated from current results.
-<!-- security-systems-poster -->
-
 # adversarial-ml-lab
 
 > Measure classifier robustness under gradient-based adversarial attacks (FGSM, PGD, C&W), gate it in CI, and map findings to MITRE ATLAS.
@@ -512,6 +500,18 @@ qualitative robustness collapse is the same one seen on larger models.
 ## Additional Documentation
 
 - [INCIDENT_RUNBOOK.md](INCIDENT_RUNBOOK.md) - incident response for robustness regressions and OOM
+
+<!-- security-systems-poster -->
+## Research Poster
+
+**Security Systems / 06 — Measuring Neural-Network Robustness Under Adversarial Perturbation**
+
+[![Research poster](poster/poster.png)](poster/poster_36x48.pdf)
+
+> Technical research poster (36 x 48 in). Click the image for the print-resolution **[PDF](poster/poster_36x48.pdf)**.
+> Poster measurements are dated snapshots at their printed commits. Use the repository evidence files for newer results; do not read the poster as a verification of the latest `main`.
+> Every metric on it is evidence-backed; historical/projected numbers are labeled and separated from current results.
+<!-- security-systems-poster -->
 
 ## License and Author
 
