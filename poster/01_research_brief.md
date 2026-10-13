@@ -1,6 +1,6 @@
 # Research Brief - Poster 06
 
-> Evidence status: Refreshed against verified code snapshot `490b71ec480c40622b63b1adaf2bf2f75959b8d6` and successful CI run `37169514061` on 2026-10-04. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
+> Evidence status: Refreshed against verified code snapshot `490b71ec480c40622b63b1adaf2bf2f75959b8d6` and successful CI run `37169514061` on 2026-10-04. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the cited CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
 
 ## Repository
 
@@ -33,7 +33,7 @@ The cited Python 3.12 CI snapshot reports:
 - **112 tests passed**.
 - **32.22% statement coverage**; CI gate is 15%.
 - Lint/format, security audit, and CodeQL jobs succeeded.
-- The current CI robustness benchmark job is skipped on ordinary pushes, so the benchmark values below come from the committed real artifact rather than this CI run.
+- The cited CI robustness benchmark job is skipped on ordinary pushes, so the benchmark values below come from the committed real artifact rather than this CI run.
 
 Committed measured CIFAR-10 artifact:
 
@@ -67,4 +67,11 @@ pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Expected evidence at the cited snapshot: **109 passed**, **32.22% coverage**.
+Expected evidence at the cited snapshot: **112 passed**, **32.22% coverage**.
+
+
+## Claim audit and rendered-source boundary, October 13, 2026 UTC
+
+The reviewed printed claims, source and test commit anchors, CI dates and benchmark limitations are in `verified_claims.json`. The PDF is generated from that manifest and the PNG is rasterized from the same page by `render_poster.py`. Source inventory, dated CI and separate reported experiments must not be combined into one result. Earlier artifact versions remain in Git history; these corrections do not assert production readiness.
+
+Offline poster rendering: `python -m pip install reportlab==4.4.9 PyMuPDF==1.26.6`, then `python poster/render_poster.py`. The font is bundled with the pinned ReportLab package; no browser or network fetch is used during rendering.
