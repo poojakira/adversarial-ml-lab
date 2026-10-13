@@ -1,6 +1,8 @@
+> **READ [LICENSE](LICENSE) BEFORE COPYING OR CHANGING ANYTHING.** This is an owner-maintained, proprietary repository. **Unsolicited code/documentation contributions are not accepted.** The development instructions below apply **only to people who have received prior written authorization** from Pooja Kiran. Public viewing/forking under GitHub's Terms, applicable law, third-party rights, and prior valid licenses remain unaffected. Any accepted external work requires an agreed written copyright license or assignment; a PR alone does not transfer ownership. For permission contact poojakiranbhardwaj@gmail.com.
+
 # Contributing to adversarial-ml-lab
 
-Thank you for your interest in contributing. This project is an **open research tool**  --  contributions that improve attack implementations, add new attacks, strengthen the benchmark harness, or improve documentation are all welcome.
+This repository is owner-maintained proprietary software. Only contributors who have received prior written authorization may use the technical guidance below.
 
 ---
 
@@ -13,7 +15,7 @@ This library is designed to be used by:
 - **Red team practitioners** quantifying evasion risk for ML-based detection systems
 - **AI governance teams** who need structured benchmark output for design review documentation
 
-If any of those describe you, please open an issue or PR.
+Please obtain written authorization before implementing changes or opening a code PR.
 
 ---
 
@@ -130,4 +132,4 @@ Before requesting a review, confirm:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+Do not submit code without prior written approval and an explicit agreement addressing its ownership and licensing. Earlier MIT-licensed versions retain their previously granted rights.
