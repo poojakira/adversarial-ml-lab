@@ -285,3 +285,34 @@ def test_attack_success_rate_is_undefined_without_clean_correct_examples() -> No
     rate, denominator = _attack_success_rate(model, adv_images, labels, clean_correct)
     assert denominator == 0
     assert rate is None
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_nonfinite_images_rejected(value):
+    x, y = _good_batch()
+    x[0, 0, 0, 0] = value
+    with pytest.raises(ValueError, match="finite"):
+        fgsm_attack(_model(), x, y, epsilon=0.0)
+
+
+@pytest.mark.parametrize("attack", [pgd_attack, pgd_l2])
+@pytest.mark.parametrize("alpha", [float("nan"), float("inf"), float("-inf")])
+def test_nonfinite_pgd_step_rejected(attack, alpha):
+    x, y = _good_batch()
+    with pytest.raises(ValueError, match="step size"):
+        attack(_model(), x, y, alpha=alpha)
+
+
+@pytest.mark.parametrize("attack", [pgd_attack, pgd_l2])
+@pytest.mark.parametrize("steps", [True, 1.5])
+def test_noninteger_pgd_steps_rejected(attack, steps):
+    x, y = _good_batch()
+    with pytest.raises(ValueError, match="steps"):
+        attack(_model(), x, y, steps=steps)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.int32, torch.bool])
+def test_label_dtype_rejected(dtype):
+    x, y = _good_batch()
+    with pytest.raises(TypeError, match="torch.long"):
+        _validate_attack_inputs(x, y.to(dtype), 0.1)

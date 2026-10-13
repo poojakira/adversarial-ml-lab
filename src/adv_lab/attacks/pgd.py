@@ -16,6 +16,8 @@ single norm.
 
 from __future__ import annotations
 
+import math
+
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -55,9 +57,9 @@ def pgd_attack(
     """
     _require_eval_mode(model)
     _validate_attack_inputs(images, labels, epsilon)
-    if steps < 1:
+    if not isinstance(steps, int) or isinstance(steps, bool) or steps < 1:
         raise ValueError(f"steps must be >= 1, got {steps}")
-    if alpha <= 0.0:
+    if not math.isfinite(alpha) or alpha <= 0.0:
         raise ValueError(f"alpha (step size) must be positive, got {alpha}")
 
     x_orig = images.clone().detach()
@@ -154,9 +156,9 @@ def pgd_l2(
     """
     _require_eval_mode(model)
     _validate_attack_inputs(images, labels, epsilon)
-    if steps < 1:
+    if not isinstance(steps, int) or isinstance(steps, bool) or steps < 1:
         raise ValueError(f"steps must be >= 1, got {steps}")
-    if alpha <= 0.0:
+    if not math.isfinite(alpha) or alpha <= 0.0:
         raise ValueError(f"alpha (step size) must be positive, got {alpha}")
 
     x_orig = images.clone().detach()

@@ -79,6 +79,12 @@ def _validate_attack_inputs(
             f"batch size mismatch: images has {images.shape[0]} samples "
             f"but labels has {labels.shape[0]}"
         )
+    if labels.dtype != torch.long:
+        raise TypeError("labels must use torch.long integer class indices")
+    if images.device != labels.device:
+        raise ValueError("images and labels must be on the same device")
+    if not torch.isfinite(images).all():
+        raise ValueError("images must contain only finite values")
     if images.shape[0] == 0:
         raise ValueError("cannot attack an empty batch (0 samples)")
 
