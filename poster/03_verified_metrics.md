@@ -1,7 +1,7 @@
 # Verified Metrics - Poster 06
 
-**Code snapshot:** `490b71ec480c40622b63b1adaf2bf2f75959b8d6`  
-**CI run:** https://github.com/poojakira/adversarial-ml-lab/actions/runs/37169514061
+**Code snapshot:** `05ee102c4c20fe3ebdcd3a8ac3dd1ea530de6698`  
+**CI run:** https://github.com/poojakira/adversarial-ml-lab/actions/runs/38498116492
 
 | Metric | Current value |
 |---|---:|
