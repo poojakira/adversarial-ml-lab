@@ -1,6 +1,6 @@
 # Research Brief - Poster 06
 
-> Evidence status: Refreshed against verified code snapshot `490b71ec480c40622b63b1adaf2bf2f75959b8d6` and successful CI run `37169514061` on 2026-10-04. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
+> Evidence status: Refreshed against verified code snapshot `05ee102c4c20fe3ebdcd3a8ac3dd1ea530de6698` and successful CI run `38498116492` on 2026-10-14. The real CIFAR-10 robustness values are from the committed measured artifact `results/cifar10_smallcnn_real.json`; the current CI run validates the code/test surface but did not rerun the expensive CIFAR-10 benchmark job.
 
 ## Repository
 
@@ -61,10 +61,10 @@ The older poster centered `results/robustbench_real.json`, an ImageNet-pretraine
 ```bash
 git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
-git checkout 490b71ec480c40622b63b1adaf2bf2f75959b8d6
+git checkout 05ee102c4c20fe3ebdcd3a8ac3dd1ea530de6698
 python -m pip install -e ".[dev]"
 pytest tests/ -q --cov=adv_lab --cov-report=term
 python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Expected evidence at the cited snapshot: **109 passed**, **32.22% coverage**.
+Expected evidence at the cited snapshot: **112 passed**, **32.22% coverage**.
