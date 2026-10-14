@@ -171,7 +171,8 @@ jobs:
     # Heavy job: installs PyTorch and downloads CIFAR-10 + a RobustBench model.
     # Run it only on the weekly schedule or manual dispatch so it never blocks
     # or slows down per-push/PR CI (the fast lint/test/CodeQL/security gates do that).
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # The full CIFAR-10 benchmark is opt-in; no schedule trigger is configured.
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
