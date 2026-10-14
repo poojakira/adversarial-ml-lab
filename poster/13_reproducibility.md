@@ -1,24 +1,14 @@
-# Reproduce the Work - Poster 06
+# Reproduce the Work — Adversarial ML Lab Poster 06
 
-**Repository:** `github.com/poojakira/adversarial-ml-lab`  
-**Verified code snapshot:** `490b71ec480c40622b63b1adaf2bf2f75959b8d6`  
-**CI run:** `37169514061`
+**Pinned CI code snapshot:** `05ee102c4c20fe3ebdcd3a8ac3dd1ea530de6698`  
+**Successful Python 3.12 CI:** [run 38498116492](https://github.com/poojakira/adversarial-ml-lab/actions/runs/38498116492) (October 14, 2026 UTC)
 
 ```bash
 git clone https://github.com/poojakira/adversarial-ml-lab.git
 cd adversarial-ml-lab
-git checkout 490b71ec480c40622b63b1adaf2bf2f75959b8d6
+git checkout 05ee102c4c20fe3ebdcd3a8ac3dd1ea530de6698
 python -m pip install -e ".[dev]"
 pytest tests/ -q --cov=adv_lab --cov-report=term
-python scripts/run_real_smallcnn_benchmark.py --epochs 6 --attack-samples 1000
 ```
 
-Current CI expectation: **112 tests passed**, **32.22% statement coverage**.
-
-Committed real benchmark reference:
-
-- clean: **71.82%**
-- FGSM robust: **3.32%**
-- PGD-20 robust: **0.00%**
-- C&W L2 robust: **4.20%**
-- attack subset: **1,024**
+Expected from pinned CI: **112 passed, 32.22% statement coverage**. The CIFAR-10 benchmark was *skipped* in that CI. A separately committed real SmallCNN artifact reports **71.82% clean accuracy**, **3.32% FGSM**, **0% PGD-20**, and **4.20% C&W L2** on a 1,024-sample attack subset (clean accuracy uses 10,000 samples). Run the benchmark using the documented dependencies and pinned configuration to reproduce these separate measurements.
